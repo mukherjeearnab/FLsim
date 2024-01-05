@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 parser = argparse.ArgumentParser()
+parser.add_argument("-n", "--node_id", required=True)
 parser.add_argument("-b", "--bootnode")
 parser.add_argument("-cn", "--controller")
 parser.add_argument("-g", "--gossip")
@@ -19,20 +20,27 @@ parsed_args = parser.parse_args()
 
 args = dict()
 
+# process node_id
+args['node_id'] = str(parsed_args.node_id)
+
 # process bootnode args
 if parsed_args.bootnode:
+    args['is_bootnode'] = False
     if parsed_args.bootnode.isdigit():
         args['bootnode_url'] = f'http://localhost:{parsed_args.bootnode}'
     elif 'http' in parsed_args.bootnode:
         args['bootnode_url'] = parsed_args.bootnode
     else:
         args['bootnode_url'] = f'http://{parsed_args.bootnode}'
+else:
+    args['is_bootnode'] = True
 
 # process controller args
 if parsed_args.controller:
-    args['no_controller'] = int(parsed_args.controller) == 0
+    args['controller_avl'] = int(parsed_args.controller) != 0
     args['controller_port'] = int(parsed_args.controller)
 else:
+    args['controller_avl'] = False
     args['controller_port'] = int(os.getenv('CONTROL_PORT'))
 
 # process gossip args

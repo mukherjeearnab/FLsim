@@ -6,3 +6,8 @@ from multiprocessing import Manager
 manager = Manager()
 
 global_state = manager.dict()
+
+# init peer state
+peer_state = manager.dict()
+peer_state['node_info'] = dict()
+peer_state['peers'] = dict()

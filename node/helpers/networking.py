@@ -2,6 +2,7 @@
 Networking Helper Modules
 '''
 import socket
+from subprocess import getoutput
 
 
 def check_local_port_bind(port: int, verbose=False) -> bool:
@@ -18,3 +19,11 @@ def check_local_port_bind(port: int, verbose=False) -> bool:
             print(f"Port {port} is in use.")
     sock.close()
     return result
+
+
+def get_all_nic_ip() -> list:
+    '''
+    Get all IP addresses from all the Network Interface Cards on the Host
+    '''
+    ips = getoutput('hostname --all-ip-addresses').strip().split(' ')
+    return ips

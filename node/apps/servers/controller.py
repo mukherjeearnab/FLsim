@@ -5,8 +5,12 @@ from multiprocessing import Process
 from flask import Flask, jsonify
 from helpers.argsparse import args
 from helpers.networking import check_local_port_bind
+# from state import peer_state
+from apps.gossip.peer_management import PeerManager
 # from routes.client_manager import blueprint as client_manager
 # from routes.job_manager import blueprint as job_manager
+
+peer_manager = PeerManager()
 
 
 # import the routers for different routes
@@ -51,6 +55,10 @@ def start_server():
     else:
         print(
             f'Cannot start controller server! Port {args["controller_port"]} already in use.')
+        args['controller_avl'] = False
+
+    peer_manager.set_controller_port(
+        args['controller_avl'], args['controller_port'])
 
 
 def stop_server():

@@ -4,11 +4,14 @@ The Gossip Server Module
 import random
 from multiprocessing import Process
 from flask import Flask, jsonify
+# from state import peer_state
 from helpers.argsparse import args
 from helpers.networking import check_local_port_bind
-# from routes.client_manager import blueprint as client_manager
+from apps.gossip.peer_management import PeerManager
+from routes.peer import blueprint as peer_management
 # from routes.job_manager import blueprint as job_manager
 
+peer_manager = PeerManager()
 
 # import the routers for different routes
 
@@ -26,7 +29,7 @@ def root():
 
 
 # register the blueprint routes
-# app.register_blueprint(client_manager, url_prefix='/client_manager')
+app.register_blueprint(peer_management, url_prefix='/peer')
 # app.register_blueprint(job_manager, url_prefix='/job_manager')
 
 
@@ -41,6 +44,8 @@ def run_server():
             port = args['gossip_port']
         else:
             port = random.randint(10000, 20000)
+
+    peer_manager.set_gossip_port(port)
 
     print(f'Gossip server listening on port {port}.')
     app.run(port=port, debug=False,
