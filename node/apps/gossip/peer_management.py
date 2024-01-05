@@ -83,7 +83,7 @@ class PeerManager(object):
 
         UPDATE_LOCK.release()
 
-    def get_peers(self) -> list:
+    def get_peers(self) -> dict:
         '''
         Get discovered peers of the node
         '''
@@ -91,7 +91,7 @@ class PeerManager(object):
         peers = peer_state['peers']
         return peers
 
-    def get_alive_peers(self) -> list:
+    def get_alive_peers(self) -> dict:
         '''
         Get discovered and alive peers of the node
         '''

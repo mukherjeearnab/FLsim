@@ -10,6 +10,7 @@ from helpers.networking import get_all_nic_ip
 # from helpers import torch as _
 from apps.servers import controller, gossip
 from apps.gossip.peer_management import PeerManager
+from apps.gossip.discovery import init_discovery_process
 
 # set flask logging level
 log = logging.getLogger('werkzeug')
@@ -31,10 +32,10 @@ gossip.start_server()
 sleep(1.0)
 
 # set peer manager object
-
+init_discovery_process()
 
 if __name__ == '__main__':
     while True:
-        sleep(2)
+        sleep(5)
         print(peer_manager.node_info())
         print(peer_manager.get_peers())

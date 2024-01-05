@@ -41,7 +41,7 @@ def run_server():
             threaded=True, host='0.0.0.0')
 
 
-server = Process(target=run_server)
+server = Process(target=run_server, name="controller_server_process")
 
 
 def start_server():
