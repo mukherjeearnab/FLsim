@@ -41,7 +41,8 @@ def run_server():
             threaded=True, host='0.0.0.0')
 
 
-server = Process(target=run_server, name="controller_server_process")
+server = Process(target=run_server,
+                 name="controller_server_process", daemon=True)
 
 
 def start_server():
@@ -65,7 +66,7 @@ def stop_server():
     '''
     Method to stop the server, it joins it, and then exit will be called
     '''
-    print('Stopping server...')
+    print('Stopping Controller server...')
     if server.is_alive():
         server.terminate()
         server.join()

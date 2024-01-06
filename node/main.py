@@ -1,6 +1,8 @@
 '''
 This is the Commandline interface for managing the server
 '''
+import sys
+import signal
 import logging
 from time import sleep
 # from state import peer_state
@@ -34,8 +36,18 @@ sleep(1.0)
 # set peer manager object
 init_discovery_process()
 
+
+def sigint_handler(signum, frame):
+    controller.stop_server()
+    gossip.stop_server()
+    sys.exit()
+
+
+signal.signal(signal.SIGINT, sigint_handler)
+
+
 if __name__ == '__main__':
     while True:
         sleep(5)
         print(peer_manager.node_info())
-        print(peer_manager.get_peers())
+        print(peer_manager.get_alive_peers())

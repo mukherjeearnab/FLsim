@@ -56,7 +56,7 @@ def init_discovery_process():
 
     # (4) Start the background process
     discovery_process = Process(
-        target=background_process, name="discovery_process")
+        target=background_process, name="discovery_process", daemon=True)
     discovery_process.start()
 
 
@@ -66,13 +66,17 @@ def background_process():
     '''
 
     while True:
-        # first ping all connected nodes
-        alive_ping_process()
+        try:
+            # first ping all connected nodes
+            alive_ping_process()
 
-        # then discover for new nodes
-        find_new_nodes_and_connect()
+            # then discover for new nodes
+            find_new_nodes_and_connect()
 
-        sleep(env['DISCOVERY_INTERVAL'])
+            sleep(env['DISCOVERY_INTERVAL'])
+        except KeyboardInterrupt:
+            print('Exiting Discovery Process')
+            exit()
 
 
 def find_new_nodes_and_connect():
@@ -140,19 +144,20 @@ def register_discovered_nodes(node_id: str, node_info: dict, ip_override=None):
             f"Failed to establish connection with node [{node_id}] with IDIS.")
         print(traceback.format_exc())
 
-    logger.info('Trying to establish connection using host NIC addresses.')
-    for ip_address in node_info['ip_addresses']:
-        logger.info(
-            f"Trying to establish connection with [{node_id}] using [{ip_address}].")
-        try:
-            post(f"http://{ip_address}:{node_info['gossip_port']}/peer/register_node",
-                 {'node_id': my_id, 'node_info': my_info}, timeout=30)
+    if node_idis_ip is None:
+        logger.info('Trying to establish connection using host NIC addresses.')
+        for ip_address in node_info['ip_addresses']:
             logger.info(
-                f"Successfully established connection with node [{node_id}].")
-            node_idis_ip = ip_address
-            break
-        except:
-            pass
+                f"Trying to establish connection with [{node_id}] using [{ip_address}].")
+            try:
+                post(f"http://{ip_address}:{node_info['gossip_port']}/peer/register_node",
+                     {'node_id': my_id, 'node_info': my_info}, timeout=30)
+                logger.info(
+                    f"Successfully established connection with node [{node_id}].")
+                node_idis_ip = ip_address
+                break
+            except:
+                pass
 
     # (3) add node to peer discovery registry
     if node_idis_ip is not None:
