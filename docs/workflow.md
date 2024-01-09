@@ -22,8 +22,7 @@
        set WorkerStage = 1
 
    if ClientStage == 1 and WorkerStage == 1:
-       for upstream_job in upstream_jobs:
-           upstream_job.sendJobDownloadACK(cluster_id / sub_job_id)
+       this.upstream_job.sendJobDownloadACK(cluster_id / sub_job_id)
 
    # release modification locks and trigger to set DatasetDownloadFlag
    ```
@@ -41,7 +40,7 @@
        downstream_job.setDatasetDownloadFlag(True)
    ```
 
-4. [`clients` + `workers`] **(1)** download the (train/test) datasets from the dataset distributor. **(2)** ACK to their respective cluster's job. **(3)** wait for `ProcessStage` to be set to `1`. Starts from the grass level as:
+4. [`clients` + `workers`] **(1)** download the (train/test) datasets from the dataset distributor. **(2)** ACK to their respective cluster's job. **(3)** `clients` wait for `ProcessStage` to be set to `1`, `workers` wait for `ProcessStage` to be set to `2`. Starts from the grass level as:
 
    [`(secondary+primary) jobs @ logicon`] does after receiving all the dataset download ACK from their respective clients and workers. (for intermediate level jobs, clients are the sub-clusters under them)
 
@@ -55,8 +54,7 @@
        set WorkerStage = 2
 
    if ClientStage == 2 and WorkerStage == 2:
-       for upstream_job in upstream_jobs:
-           upstream_job.sendDatasetACK(cluster_id / sub_job_id)
+       this.upstream_job.sendDatasetACK(cluster_id / sub_job_id)
 
    # release modification locks and trigger to update ProcessStage to 1
    ```
@@ -77,9 +75,9 @@
 
    set globalParameter = intialParameters[0]
 
-   setProcessStage(1)
+   setProcessStage(1, globalParameter)
 
-   def setProcessStage(stage: int):
+   def setProcessStage(stage: int, globalParameter: dict):
        # starts from the root level job
        set ProcessStage = 1
 
@@ -94,16 +92,163 @@
    # exec @ client
    wait_for_processStage(1)
 
-   download_global_parameters()
+   while True:
+       download_global_parameters()
 
-   update_client_status(3)
+       update_client_status(3) # 3: client busy in local training
 
-   start_local_training()
+       local_training()
 
-   # continue here on with submission of trained parameters
-   # and set client status to 4
-   # and wait for clientStage to be 4
-   # wait for processStage to be 1 or 3
-   # if 1 restart from download_global_parameters()
-   # else if 3, send client status to 5 and exit
+       # submit_trained_parameters()
+
+       # set_client_status(4) # 4: client waiting for global params
+
+       # wait_for_client_stage(4) # wait for all clients to be in 4
+
+       # process_stage = wait_process_stage([1, 3])
+
+       # if process_stage == 3:
+       #     set_client_status(5)
+       #     break
+   ```
+
+   [`(secondary+primary) jobs @ logicon`] will update the `ClientStage` in a hierarchical fashion, if all the `clients` / `sub-clusters` have updated their status to `3`.
+
+   ```python
+   # exec @ logicon
+   # from the grass level
+   if all_client_status == 3:
+       set ClientStage = 3
+       this.upstream_job.setClientStatus(cluster_id / sub_job_id, 3)
+   ```
+
+7. [`clients`] once done with `local_training()`: **(1)** upload the trained parameters. **(2)** ACK to their respective cluster's job by updating `clientStatus` to `4`. **(3)** wait for `ClientStage` to turn `4`. Starts from the grass level as:
+
+   ```python
+   # exec @ client
+   wait_for_processStage(1)
+
+   while True:
+       # download_global_parameters()
+
+       # update_client_status(3) # 3: client busy in local training
+
+       # local_training()
+
+       submit_trained_parameters()
+
+       set_client_status(4) # 4: client waiting for global params
+
+       wait_for_client_stage(4) # wait for all clients to be in 4
+
+       # process_stage = wait_process_stage([1, 3])
+
+       # if process_stage == 3:
+       #     set_client_status(5)
+       #     break
+   ```
+
+   [`(specific cluster) job @ logicon`] waits for all the `client` or `sub-cluster` parameters to be submitted. Once all parameters have been submitted, `ProcessStage` will be updated to `2` _(`clients` / `sub-clusters` will further need to update `ClientStatus` to `4`)_.
+
+   ```python
+   # exec @ logicon
+   # from the grass level
+   # after all parameters have been submitted by clients and sub-clusters
+   if len(submitted_params) == num_clients:
+       ProcessStage = 2
+
+   # also, if all clients / sub-clusters are at status 4 (exec seperately in ClientStatus handler)
+   if all_client_status = 4:
+       ClientStage = 4
+   ```
+
+   [`workers`] at this point have been waiting for `ProcessStage` to be `2`. Once `ProcessStage` is `2`, they: **(1)** download trained parameters from their respective cluster's job. **(2)** update `WorkerStatus` to `3` (so that eventually `WorkerStage` will be `3`). **(3)** start the aggregation process.
+
+   ```python
+   # exec @ worker
+
+   while True:
+       wait_for_processStage(2)
+
+       downloaded_params = download_trained_parameters()
+
+       update_worker_status(3)
+
+       aggregated_parameter = run_aggregation_process(downloaded_params)
+
+       # upload_aggregated_parameter(aggregated_parameters)
+
+       # update_worker_status(4)
+
+       # wait_for_workerStage(4)
+
+       # process_stage = wait_process_stage([1, 3])
+       # if process_stage == 3:
+       #     update_worker_status(5)
+       #     break
+   ```
+
+   [`(specific cluster) job @ logicon`] waits for all the `workers` to be in status `3`. Once all `workers` are in `WorkerStatus=3`, `WorkerStage` will be updated to `3`.
+
+   ```python
+   # exec @ logicon
+   if all_worker_status = 3:
+       WorkerStage = 3
+   ```
+
+   [`workers`] at this point have been aggregating the trained parameters. Now they: **(1)** upload the aggregated parameter. **(2)** update `WorkerStatus` to `4` (so that eventually `WorkerStage` will be `4`). **(3)** wait for `WorkerStage` to turn `4`.
+
+   ```python
+   # exec @ worker
+
+   while True:
+       # wait_for_processStage(2)
+
+       # downloaded_params = download_trained_parameters()
+
+       # update_worker_status(3)
+
+       # aggregated_parameter = run_aggregation_process(downloaded_params)
+
+       upload_aggregated_parameter(aggregated_parameters)
+
+       update_worker_status(4)
+
+       wait_for_workerStage(4)
+
+       # process_stage = wait_process_stage([1, 3])
+       # if process_stage == 3:
+       #     update_worker_status(5)
+       #     break
+   ```
+
+   [`(specific cluster) job @ logicon`] waits for all the `workers` to be in status `4`. Once all `workers` are in `WorkerStatus=4`, `WorkerStage` will be updated to `4`, and the `Consensus` mechanism will be invoked to select the `updated global parameter` and upload to the upstream cluster(s).
+
+   ```python
+   # exec @ logicon
+   if all_worker_status = 4:
+       WorkerStage = 4
+
+   if WorkerStage == 4:
+       # execute consensus and select the updated global parameter
+       global_param_update = consensus_select_parameter()
+
+       # decision point: if upstream_clusters is not None,
+       # this means that this job is the Primary Job, then
+       # set global_parameter, and set ProcessPhase to 1
+       if upstream_job is not None:
+           setProcessStage(1, global_param_update)
+       else:
+           # upload global parameter to upstream job
+           upstream_job.upload_client_parameter(global_param_update)
+           upstream_job.update_client_status(4)
+
+    # definition of setProcessStage method
+    def setProcessStage(stage: int, globalParameter: dict):
+       # starts from the root level job
+       set ProcessStage = 1
+
+       for downstream_job in downstream_jobs:
+           downstream_job.setGlobalParameter(globalParameter)
+           downstream_job.setProcessStage(1)
    ```
