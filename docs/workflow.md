@@ -82,7 +82,8 @@
        set ProcessStage = 1
 
        for downstream_job in downstream_jobs:
-           downstream_job.setGlobalParameter(globalParameter)
+           if ProcessStage == 1
+               downstream_job.setGlobalParameter(globalParameter)
            downstream_job.setProcessStage(1)
    ```
 
@@ -101,14 +102,14 @@
 
        # submit_trained_parameters()
 
-       # set_client_status(4) # 4: client waiting for global params
+       # update_client_status(4) # 4: client waiting for global params
 
        # wait_for_client_stage(4) # wait for all clients to be in 4
 
        # process_stage = wait_process_stage([1, 3])
 
        # if process_stage == 3:
-       #     set_client_status(5)
+       #     update_client_status(5)
        #     break
    ```
 
@@ -119,7 +120,7 @@
    # from the grass level
    if all_client_status == 3:
        set ClientStage = 3
-       this.upstream_job.setClientStatus(cluster_id / sub_job_id, 3)
+       this.upstream_job.update_client_status(cluster_id / sub_job_id, 3)
    ```
 
 7. [`clients`] once done with `local_training()`: **(1)** upload the trained parameters. **(2)** ACK to their respective cluster's job by updating `clientStatus` to `4`. **(3)** wait for `ClientStage` to turn `4`. Starts from the grass level as:
@@ -137,14 +138,14 @@
 
        submit_trained_parameters()
 
-       set_client_status(4) # 4: client waiting for global params
+       update_client_status(4) # 4: client waiting for global params
 
        wait_for_client_stage(4) # wait for all clients to be in 4
 
        # process_stage = wait_process_stage([1, 3])
 
        # if process_stage == 3:
-       #     set_client_status(5)
+       #     update_client_status(5)
        #     break
    ```
 
@@ -249,7 +250,8 @@
        set ProcessStage = 1
 
        for downstream_job in downstream_jobs:
-           downstream_job.setGlobalParameter(globalParameter)
+           if ProcessStage == 1
+               downstream_job.setGlobalParameter(globalParameter)
            downstream_job.setProcessStage(1)
    ```
 
@@ -268,13 +270,13 @@
 
        # submit_trained_parameters()
 
-       # set_client_status(4) # 4: client waiting for global params
+       # update_client_status(4) # 4: client waiting for global params
 
        # wait_for_client_stage(4) # wait for all clients to be in 4
 
        process_stage = wait_process_stage([1, 3])
        if process_stage == 3:
-           set_client_status(5)
+           update_client_status(5)
            break
    ```
 
