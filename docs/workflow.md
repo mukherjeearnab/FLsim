@@ -252,3 +252,52 @@
            downstream_job.setGlobalParameter(globalParameter)
            downstream_job.setProcessStage(1)
    ```
+
+8. [`clients` + `workers`] At this point, the `clients` and the `workers` just have been waiting for the `ProcessStage` to be `1`. Once the `ProcessPhase` is set to `1`, it starts all over from `Step 6`.
+
+   ```python
+   # exec @ client
+   wait_for_processStage(1)
+
+   while True:
+       # download_global_parameters()
+
+       # update_client_status(3) # 3: client busy in local training
+
+       # local_training()
+
+       # submit_trained_parameters()
+
+       # set_client_status(4) # 4: client waiting for global params
+
+       # wait_for_client_stage(4) # wait for all clients to be in 4
+
+       process_stage = wait_process_stage([1, 3])
+       if process_stage == 3:
+           set_client_status(5)
+           break
+   ```
+
+   ```python
+   # exec @ worker
+
+   while True:
+       # wait_for_processStage(2)
+
+       # downloaded_params = download_trained_parameters()
+
+       # update_worker_status(3)
+
+       # aggregated_parameter = run_aggregation_process(downloaded_params)
+
+       # upload_aggregated_parameter(aggregated_parameters)
+
+       # update_worker_status(4)
+
+       # wait_for_workerStage(4)
+
+       process_stage = wait_process_stage([1, 3])
+       if process_stage == 3:
+           update_worker_status(5)
+           break
+   ```
