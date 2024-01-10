@@ -6,6 +6,7 @@ from state import job_config_state
 from helpers.logging import logger
 from helpers.file import read_yaml_file
 from apps.job.load.modules_loader import load_module_files
+from apps.job.load.dataset_config import create_dist_tree
 
 
 def load_job(job_name: str, job_config: str):
@@ -22,6 +23,11 @@ def load_job(job_name: str, job_config: str):
     # 1. read all the python modules and populate the dictionary
     config = load_module_files(config)
 
-    print(json.dumps(config, indent=4))
+    # print(json.dumps(config, indent=4))
+
     # 2. append additional information and properties job configs
+    dataset_structure = create_dist_tree(config)
+
+    print(dataset_structure)
+
     # 3. prepare and send details to dataset distributor to prepare dataset chunks for clients

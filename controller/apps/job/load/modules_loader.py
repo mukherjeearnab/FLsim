@@ -64,8 +64,6 @@ def load_model_params(config: dict):
     FL Model Modules Loader
     '''
 
-    print(config['model_file'])
-
     # load the model file
     config['model_file'] = {
         'file': config['model_file'],
