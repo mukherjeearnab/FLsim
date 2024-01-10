@@ -1,7 +1,7 @@
 dataset:
-  prep: cifar_def
   cluster_configs:
     - &def_random_dist
+      prep: cifar_def
       preprocessor: default
       distribution:
         distributor: random_dist # diritchlet_dist
@@ -63,73 +63,73 @@ worker_configs:
       <<: *def_random_dist
 
 clients:
-  - node_2:
+  node_2:
       <<: *def_client
-  - node_3:
+  node_3:
       <<: *def_client
-  - node_4:
+  node_4:
       <<: *def_client
-  - node_5:
+  node_5:
       <<: *def_client
 
 workers:
-  - node_0:
-      <<: *def_worker
-  - node_1:
-      <<: *def_worker
-  - node_2:
-      <<: *def_worker
-  - node_3:
-      <<: *def_worker
-  - node_4:
-      <<: *def_worker
-  - node_5:
-      <<: *def_worker
+  node_0:
+    <<: *def_worker
+  node_1:
+    <<: *def_worker
+  node_2:
+    <<: *def_worker
+  node_3:
+    <<: *def_worker
+  node_4:
+    <<: *def_worker
+  node_5:
+    <<: *def_worker
 
 clusters:
-  - cluster_0:
-      upstream_cluster: null
-      clients:
-        - cluster_0_0
-        - cluster_0_1
-      workers:
-        - node_0
-        - node_1
-      consensus_params:
-        <<: *default_2_3
-      train_params:
-        cluster_epochs: 1
-      dataset_params:
-        <<: *def_random_dist
+  cluster_0:
+    upstream_cluster: null
+    clients:
+      - cluster_0_0
+      - cluster_0_1
+    workers:
+      - node_0
+      - node_1
+    consensus_params:
+      <<: *default_2_3
+    train_params:
+      cluster_epochs: 1
+    dataset_params:
+      <<: *def_random_dist
 
-  - cluster_0_0:
-      upstream_cluster: cluster_0
-      clients:
-        - node_2
-        - node_3
-      workers:
-        - node_0
-        - node_2
-        - node_3
-      consensus_params:
-        <<: *default_2_3
-      train_params:
-        cluster_epochs: 1
-      dataset_params:
-        <<: *def_random_dist
+  cluster_0_0:
+    upstream_cluster: cluster_0
+    clients:
+      - node_2
+      - node_3
+    workers:
+      - node_0
+      - node_2
+      - node_3
+    consensus_params:
+      <<: *default_2_3
+    train_params:
+      cluster_epochs: 1
+    dataset_params:
+      <<: *def_random_dist
 
-  - cluster_0_1:
-      upstream_cluster: cluster_0
-      clients:
-        - node_4
-        - node_5
-      workers:
-        - node_1
-        - node_4
-        - node_5
-      consensus_params:
-        <<: *default_2_3
-      train_params:
-        cluster_epochs: 1
-      dataset_params:
-        <<: *def_random_dist
+  cluster_0_1:
+    upstream_cluster: cluster_0
+    clients:
+      - node_4
+      - node_5
+    workers:
+      - node_1
+      - node_4
+      - node_5
+    consensus_params:
+      <<: *default_2_3
+    train_params:
+      cluster_epochs: 1
+    dataset_params:
+      <<: *def_random_dist
