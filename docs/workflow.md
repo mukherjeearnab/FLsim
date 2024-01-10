@@ -4,6 +4,14 @@
 
    1. [`logicon`] Secondary jobs (for sub-clusters) is deployed (mentioning the sub-clusters / clients and workers) as `"job_name#0"` for single sub-level and `"job_name#0_0"` for double sub-level clusters.
 
+      a) All job sub-clusters have a `cluster_epoch` parameter, which specified how many cluster rounds will be executed before aggregated global parameters are uploaded to upstream cluster's job (similar to a client submitting trained parameters to it's own cluster).
+
+      b) Thus, every job has a local counter `current_cluster_epoch` set to `1` initially, and at every round it is incremented by `1`.
+
+      c) Finally, when `current_cluster_epoch == cluster_epoch`, the `upstream_job.upload_client_parameter` and `upstream_job.update_client_status` are executed by the sub-cluster's job.
+
+      **NOTE:** If `upstream_job` for a job is `null`, i.e., it is a `primary job`, then whatever the `cluster_epoch` in the job config, during deployment of the job, `cluster_epoch` will be reset to `1`.
+
    2. [`logicon`] For the job and all sub-jobs, set `JobsheetDownloadFlag` to `True`.`
 
    3. [`clients` + `workers`] Download the job sheets from the respective jobs (primary or secondary).
@@ -223,7 +231,13 @@
        #     break
    ```
 
-   [`(specific cluster) job @ logicon`] waits for all the `workers` to be in status `4`. Once all `workers` are in `WorkerStatus=4`, `WorkerStage` will be updated to `4`, and the `Consensus` mechanism will be invoked to select the `updated global parameter` and upload to the upstream cluster(s).
+   [`(specific cluster) job @ logicon`] waits for all the `workers` to be in status `4`. Once all `workers` are in `WorkerStatus=4`, `WorkerStage` will be updated to `4`, and the `Consensus` mechanism will be invoked to select the `updated global parameter`. Once an `updated global parameter` is selected, it is a decision point:
+
+   1. If `upstream_job` is `null`, then the context of `cluster_epoch` is totally ignored and `setProcessStage(1, global_param_update)` is executed.
+
+   2. If `current_cluster_epoch` is less than `cluster_epochs`, `setProcessStage(1, global_param_update)` is executed, and `current_cluster_epoch` is incremented by `1`.
+
+   3. If `current_cluster_epoch` is equal to `cluster_epochs`, and `upstream_job` is not `null`, then the `updated_global_parameter` is uploaded to the upstream cluster's job. Also, `current_cluster_epoch` will be reset to `1`.
 
    ```python
    # exec @ logicon
@@ -234,15 +248,22 @@
        # execute consensus and select the updated global parameter
        global_param_update = consensus_select_parameter()
 
-       # decision point: if upstream_clusters is not None,
+       # decision point: if upstream_clusters is None,
        # this means that this job is the Primary Job, then
        # set global_parameter, and set ProcessPhase to 1
-       if upstream_job is not None:
+       if upstream_job is None:
            setProcessStage(1, global_param_update)
        else:
-           # upload global parameter to upstream job
-           upstream_job.upload_client_parameter(global_param_update)
-           upstream_job.update_client_status(4)
+           if current_cluster_epoch == cluster_epochs:
+               # upload global parameter to upstream job
+               upstream_job.upload_client_parameter(global_param_update)
+               upstream_job.update_client_status(4)
+               # also reset current_cluster_epoch to 1
+               current_cluster_epoch = 1
+           else:
+               # resume training and increment epoch by 1
+               current_cluster_epoch += 1
+               setProcessStage(1, global_param_update)
 
     # definition of setProcessStage method
     def setProcessStage(stage: int, globalParameter: dict):
