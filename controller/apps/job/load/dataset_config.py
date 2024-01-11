@@ -24,67 +24,35 @@ def create_dist_tree(config: dict):
     }
     '''
 
-    structure = dict()
-    node_dir = dict()
+    root_node, structure = traverse_config_for_tree(config)
 
-    root_node = traverse_config_for_tree(config, node_dir)
-
-    # print(node_dir[root_node])
-
-    recursive_struct_finder(node_dir[root_node], config, structure, 0, set())
-
-    return structure
+    return root_node, structure
 
 
-def traverse_config_for_tree(config: dict, node_dir: dict):
+def traverse_config_for_tree(config: dict):
     '''
     Traverse the configuration dict and create a tree of all the cluster nodes
     '''
-    root_cluster = None
+    root_cluster, structure = None, dict()
+
+    # find the root cluster (i.e., the root node)
     for cluster_id, cluster in config['clusters'].items():
-        node_dir[cluster_id] = ClusterNode(cluster_id)
         if cluster['upstream_cluster'] is None:
             root_cluster = cluster_id
 
-    def traverse(cluster_id: str, config: dict, visited: set):
-        if cluster_id in visited:
-            return
-
-        visited.add(cluster_id)
-
+    def traverse(cluster_id: str, config: dict, index: int, structure: dict):
         cluster = config['clusters'][cluster_id]
 
-        for client_id in cluster['clients']:
+        structure[index] = dict()
+        structure[index]['id'] = cluster_id
+        structure[index]['distributor'] = cluster['dataset_params']['distribution']['distributor']['file']
+        structure[index]['num_clients'] = len(cluster['clients'])
+        structure[index]['clients'] = cluster['clients']
+
+        for i, client_id in enumerate(cluster['clients']):
             if client_id in list(config['clusters'].keys()):
-                node_dir[cluster_id].children.append(node_dir[client_id])
-                traverse(client_id, config, visited)
+                traverse(client_id, config, i, structure[index])
 
-    traverse(root_cluster, config, set())
+    traverse(root_cluster, config, 0, structure)
 
-    return root_cluster
-
-
-def recursive_struct_finder(root, config: dict, structure: dict, index, visited):
-    '''
-    Recursively find the distribution structure
-    '''
-    if root.id in visited:
-        return
-
-    visited.add(root.id)
-
-    structure[index] = dict()
-    structure[index]['id'] = root.id
-    structure[index]['distributor'] = config['clusters'][root.id]['dataset_params']['distribution']['distributor']['file']
-    structure[index]['num_clients'] = len(
-        config['clusters'][root.id]['clients'])
-    structure[index]['clients'] = config['clusters'][root.id]['clients']
-
-    for i, cluster in enumerate(root.children):
-        recursive_struct_finder(cluster, config, structure[index], i, visited)
-
-
-class ClusterNode:
-    def __init__(self, id: str):
-        self.id = id
-        self.children = []
+    return root_cluster, structure

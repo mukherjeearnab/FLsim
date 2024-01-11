@@ -26,8 +26,8 @@ def load_job(job_name: str, job_config: str):
     # print(json.dumps(config, indent=4))
 
     # 2. append additional information and properties job configs
-    dataset_structure = create_dist_tree(config)
+    root_cluster_id, dataset_structure = create_dist_tree(config)
 
-    print(dataset_structure)
+    print(root_cluster_id, json.dumps(dataset_structure, indent=4))
 
     # 3. prepare and send details to dataset distributor to prepare dataset chunks for clients
