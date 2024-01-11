@@ -5,6 +5,7 @@ import json
 from state import job_config_state
 from helpers.logging import logger
 from helpers.file import read_yaml_file
+from helpers.http import post
 from apps.job.load.modules_loader import load_module_files
 from apps.job.load.dataset_config import create_dist_tree
 
@@ -26,8 +27,10 @@ def load_job(job_name: str, job_config: str):
     # print(json.dumps(config, indent=4))
 
     # 2. append additional information and properties job configs
-    root_cluster_id, dataset_structure = create_dist_tree(config)
+    _, dataset_structure = create_dist_tree(config)
 
-    print(root_cluster_id, json.dumps(dataset_structure, indent=4))
+    # print(root_cluster_id, json.dumps(dataset_structure, indent=4))
 
     # 3. prepare and send details to dataset distributor to prepare dataset chunks for clients
+    post('http://localhost:8888/prepare',
+         {'job_name': job_name, 'manifest': dataset_structure})

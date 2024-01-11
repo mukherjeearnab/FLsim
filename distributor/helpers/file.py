@@ -75,6 +75,16 @@ def check_OK_file(path: str) -> bool:
     return exists(f'{path}/OK')
 
 
+def get_OK_file(path: str) -> bool:
+    '''
+    Reads the OK file if OK flag file is present in directory.
+    '''
+    if exists(f'{path}/OK'):
+        with open(f'{path}/OK', 'r', encoding='utf8') as f:
+            read_timestamp = f.read()
+    return read_timestamp
+
+
 def create_dir_struct(path: str) -> None:
     '''
     Creates a directory structure, if it does not exist

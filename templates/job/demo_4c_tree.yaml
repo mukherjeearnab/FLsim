@@ -16,6 +16,22 @@ dataset:
         train: 0.8
         test: 0.2
 
+    - &def_random_dist2
+      prep: cifar_def
+      preprocessor: default
+      distribution:
+        distributor: random_dist # diritchlet_dist
+        chunks:
+          - 0.1
+          - 0.9
+        extra_params:
+          diritchlet:
+            alpha: 1.0
+            seed: 10
+      train_test_split:
+        train: 0.8
+        test: 0.2
+
 consensus:
   - &default_2_3
     runnable: majority_2_3
@@ -64,13 +80,13 @@ worker_configs:
 
 clients:
   node_2:
-      <<: *def_client
+    <<: *def_client
   node_3:
-      <<: *def_client
+    <<: *def_client
   node_4:
-      <<: *def_client
+    <<: *def_client
   node_5:
-      <<: *def_client
+    <<: *def_client
 
 workers:
   node_0:
@@ -132,4 +148,4 @@ clusters:
     train_params:
       cluster_epochs: 1
     dataset_params:
-      <<: *def_random_dist
+      <<: *def_random_dist2
