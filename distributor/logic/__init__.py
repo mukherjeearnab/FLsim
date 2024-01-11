@@ -240,7 +240,8 @@ class DatasetDistributor(object):
                     logger.error(
                         f'Error Saving Chunked Dataset to disk!\n{traceback.format_exc()}')
                     return 2
-
+        else:
+            logger.info('Chunks already present. Skipping...')
         ############################
         # The Recursive Part
         ############################
