@@ -45,7 +45,7 @@ def traverse_config_for_tree(config: dict):
 
         structure[index] = dict()
         structure[index]['id'] = cluster_id
-        structure[index]['distributor'] = cluster['dataset_params']['distribution']['distributor']['file']
+        structure[index]['params'] = cluster['dataset_params']
         structure[index]['num_clients'] = len(cluster['clients'])
         structure[index]['clients'] = cluster['clients']
 
