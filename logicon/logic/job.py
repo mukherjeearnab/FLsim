@@ -344,6 +344,7 @@ class Job(object):
         self.modification_lock.acquire()
         self._read_state()
         exec_status = True
+        next_signal = 0
 
         # method logic
         all_client_status = set()
@@ -364,11 +365,12 @@ class Job(object):
             self.job_status['client_stage'] = list(all_client_status)[0]
             logger.info(
                 f"All clients are at Stage: [{self.job_status['client_stage']}]")
+            next_signal = self._cw_stage_update_handler()
 
         # method suffixed with update state and lock release
         self._update_state()
         self.modification_lock.release()
-        return exec_status
+        return exec_status, next_signal
 
     def update_worker_status(self, worker_id: str, worker_status: int) -> bool:
         '''
@@ -380,6 +382,7 @@ class Job(object):
         self.modification_lock.acquire()
         self._read_state()
         exec_status = True
+        next_signal = 0
 
         # method logic
         all_worker_status = set()
@@ -400,11 +403,48 @@ class Job(object):
             self.job_status['worker_stage'] = list(all_worker_status)[0]
             logger.info(
                 f"All workers are at Stage: [{self.job_status['worker_stage']}]")
+            next_signal = self._cw_stage_update_handler()
 
         # method suffixed with update state and lock release
         self._update_state()
         self.modification_lock.release()
-        return exec_status
+        return exec_status, next_signal
+
+    def _cw_stage_update_handler(self):
+        '''
+        If there are additional activities need to be performed
+        after client stage updates, they are triggered from here.
+
+        Signal Class:
+        1XX : client + worker
+        2XX : client
+        3XX : worker
+        '''
+        client_stage = self.job_status['client_stage']
+        worker_stage = self.job_status['worker_stage']
+
+        if client_stage == 1 and worker_stage == 1:
+            # returns signal to execute the following
+            # send job download ack to upstream cluster
+            # set download flag
+            return 101
+
+        if client_stage == 2 and worker_stage == 2:
+            # returns signal to execute the following
+            # send dataset download ack to upstream cluster
+            # set process_phase to 1
+            return 102
+
+        if client_stage == 3:
+            # returns signal to execute the following
+            # update client / cluster status to upstream cluster
+            return 201
+
+        if worker_stage == 4:
+            # returns signal to execute the following
+            # execute the consensus to select global update param
+            # update process_phase (or) continue training (or) upload global update to upstream cluster
+            return 301
 
     def allow_start_training(self) -> bool:
         '''
@@ -506,7 +546,8 @@ class Job(object):
                 'Global Model Parameters are Set. Waiting for process_stage to be in [1] Local Training.')
 
             # set process stage to 1
-            self._allow_start_training(_internal=True)
+            # self._allow_start_training(_internal=True)
+            # NOTE: This will be triggered by the external process
 
             # method suffixed with update state and lock release
             self._update_state()

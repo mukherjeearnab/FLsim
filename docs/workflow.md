@@ -48,7 +48,7 @@
        downstream_job.setDatasetDownloadFlag(True)
    ```
 
-4. [`clients` + `workers`] **(1)** download the (train/test) datasets from the dataset distributor. **(2)** ACK to their respective cluster's job. **(3)** `clients` wait for `ProcessStage` to be set to `1`, `workers` wait for `ProcessStage` to be set to `2`. Starts from the grass level as:
+4. [`clients` + `workers`] **(1)** download the (train/test) datasets from the dataset distributor. **(2)** They send back initial parameters to be set as global params, **and them** ACK to their respective cluster's job. **(3)** `clients` wait for `ProcessStage` to be set to `1`, `workers` wait for `ProcessStage` to be set to `2`. Starts from the grass level as:
 
    [`(secondary+primary) jobs @ logicon`] does after receiving all the dataset download ACK from their respective clients and workers. (for intermediate level jobs, clients are the sub-clusters under them)
 
@@ -67,7 +67,7 @@
    # release modification locks and trigger to update ProcessStage to 1
    ```
 
-5. [`(primary+secondary) jobs @ logicon`] **(1)** Requests a `client` or `worker` to submit random intitalized `model parameter` to be set as the initial `global parameters`. **(2)** sets the Process Phase / Stage (`ProcessStage`) flag from `0` to `1` true for all the clients and workers in the root cluster to the grass-level clusters in the hierarchy. Also sets the global parameters to every secondary jobs in the sub-clusters.
+5. [`(primary+secondary) jobs @ logicon`] **(1)** The **Primary** selects a random submitted (_in step **4**_) `model parameter` to be set as the initial `global parameters`. **(2)** sets the Process Phase / Stage (`ProcessStage`) flag from `0` to `1` true for all the clients and workers in the root cluster to the grass-level clusters in the hierarchy. Also sets the global parameters to every secondary jobs in the sub-clusters.
 
    ```python
    # exec @ logicon
