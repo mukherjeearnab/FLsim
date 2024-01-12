@@ -2,6 +2,7 @@
 Application Logic for Client Management
 '''
 import threading
+from typing import Tuple
 from state import job_state
 from helpers.logging import logger
 
@@ -334,7 +335,7 @@ class Job(object):
         self.modification_lock.release()
         return exec_status
 
-    def update_client_status(self, client_id: str, client_status: int) -> bool:
+    def update_client_status(self, client_id: str, client_status: int) -> Tuple[bool, int]:
         '''
         Updates the status of a client, based on their client_id and
         if all clients have the same status, the global client status, 
@@ -372,7 +373,7 @@ class Job(object):
         self.modification_lock.release()
         return exec_status, next_signal
 
-    def update_worker_status(self, worker_id: str, worker_status: int) -> bool:
+    def update_worker_status(self, worker_id: str, worker_status: int) -> Tuple[bool, int]:
         '''
         Updates the status of a worker, based on their worker_id and
         if all workers have the same status, the global worker status, 
