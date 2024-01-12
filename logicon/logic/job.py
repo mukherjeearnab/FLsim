@@ -23,6 +23,7 @@ class Job(object):
             self.modification_lock = threading.Lock()
 
             self.cluster_config = cluster_config[self.cluster_id]
+            self.is_primary = True if self.cluster_config['upstream_cluster'] is None else False
 
             # populate client_config, if any of the clients are nodes
             self.client_configs = dict()
@@ -95,6 +96,7 @@ class Job(object):
             return job_payload
 
         self.modification_lock = job_payload['modification_lock']
+        self.is_primary = job_payload['is_primary']
         self.cluster_config = job_payload['cluster_config']
         self.client_configs = job_payload['client_configs']
         self.clients = job_payload['clients']
@@ -107,6 +109,7 @@ class Job(object):
     def _update_state(self):
         job_payload = {
             'modification_lock': self.modification_lock,
+            'is_primary': self.is_primary,
             'cluster_config': self.cluster_config,
             'client_configs': self.client_configs,
             'clients': self.clients,
@@ -427,13 +430,13 @@ class Job(object):
         if client_stage == 1 and worker_stage == 1:
             # returns signal to execute the following
             # send job download ack to upstream cluster
-            # set download flag
+            # set download flag true (allow dataset download)
             return 101
 
         if client_stage == 2 and worker_stage == 2:
             # returns signal to execute the following
             # send dataset download ack to upstream cluster
-            # set process_phase to 1
+            # set process_phase to 1 (allow start training)
             return 102
 
         if client_stage == 3:

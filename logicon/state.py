@@ -7,5 +7,8 @@ manager = Manager()
 
 global_state = manager.dict()
 
-# init peer state
+# init job state
 job_state = manager.dict()
+
+# job route state
+job_route_state = manager.dict()
