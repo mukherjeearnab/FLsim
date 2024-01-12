@@ -1,7 +1,7 @@
 '''
 Job Load Module
 '''
-import json
+from env import env
 from state import job_config_state
 from helpers.logging import logger
 from helpers.file import read_yaml_file
@@ -31,7 +31,7 @@ def load_job(job_name: str, job_config: str):
     # 3. prepare and send details to dataset distributor to prepare dataset chunks for clients
     _, dataset_manifest = create_dist_tree(config)
     logger.info(f'Starting Dataset Preperation for Job {job_name}')
-    post('http://localhost:8888/prepare',
+    post(env['DATADIST_URL'],
          {'job_name': job_name, 'manifest': dataset_manifest})
     logger.info(f'Dataset Preperation Complete for Job {job_name}')
 
