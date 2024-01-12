@@ -491,7 +491,6 @@ class Job(object):
         exec_status = True
 
         # method logic
-        # HERER
         if self.job_status['process_stage'] == 0 or self.job_status['process_stage'] == 2:
             self.exec_params['global_model_param']['param'] = param
             self.exec_params['global_model_param']['extra_data'] = extra_data
@@ -522,8 +521,8 @@ class Job(object):
 
     def append_client_params(self, client_id: str, param: dict, extra_data: dict) -> bool:
         '''
-        Append Trained Model Params from Clients to the exec_params.client_model_params[].
-        Only works if job_status.client_stage=3 and job_status.process_phase=1.
+        Append Trained Model Params from Clients to the exec_params.client_trained_params{}.
+        Only works if job_status.worker_stage=2 and job_status.process_phase=1.
         '''
         # method prefixed with locking and reading state
         self.modification_lock.acquire()
@@ -531,7 +530,7 @@ class Job(object):
         exec_status = True
 
         # method logic
-        if self.job_status['process_stage'] == 1 and self.job_status['client_stage'] == 3 and self.job_status['worker_stage'] == 2:
+        if self.job_status['process_stage'] == 1 and self.job_status['worker_stage'] == 2:
             # add client submitted parameters
             self.exec_params['client_trained_params'][client_id] = {
                 'param': param,
@@ -545,20 +544,55 @@ class Job(object):
             if len(self.exec_params['client_trained_params'].keys()) == (len(self.clients)+len(self.sub_clusters)):
                 self.job_status['process_phase'] = 2
                 logger.info(
-                    'All clients params are submitted, signalling Federated Aggregation.')
+                    'All client params are submitted, signalling Federated Aggregation.')
 
             # method suffixed with update state and lock release
             self._update_state()
         else:
             logger.warning(
-                f'Cannot APPEND client model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')  # HERER
+                f'Cannot APPEND client model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
             exec_status = False
 
         # method suffixed with update state and lock release
         self.modification_lock.release()
         return exec_status
 
-# TODO: implement handler for worker parameters
+    def append_worker_params(self, worker_id: str, param: dict, extra_data: dict) -> bool:
+        '''
+        Append Aggregated Model Params from Workers to the exec_params.worker_aggregated_params[].
+        Only works if job_status.client_stage=4 and job_status.process_phase=2.
+        '''
+        # method prefixed with locking and reading state
+        self.modification_lock.acquire()
+        self._read_state()
+        exec_status = True
+
+        # method logic
+        if self.job_status['process_stage'] == 2 and self.job_status['client_stage'] == 4:
+            # add worker submitted parameters
+            self.exec_params['worker_aggregated_params'][worker_id] = {
+                'param': param,
+                'extra_data': extra_data
+            }
+
+            logger.info(
+                f"[{worker_id}] submitted params. Total Params: {len(self.exec_params['worker_aggregated_params'].keys())}/{len(self.workers)}")
+
+            # check if all the worker's parameters are submitted
+            if len(self.exec_params['worker_aggregated_params'].keys()) == (len(self.workers)):
+                logger.info(
+                    'All worker params are submitted, next is Consensus Exec.')
+
+            # method suffixed with update state and lock release
+            self._update_state()
+        else:
+            logger.warning(
+                f'Cannot APPEND worker model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
+            exec_status = False
+
+        # method suffixed with update state and lock release
+        self.modification_lock.release()
+        return exec_status
 
 
 CLIENT_STAGE = {
