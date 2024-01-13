@@ -145,7 +145,32 @@ def append_worker_params():
 
 @blueprint.route('/update_client_status', methods=['POST'])
 def update_client_status():
-    # TODO
+    '''
+    Update Client Status to Job Instance of a cluster.
+    '''
+    payload = request.get_json()
+
+    job_name = payload['job_name']
+    cluster_id = payload['cluster_id']
+    client_id = payload['client_id']
+    client_status = payload['status']
+
+    job_id = f'{job_name}#{cluster_id}'
+
+    if job_id not in job_route_state:
+        return jsonify({'message': f'Job [{job_name}] for Cluster [{cluster_id}] does not exist.', 'status': False}), 404
+    
+    try:
+        leaf_job = job_route_state[job_id]
+        status = auxiliary.recursive_client_status_handler(leaf_job, client_id, client_status)
+
+        if not status:
+            return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
+        
+        return jsonify({'message': 'Client status updated successfully!', 'status': True}), 200
+    except Exception:
+        logger.error( f'Failed to update client status.\n{traceback.format_exc()}')
+        return jsonify({'message': 'Failed to update client status!', 'status': False}), 500
 
 @blueprint.route('/update_worker_status', methods=['POST'])
 def update_worker_status():

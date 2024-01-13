@@ -58,3 +58,44 @@ def recursive_terminate_job(job: Job):
         status = status and recursive_terminate_job(sub_job)
 
     return status
+
+
+def recursive_client_status_handler(job: Job, client_id: str, client_status: str):
+    '''
+    Recursively handle side-effects of client status update
+    '''
+
+    status, side_effect = job.update_client_status(client_id, client_status)
+
+    if side_effect == 101:
+        # send job download ack to upstream cluster
+        if not job.is_primary:
+            upstream_job = Job(
+                job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, load_from_db=True)
+            status = status and recursive_client_status_handler(
+                upstream_job, client_id, job.job_status['client_stage'])
+
+        # set download flag true (allow dataset download)
+        job.allow_dataset_download()
+
+    if side_effect == 102:
+        # send dataset download ack to upstream cluster
+        if not job.is_primary:
+            upstream_job = Job(
+                job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, load_from_db=True)
+            status = status and recursive_client_status_handler(
+                upstream_job, client_id, job.job_status['client_stage'])
+
+        # set process_phase to 1 (allow start training)
+        # TODO: ALSO SET GLOBAL PARAMS (recursive, root to leaf)
+        job.allow_start_training()
+
+    if side_effect == 201:
+        # update client / cluster status to upstream cluster
+        if not job.is_primary:
+            upstream_job = Job(
+                job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, load_from_db=True)
+            status = status and recursive_client_status_handler(
+                upstream_job, client_id, job.job_status['client_stage'])
+
+    return status

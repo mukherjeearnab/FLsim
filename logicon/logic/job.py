@@ -338,7 +338,7 @@ class Job(object):
         self.modification_lock.release()
         return exec_status
 
-    def update_client_status(self, client_id: str, client_status: int) -> Tuple[bool, int]:
+    def update_client_status(self, client_id: str, status: int) -> Tuple[bool, int]:
         '''
         Updates the status of a client, based on their client_id and
         if all clients have the same status, the global client status, 
@@ -356,14 +356,14 @@ class Job(object):
         for i in range(len(self.job_status['client_info'])):
             # find the client and update their status
             if self.job_status['client_info'][i]['client_id'] == client_id:
-                self.job_status['client_info'][i]['status'] = client_status
+                self.job_status['client_info'][i]['status'] = status
 
             # collect the status of all the clients
             all_client_status.add(
                 self.job_status['client_info'][i]['status'])
 
         logger.info(
-            f"Client [{client_id}] is at stage [{client_status}].")
+            f"Client [{client_id}] is at stage [{status}].")
 
         if len(all_client_status) == 1:
             self.job_status['client_stage'] = list(all_client_status)[0]
@@ -376,7 +376,7 @@ class Job(object):
         self.modification_lock.release()
         return exec_status, next_signal
 
-    def update_worker_status(self, worker_id: str, worker_status: int) -> Tuple[bool, int]:
+    def update_worker_status(self, worker_id: str, status: int) -> Tuple[bool, int]:
         '''
         Updates the status of a worker, based on their worker_id and
         if all workers have the same status, the global worker status, 
@@ -394,14 +394,14 @@ class Job(object):
         for i in range(len(self.job_status['worker_info'])):
             # find the worker and update their status
             if self.job_status['worker_info'][i]['worker_id'] == worker_id:
-                self.job_status['worker_info'][i]['status'] = worker_status
+                self.job_status['worker_info'][i]['status'] = status
 
             # collect the status of all the workers
             all_worker_status.add(
                 self.job_status['worker_info'][i]['status'])
 
         logger.info(
-            f"Worker [{worker_id}] is at stage [{worker_status}].")
+            f"Worker [{worker_id}] is at stage [{status}].")
 
         if len(all_worker_status) == 1:
             self.job_status['worker_stage'] = list(all_worker_status)[0]
