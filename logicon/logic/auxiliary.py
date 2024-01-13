@@ -30,3 +30,31 @@ def recursive_allow_dataset_download(job: Job):
         status = status and recursive_allow_dataset_download(sub_job)
 
     return status
+
+
+def recursive_abort_job(job: Job):
+    '''
+    Recursively abort a job collection in any order
+    '''
+
+    status = job.set_abort()
+
+    for cluster_id in job.sub_clusters():
+        sub_job = Job(job.job_name, cluster_id, {}, {}, {}, load_from_db=True)
+        status = status and recursive_abort_job(sub_job)
+
+    return status
+
+
+def recursive_terminate_job(job: Job):
+    '''
+    Recursively abort a job collection in any order
+    '''
+
+    status = job.terminate_training()
+
+    for cluster_id in job.sub_clusters():
+        sub_job = Job(job.job_name, cluster_id, {}, {}, {}, load_from_db=True)
+        status = status and recursive_terminate_job(sub_job)
+
+    return status

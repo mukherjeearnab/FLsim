@@ -75,20 +75,73 @@ def start_job_route():
         if not status:
             return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
 
-        return jsonify({'message': 'Job instance created successfully!', 'status': True}), 200
+        return jsonify({'message': 'Job instance started successfully!', 'status': True}), 200
     except Exception:
         logger.error(
-            f'Failed to Create Job Instance.\n{traceback.format_exc()}')
-        return jsonify({'message': 'Failed to create job  instance!', 'status': False}), 500
+            f'Failed to Start Job Instance.\n{traceback.format_exc()}')
+        return jsonify({'message': 'Failed to start job  instance!', 'status': False}), 500
 
 
 @blueprint.route('/append_client_params', methods=['POST'])
 def append_client_params():
-    # TODO
+    '''
+    Append Trained Client Params to Job Instance of a cluster.
+    '''
+    payload = request.get_json()
+
+    job_name = payload['job_name']
+    cluster_id = payload['cluster_id']
+    client_id = payload['client_id']
+    param = payload['param']
+    extra_data = payload['extra_data']
+
+    job_id = f'{job_name}#{cluster_id}'
+
+    if job_id not in job_route_state:
+        return jsonify({'message': f'Job [{job_name}] for Cluster [{cluster_id}] does not exist.', 'status': False}), 404
+    
+    try:
+        job = job_route_state[job_id]
+        status = job.append_client_params(client_id, param, extra_data)
+
+        if not status:
+            return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
+        
+        return jsonify({'message': 'Client param appended successfully!', 'status': True}), 200
+    except Exception:
+        logger.error( f'Failed to append client params.\n{traceback.format_exc()}')
+        return jsonify({'message': 'Failed to append client params!', 'status': False}), 500
+
 
 @blueprint.route('/append_worker_params', methods=['POST'])
 def append_worker_params():
-    # TODO
+    '''
+    Append Aggregated Worker Params to Job Instance of a cluster.
+    '''
+    payload = request.get_json()
+
+    job_name = payload['job_name']
+    cluster_id = payload['cluster_id']
+    worker_id = payload['worker_id']
+    param = payload['param']
+    extra_data = payload['extra_data']
+
+    job_id = f'{job_name}#{cluster_id}'
+
+    if job_id not in job_route_state:
+        return jsonify({'message': f'Job [{job_name}] for Cluster [{cluster_id}] does not exist.', 'status': False}), 404
+    
+    try:
+        job = job_route_state[job_id]
+        status = job.append_worker_params(worker_id, param, extra_data)
+
+        if not status:
+            return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
+        
+        return jsonify({'message': 'Worker param appended successfully!', 'status': True}), 200
+    except Exception:
+        logger.error( f'Failed to append worker params.\n{traceback.format_exc()}')
+        return jsonify({'message': 'Failed to append worker params!', 'status': False}), 500
 
 @blueprint.route('/update_client_status', methods=['POST'])
 def update_client_status():
@@ -100,8 +153,54 @@ def update_worker_status():
 
 @blueprint.route('/set_abort', methods=['POST'])
 def set_abort():
-    # TODO
+    '''
+    Abort a running job instance
+    '''
+    payload = request.get_json()
+
+    job_name = payload['job_name']
+
+    root_job_name = f'{job_name}#root'
+
+    if root_job_name not in job_route_state:
+        return jsonify({'message': f'Job with name [{job_name}] does not exist.', 'status': False}), 404
+
+    try:
+        root_job = job_route_state[root_job_name]
+        status = auxiliary.recursive_abort_job(root_job)
+
+        if not status:
+            return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
+
+        return jsonify({'message': 'Job instance aborted successfully!', 'status': True}), 200
+    except Exception:
+        logger.error(
+            f'Failed to Abort Job Instance.\n{traceback.format_exc()}')
+        return jsonify({'message': 'Failed to abort job  instance!', 'status': False}), 500
 
 @blueprint.route('/terminate_training', methods=['POST'])
 def terminate_training():
-    # TODO
+    '''
+    Terminate a running job instance
+    '''
+    payload = request.get_json()
+
+    job_name = payload['job_name']
+
+    root_job_name = f'{job_name}#root'
+
+    if root_job_name not in job_route_state:
+        return jsonify({'message': f'Job with name [{job_name}] does not exist.', 'status': False}), 404
+
+    try:
+        root_job = job_route_state[root_job_name]
+        status = auxiliary.recursive_terminate_job(root_job)
+
+        if not status:
+            return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
+
+        return jsonify({'message': 'Job instance terminated successfully!', 'status': True}), 200
+    except Exception:
+        logger.error(
+            f'Failed to Terminate Job Instance.\n{traceback.format_exc()}')
+        return jsonify({'message': 'Failed to terminate job  instance!', 'status': False}), 500

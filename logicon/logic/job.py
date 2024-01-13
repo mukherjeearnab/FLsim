@@ -494,7 +494,7 @@ class Job(object):
             self.modification_lock.release()
         return exec_status
 
-    def terminate_training(self) -> None:
+    def terminate_training(self) -> bool:
         '''
         Signal to Terminate the Training process. This sets the process_stage to 3, i.e., TrainingComplete
         Requires Clients to be waiting for Model Params, i.e., client_stage is 4,
