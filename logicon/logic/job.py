@@ -2,7 +2,7 @@
 Application Logic for Client Management
 '''
 import threading
-from typing import Tuple
+from typing import Tuple, Union
 from state import job_state
 from helpers.logging import logger
 
@@ -126,7 +126,7 @@ class Job(object):
 
         job_state[job_id] = job_payload
 
-    def get_config(self, config_type: str):
+    def get_config(self, config_type: str) -> Union[dict, None]:
         '''
         Get Configuration for type
         type = 'cluster' | 'client' | 'worker'
@@ -146,7 +146,7 @@ class Job(object):
         else:
             return None
 
-    def get_participants(self):
+    def get_participants(self) -> Union[dict, None]:
         '''
         Get all the id's of the participants
         Includes upstream cluster, sub-clusters, clients and workers
@@ -166,7 +166,7 @@ class Job(object):
 
         return res
 
-    def get_job_status(self):
+    def get_job_status(self) -> Union[dict, None]:
         '''
         Get the Job Status
         '''
@@ -178,7 +178,7 @@ class Job(object):
 
         return payload['job_status']
 
-    def get_exec_params(self):
+    def get_exec_params(self) -> Union[dict, None]:
         '''
         Get the Job Execution Params
         '''
@@ -563,7 +563,7 @@ class Job(object):
         self.modification_lock.release()
         return exec_status
 
-    def set_global_model_param(self, param: dict, extra_data: dict) -> bool:
+    def set_global_model_param(self, param: Union[str, dict], extra_data: Union[str, dict]) -> bool:
         '''
         Set or Update the Global Model Parameters, for initial time, or aggregated update time.
         Only set, if process_stage is 0 or 2, i.e., NotStarted or InAggregation.
@@ -606,7 +606,7 @@ class Job(object):
         self.modification_lock.release()
         return exec_status
 
-    def append_client_params(self, client_id: str, param: dict, extra_data: dict) -> bool:
+    def append_client_params(self, client_id: str, param: Union[str, dict], extra_data: Union[str, dict]) -> bool:
         '''
         Append Trained Model Params from Clients to the exec_params.client_trained_params{}.
         Only works if job_status.worker_stage=2 and job_status.process_phase=1.
@@ -644,7 +644,7 @@ class Job(object):
         self.modification_lock.release()
         return exec_status
 
-    def append_worker_params(self, worker_id: str, param: dict, extra_data: dict) -> bool:
+    def append_worker_params(self, worker_id: str, param: Union[str, dict], extra_data: Union[str, dict]) -> bool:
         '''
         Append Aggregated Model Params from Workers to the exec_params.worker_aggregated_params[].
         Only works if job_status.client_stage=4 and job_status.process_phase=2.
