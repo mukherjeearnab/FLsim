@@ -33,7 +33,7 @@ def list_jobs():
     jobs = list(job_route_state.keys())
     jobs = filter(lambda job: 'root' in job, jobs)
 
-    return jsonify({'jobs': jobs})
+    return jsonify(jobs)
 
 
 @blueprint.route('/get_config')
