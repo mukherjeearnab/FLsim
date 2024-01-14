@@ -50,6 +50,7 @@ class Job(object):
                 'download_dataset': False,      # flag to denote whether to download the dataset
                 'process_stage': 0,             # denotes the stage at which the job is
                 'global_round': 0,              # denotes the current global round of federated training
+                'current_epoch': 0,             # denotes the current epoch for the cluster
                 'abort': False,                 # denotes whether to abort the job or not
                 'client_info': [                # stores the information of the client's individual status
                     # {
@@ -74,6 +75,7 @@ class Job(object):
                     'param': None,
                     'extra_data': None
                 },
+                'initial_params': list()
             }
 
             # finally update the state
@@ -187,6 +189,46 @@ class Job(object):
             return None
 
         return payload['exec_params']
+
+    def is_final_cluster_epoch(self) -> bool:
+        '''
+        Check if the current cluster epoch is final
+        '''
+
+        payload = self._read_state(fetch_only=True)
+
+        if payload is None:
+            return False
+
+        return payload['job_status']['current_epoch'] == payload['cluster_config']['train_params']['cluster_epochs']
+
+    def reset_cluster_epoch(self) -> None:
+        '''
+        reset current cluster epoch
+        '''
+        # method prefixed with locking and reading state
+        self.modification_lock.acquire()
+        self._read_state()
+
+        self.job_status['current_epoch'] = 1
+
+        # method suffixed with update state and lock release
+        self._update_state()
+        self.modification_lock.release()
+
+    def increment_cluster_epoch(self) -> None:
+        '''
+        increment current cluster epoch
+        '''
+        # method prefixed with locking and reading state
+        self.modification_lock.acquire()
+        self._read_state()
+
+        self.job_status['current_epoch'] += 1
+
+        # method suffixed with update state and lock release
+        self._update_state()
+        self.modification_lock.release()
 
     def allow_jobsheet_download(self) -> bool:
         '''
@@ -633,6 +675,35 @@ class Job(object):
         else:
             logger.warning(
                 f'Cannot APPEND worker model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
+            exec_status = False
+
+        # method suffixed with update state and lock release
+        self.modification_lock.release()
+        return exec_status
+
+    def append_initial_params(self, node_id: str, param: str) -> bool:
+        '''
+        Append Initial Model Params from Clients and Workers to the exec_params.initial_params{}.
+        Only works if job_status.client_stage=1 and job_status.worker_stage=1 and job_status.process_phase=0.
+        '''
+        # method prefixed with locking and reading state
+        self.modification_lock.acquire()
+        self._read_state()
+        exec_status = True
+
+        # method logic
+        if self.job_status['process_stage'] == 0 and self.job_status['client_stage'] == 1 and self.job_status['worker_stage'] == 1:
+            # add submitted initial parameters
+            self.exec_params['initial_params'].append(param)
+
+            logger.info(
+                f"[{node_id}] submitted initial params. Total Params: {len(self.exec_params['initial_params'])}")
+
+            # method suffixed with update state and lock release
+            self._update_state()
+        else:
+            logger.warning(
+                f'Cannot APPEND initial model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
             exec_status = False
 
         # method suffixed with update state and lock release
