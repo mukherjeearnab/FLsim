@@ -25,24 +25,6 @@ class Job(object):
             self.cluster_config = cluster_config[self.cluster_id]
             self.is_primary = True if self.cluster_config['upstream_cluster'] is None else False
 
-            # populate client_config, if any of the clients are nodes
-            self.client_configs = dict()
-            self.clients = []
-            self.sub_clusters = []
-            for client_id in self.cluster_config['clients']:
-                if client_id not in list(cluster_config.keys()):
-                    self.client_configs[client_id] = client_config[client_id]
-                    self.clients.append(client_id)
-                else:
-                    self.sub_clusters.append(client_id)
-
-            # populate worker_config, if any of the clients are nodes
-            self.worker_configs = dict()
-            self.workers = []
-            for worker_id in self.cluster_config['workers']:
-                self.workers.append(worker_id)
-                self.worker_configs[worker_id] = worker_config[worker_id]
-
             self.job_status = {
                 'client_stage': 0,              # denotes the status of all the clients
                 'worker_stage': 0,              # denotes the status of all the workers
@@ -66,6 +48,27 @@ class Job(object):
                     # }
                 ]
             }
+
+            # populate client_config and sub_clusters list
+            self.client_configs = dict()
+            self.clients = []
+            self.sub_clusters = []
+            for client_id in self.cluster_config['clients']:
+                if client_id not in list(cluster_config.keys()):
+                    self.client_configs[client_id] = client_config[client_id]
+                    self.clients.append(client_id)
+                    self._add_client(client_id, False, _internal=True)
+                else:
+                    self.sub_clusters.append(client_id)
+                    self._add_client(client_id, True, _internal=True)
+
+            # populate worker_config
+            self.worker_configs = dict()
+            self.workers = []
+            for worker_id in self.cluster_config['workers']:
+                self.worker_configs[worker_id] = worker_config[worker_id]
+                self.workers.append(worker_id)
+                self._add_worker(worker_id, _internal=True)
 
             self.exec_params = {
                 # trained and aggregated params are of schema {'client_id': {'param': Any, 'extra_data': Any}}
@@ -323,23 +326,33 @@ class Job(object):
 
     def add_client(self, client_id: str, is_cluster: bool) -> bool:
         '''
+        Wrapper around the _add_client method,
+        to expose to external calls
+        '''
+
+        return self._add_client(client_id, is_cluster, _internal=False)
+
+    def _add_client(self, client_id: str, is_cluster: bool, _internal: bool) -> bool:
+        '''
         Adds a Client to the list of clients for the current job, only if job_status.process_stage is 0.
         '''
         # method prefixed with locking and reading state
-        self.modification_lock.acquire()
-        self._read_state()
+        if not _internal:
+            self.modification_lock.acquire()
+            self._read_state()
         exec_status = True
 
         # method logic
         if self.job_status['process_stage'] == 0:
             self.job_status['client_info'].append({
                 'client_id': client_id,
-                'status': 0,
+                'status': -1,
                 'is_cluster': is_cluster
             })
 
             # method suffixed with update state and lock release
-            self._update_state()
+            if not _internal:
+                self._update_state()
         else:
             # log output and set execution status to False
             logger.warning(
@@ -348,16 +361,26 @@ class Job(object):
             exec_status = False
 
         # method suffixed with update state and lock release
-        self.modification_lock.release()
+        if not _internal:
+            self.modification_lock.release()
         return exec_status
 
     def add_worker(self, worker_id: str) -> bool:
         '''
+        Wrapper around the _add_worker method,
+        to expose to external calls
+        '''
+
+        return self._add_worker(worker_id, _internal=False)
+
+    def _add_worker(self, worker_id: str,  _internal: bool) -> bool:
+        '''
         Adds a Worker to the list of workers for the current job, only if job_status.process_stage is 0.
         '''
         # method prefixed with locking and reading state
-        self.modification_lock.acquire()
-        self._read_state()
+        if not _internal:
+            self.modification_lock.acquire()
+            self._read_state()
         exec_status = True
 
         # method logic
@@ -368,7 +391,8 @@ class Job(object):
             })
 
             # method suffixed with update state and lock release
-            self._update_state()
+            if not _internal:
+                self._update_state()
         else:
             # log output and set execution status to False
             logger.warning(
@@ -377,7 +401,8 @@ class Job(object):
             exec_status = False
 
         # method suffixed with update state and lock release
-        self.modification_lock.release()
+        if not _internal:
+            self.modification_lock.release()
         return exec_status
 
     def update_client_status(self, client_id: str, status: int) -> Tuple[bool, int]:

@@ -31,7 +31,7 @@ def load_job(job_name: str, job_config: str):
     # 3. prepare and send details to dataset distributor to prepare dataset chunks for clients
     _, dataset_manifest = create_dist_tree(config)
     logger.info(f'Starting Dataset Preperation for Job {job_name}')
-    post(env['DATADIST_URL'],
+    post(f"{env['DATADIST_URL']}/prepare",
          {'job_name': job_name, 'manifest': dataset_manifest})
     logger.info(f'Dataset Preperation Complete for Job {job_name}')
 
