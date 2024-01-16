@@ -65,6 +65,9 @@ def get_dataset_metadata():
     ok_file = datasetDistributor.get_dataset_metadata(
         job_name, cluster_id, 'ok_file')
 
+    weights = datasetDistributor.get_dataset_metadata(
+        job_name, cluster_id, 'weights')
+
     if client_id is not None:
         dataset_file = datasetDistributor.get_dataset_metadata(
             job_name, cluster_id, client_id)
@@ -73,7 +76,7 @@ def get_dataset_metadata():
 
     if ok_file is not None:
         timestamp = get_OK_file(ok_file)
-        return jsonify({'timestamp': timestamp, 'path': ok_file, 'file': dataset_file}), 200
+        return jsonify({'timestamp': timestamp, 'path': ok_file, 'file': dataset_file, 'weights': weights}), 200
     else:
         return jsonify({'message': f'Metadata for Job [{job_name}], Cluster [{cluster_id}] not found!'}), 404
 

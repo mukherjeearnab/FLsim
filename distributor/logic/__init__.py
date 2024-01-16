@@ -27,6 +27,7 @@ class DatasetDistributor(object):
         metadata == client_id ==> returns the dataset chunk path for the client 
         metadata == 'global_test' ==> returns the dataset chunk path for the global_test (for workers) 
         metadata == 'ok_file' ==> returns the ok_file path for the dataset chunk
+        metadata == 'weights' ==> returns the weights of the clients
         '''
 
         if job_name not in self.jobs:
@@ -245,9 +246,14 @@ class DatasetDistributor(object):
         ############################
         # The Recursive Part
         ############################
+        # define cluster to chunk mapping for the cluster
+        client_weights = {node_id: weight for node_id,
+                          weight in zip(cluster['clients'], cluster['params']['distribution']['chunks'])}
+
         job.cluster2chunk_mapping[cluster['id']] = {
             'global_test': f"{chunk_save_path}/global_test.tuple",
-            'ok_file': f"{chunk_save_path}"
+            'ok_file': f"{chunk_save_path}",
+            'weights': client_weights
         }
         # recursively save the chunks for the sub clusters
         for i in range(num_clients):
