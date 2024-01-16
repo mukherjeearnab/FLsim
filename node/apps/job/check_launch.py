@@ -8,6 +8,8 @@ from state import jobs_proc_state
 from helpers.argsparse import args
 from helpers.logging import logger
 from helpers.http import get
+from apps.client import client_process
+from apps.worker import worker_process
 
 
 def get_jobs_from_server(logicon_url: str) -> None:

@@ -1,5 +1,5 @@
 '''
-The Client Process Module
+The Worker Process Module
 '''
 from time import time
 from copy import deepcopy
@@ -7,16 +7,16 @@ from helpers.argsparse import args
 from helpers.logging import logger
 from helpers import p2p_store, perflog
 from helpers.converters import get_base64_state_dict, set_base64_state_dict
-from apps.client import handlers
+from apps.worker import handlers
 from apps.common import getters, setters, listeners
 
 
-def client_process(job_name: str, cluster_id: str) -> None:
+def worker_process(job_name: str, cluster_id: str) -> None:
     '''
-    Client Process
+    Worker Process
     0. Wait for JobsheetDownload Flag
     1. Download Job Configuration
-    2. ACK of Job Sheet Download (Client Status to 1)
+    2. ACK of Job Sheet Download (Worker Status to 1)
         1. Initialize the Model and Obtain Intial Parameters
     3. Wait for DatasetDownload Flag
     4. Download the Dataset
@@ -25,24 +25,25 @@ def client_process(job_name: str, cluster_id: str) -> None:
             2. Check OK File, and Determine if Required to Download Dataset
             3. Download Dataset if Required and OK File's timestamp
         1. Preprocess Dataset and Load it
-    5. ACK of Dataset Download (Client Status to 2) & Send Back Initial Model (Global) Parameters
-    6. Wait for process_stage to be 1
-    7. Donwload Global Parameter
+    5. ACK of Dataset Download (Worker Status to 2) & Send Back Initial Model (Global) Parameters
+    6. Wait for process_stage to be 2
+    7. Donwload All Trained Client Parameter(s) 
         1. Apply Parameter Mixing
-    8. Update Client Status to 3
-    9. Load Model and Start Local Training
-        1. Test Trained Model
+    8. Update Worker Status to 3
+    9. Start Aggregation Process
+        1. Test Aggregated Model
         2. Add Test Performance Metrics to PerfLog
-    10. Upload Trained Model Parameter
-    11. Update Client Status to 4
-    12. Wait for client_stage to be 4
+    10. Upload Aggregated Model Parameter
+    11. Update Worker Status to 4
+    12. Wait for worker_stage to be 4
     13. Wait for process_stage to be 1 or 3
-    14. If process_stage is 1, start again from step 7, 
-        else Update Client Status to 5 and exit
+    14. Add Global Parameter to Perflog and Commit Perflog
+    15. If process_stage is 1, start again from step 6, 
+        else Update Worker Status to 5 and exit
     '''
 
     node_id = args['node_id']
-    node_type = 'client'
+    node_type = 'worker'
 
     global_round = 1
     extra_data = {
@@ -64,11 +65,11 @@ def client_process(job_name: str, cluster_id: str) -> None:
         job_name, cluster_id, manifest, node_type)
 
     # set global and prev local model
-    global_model = deepcopy(local_model)
-    prev_local_model = deepcopy(local_model)
+    # global_model = deepcopy(local_model)
+    # prev_local_model = deepcopy(local_model)
 
     # obtain parameters of the model
-    previous_param = get_base64_state_dict(prev_local_model)
+    init_param = get_base64_state_dict(local_model)
 
     # 3. Wait for DatasetDownload Flag
     listeners.wait_for_dataset_flag(job_name, cluster_id, node_type)
@@ -83,52 +84,42 @@ def client_process(job_name: str, cluster_id: str) -> None:
         job_name, cluster_id, node_type, dataset_path, file_path, timestamp)
 
     # 4.1. Preprocess Dataset and Load it
-    train_set, test_set = handlers.load_dataset(job_name, cluster_id, node_type,
-                                                file_name, dataset_path, manifest)
+    global_test_set = handlers.load_dataset(job_name, cluster_id, node_type,
+                                            file_name, dataset_path, manifest)
 
     # also create the data loaders for the train set and test set
-    train_loader, test_loader = handlers.create_data_loaders(
-        train_set, test_set, manifest)
+    global_test_loader = handlers.create_data_loaders(
+        global_test_set, manifest)
 
     # 5. ACK of Dataset Download (Client Status to 2) & Send Back Initial Model (Global) Parameters
     # 5.1 Upload Initial Model (Global) Parameters to P2P Store
-    init_param_key = p2p_store.setv(previous_param)
+    init_param_key = p2p_store.setv(init_param)
     # 5.2 ACK of Dataset Download (Client Status to 2)
     setters.update_node_status(
         job_name, cluster_id, node_type, 2, {'initial_param': init_param_key})
 
-    # 6. Wait for process_stage to be 1
-    listeners.wait_for_start_end_training(job_name, cluster_id, node_type)
-
     # Process Loop
     while True:
+        # 6. Wait for process_stage to be 2
+        listeners.wait_for_aggregation_phase(job_name, cluster_id, node_type)
+
         # set start time
         start_time = time()
 
-        # 7. Donwload Global Parameter
-        global_param, global_extra_data = handlers.get_global_param(
+        # 7. Donwload All Trained Client Parameter(s)
+        client_params = handlers.get_client_params(
             job_name, cluster_id, node_type)
-        set_base64_state_dict(global_model, global_param)
-        extra_data['global_extra_data'] = global_extra_data
 
-        # 7.1. Apply Parameter Mixing
-        curr_param = handlers.parameter_mixing(
-            job_name, cluster_id, manifest, node_type, global_model, prev_local_model)
-
-        # update the parameters local and prev local models
-        set_base64_state_dict(local_model, curr_param)
-        set_base64_state_dict(prev_local_model, previous_param)
-
-        # 8. Update Client Status to 3
+        # 8. Update Worker Status to 3
         setters.update_node_status(job_name, cluster_id, node_type, 3)
 
-        # 9. Load Model and Start Local Training
-        handlers.train_model(job_name, cluster_id, manifest, node_type, train_loader,
-                             local_model, global_model, prev_local_model, extra_data)
+        # 9. Start Aggregation Process
+        local_model = handlers.run_aggregator(job_name, cluster_id, node_type, manifest,
+                                              local_model, client_params, extra_data)
 
-        # 9.1. Test Trained Model
+        # 9.1. Test Aggregated Model
         metrics = handlers.test_model(job_name, cluster_id, manifest, node_type,
-                                      local_model, test_loader)
+                                      local_model, global_test_loader)
 
         # calculate round time
         end_time = time()
@@ -139,27 +130,33 @@ def client_process(job_name: str, cluster_id: str) -> None:
         perflog.add_record(node_id, job_name, metrics,
                            global_round, time_delta)
 
-        # 10. Upload Trained Model Parameter
+        # 10. Upload Aggregated Model Parameter
         curr_param = get_base64_state_dict(local_model)
         trained_param_key = p2p_store.setv(curr_param)
         setters.append_node_params(
             job_name, cluster_id, node_type, trained_param_key)
 
-        # 11. Update Client Status to 4
+        # 11. Update Worker Status to 4
         setters.update_node_status(job_name, cluster_id, node_type, 4)
 
-        # 12. Wait for client_stage to be 4
+        # 12. Wait for worker_stage to be 4
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 4)
 
         # 13. Wait for process_stage to be 1 or 3
         process_stage = listeners.wait_for_start_end_training(
             job_name, cluster_id, node_type)
 
-        # 14. If process_stage is 1, start again from step 7,
-        #     else Update Client Status to 5 and exit
+        # 14. Add Global Parameter to Perflog and Commit Perflog
+        global_param, _ = handlers.get_global_param(
+            job_name, cluster_id, node_type)
+        perflog.add_params(
+            job_name, global_round, global_param)
+        perflog.save_logs(job_name)
+
+        # 15. If process_stage is 1, start again from step 6,
+        #     else Update Worker Status to 5 and exit
         if process_stage == 1:
-            # update previous params and global round
-            previous_param = curr_param
+            # update global round
             global_round += 1
 
             start_time = time()

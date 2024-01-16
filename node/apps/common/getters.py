@@ -60,7 +60,7 @@ def get_dataset(job_name: str, cluster_id: str, node_type: str, file_path: str, 
         _fail_exit(job_name, cluster_id, node_type)
 
 
-def get_job_config(job_name, cluster_id, node_type: str) -> dict:
+def get_job_config(job_name: str, cluster_id: str, node_type: str) -> dict:
     '''
     Get Job Config for a given job at a given cluster for a given node
     node_type: str = [client, worker]
@@ -83,7 +83,7 @@ def get_job_config(job_name, cluster_id, node_type: str) -> dict:
         _fail_exit(job_name, cluster_id, node_type)
 
 
-def get_global_params(job_name, cluster_id, node_type: str) -> Tuple[str, str]:
+def get_global_param(job_name: str, cluster_id: str, node_type: str) -> Tuple[str, str]:
     '''
     Get Global Params for a given job at a given cluster
 
@@ -107,4 +107,30 @@ def get_global_params(job_name, cluster_id, node_type: str) -> Tuple[str, str]:
     except Exception:
         logger.error(
             f'Failed to download global param for [{job_name}] at [{cluster_id}].\n{traceback.format_exc()}')
+        _fail_exit(job_name, cluster_id, node_type)
+
+
+def get_client_params(job_name: str, cluster_id: str, node_type: str) -> :
+    '''
+    Get Client Params for a given job at a given cluster
+
+    Returns:
+        param_key, extra_data_key
+    '''
+
+    url = f'{logicon_url}/job/get_exec_params'
+
+    try:
+        manifest = get(
+            url, {'job_name': job_name, 'cluster_id': cluster_id})
+        
+        client_params  =manifest['client_trained_params']
+        
+        logger.info(
+            f'Downloaded client params for [{job_name}] at [{cluster_id}]')
+
+        return client_params
+    except Exception:
+        logger.error(
+            f'Failed to download client params for [{job_name}] at [{cluster_id}].\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
