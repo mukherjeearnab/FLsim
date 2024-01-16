@@ -6,10 +6,8 @@ from time import sleep
 from env import env
 from state import job_config_state
 from helpers.logging import logger
-from helpers.file import read_yaml_file
 from helpers.http import post
-from apps.job.load.modules_loader import load_module_files
-from apps.job.load.dataset_config import create_dist_tree
+from helpers.perflog import init_project
 
 
 def start_job(job_name: str):
@@ -44,6 +42,8 @@ def start_job(job_name: str):
                    {'job_name': job_name})
 
         logger.info(f"RESPONSE: {res['message']}")
+
+        init_project(job_name, job_config)
     except Exception:
         logger.error(
             f'Failed to Start Job Instance!\n{traceback.format_exc()}')
