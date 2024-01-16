@@ -50,6 +50,7 @@ training:
   worker_configs:
     - &fed_avg_def
       aggregator: fed_avg
+      batch_size: 64
       extra_params:
         fed_avg_momentum: 0.9
 

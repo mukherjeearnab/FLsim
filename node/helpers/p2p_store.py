@@ -53,15 +53,15 @@ def kv_get_legacy(key: str) -> Any:
     '''
     Get Value from Key
     '''
-    while True:
-        try:
-            reply = http.get(f'{KVS_URL}/get',
-                             {'key': key})
-            break
-        except Exception:
-            logger.error(
-                f'KVStore Database Connection Error! Retrying in 30s.\n{traceback.format_exc()}')
-            sleep(DELAY*6)
+    print('GETKEY', key)
+
+    try:
+        reply = http.get(f'{KVS_URL}/get?key={key}',
+                         {'key': key})
+    except Exception:
+        logger.error(
+            f'KVStore Database Connection Error! Retrying in 30s.\n{traceback.format_exc()}')
+        sleep(DELAY*60)
 
     if reply['status'] == 404:
         return None
@@ -73,17 +73,18 @@ def kv_set_legacy(value: Any) -> str:
     '''
     Set Value with Key
     '''
-    while True:
-        try:
-            reply = http.post(f'{KVS_URL}/set', {'value': json.dumps(value)})
-            break
-        except Exception:
-            logger.error(
-                f'KVStore Database Connection Error! Retrying in 30s.\n{traceback.format_exc()}')
-            sleep(DELAY*6)
+    try:
+        reply = http.post(f'{KVS_URL}/set', {'value': json.dumps(value)})
+
+    except Exception:
+        logger.error(
+            f'KVStore Database Connection Error! Retrying in 30s.\n{traceback.format_exc()}')
+        sleep(DELAY*60)
 
     if reply['status'] == 500:
         return None
+
+    print(reply)
 
     return reply['key']
 

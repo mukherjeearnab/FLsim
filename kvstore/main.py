@@ -21,11 +21,13 @@ def root():
     return jsonify(data)
 
 
-@app.route('/get', methods=['GET'])
+@app.route('/get')
 def get_val():
     '''
     get value of key
     '''
+    print(request.args)
+
     key = request.args['key']
 
     value, status = keyValueStore.get(key)
@@ -33,11 +35,13 @@ def get_val():
     return jsonify({'status': status, 'value': value}), 200 if status else 404
 
 
-@app.route('/delete', methods=['GET'])
+@app.route('/delete')
 def delete_val():
     '''
     get value of key
     '''
+    print(request.args)
+
     key = request.args['key']
 
     value, status = keyValueStore.delete(key)

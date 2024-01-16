@@ -1,18 +1,17 @@
 dataset:
-  prep: cifar_def
   cluster_configs:
     - &def_random_dist
+      prep: cifar_def
       preprocessor: default
       distribution:
-        distributor: diritchlet_dist
-        # chunks:
-        #   - 0.5
-        #   - 0.5
+        distributor: random_dist # diritchlet_dist
+        chunks:
+          - 1.0
         extra_params:
           diritchlet:
             alpha: 1.0
             seed: 10
-      train_test_split: # train test split config
+      train_test_split:
         train: 0.8
         test: 0.2
 
@@ -24,8 +23,8 @@ training:
   client_configs:
     - &cifar_train_def
       learning_rate: 0.0001
-      batch_size: 64
-      local_epochs: 5
+      batch_size: 256
+      local_epochs: 2
       extra_params:
         fed_prox:
           mu: 0.01
@@ -34,6 +33,7 @@ training:
   worker_configs:
     - &fed_avg_def
       aggregator: fed_avg
+      batch_size: 256
       extra_params:
         fed_avg_momentum: 0.9
 
@@ -63,23 +63,23 @@ worker_configs:
       <<: *def_random_dist
 
 clients:
-  - node_0:
-      <<: *def_client
+  node_0:
+    <<: *def_client
 
 workers:
-  - node_0:
-      <<: *def_worker
+  node_0:
+    <<: *def_worker
 
 clusters:
-  - cluster_0:
-      upstream_cluster: null
-      clients:
-        - node_0
-      workers:
-        - node_0
-      consensus_params:
-        <<: *default_2_3
-      train_params:
-        cluster_epochs: 1
-      dataset_params:
-        <<: *def_random_dist
+  cluster_0:
+    upstream_cluster: null
+    clients:
+      - node_0
+    workers:
+      - node_0
+    consensus_params:
+      <<: *default_2_3
+    train_params:
+      cluster_epochs: 1
+    dataset_params:
+      <<: *def_random_dist

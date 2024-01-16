@@ -11,4 +11,4 @@ global_state = manager.dict()
 job_state = manager.dict()
 
 # job route state
-job_route_state = manager.dict()
+job_route_state = dict()

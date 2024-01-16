@@ -26,10 +26,10 @@ def wait_for_jobsheet_flag(job_name: str, cluster_id: str, node_type: str):
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})
+                           'cluster_id': cluster_id})['payload']
 
-            jobsheet_flag = manifest['job_status']['download_jobsheet']
-            abort_flag = manifest['job_status']['abort']
+            jobsheet_flag = manifest['download_jobsheet']
+            abort_flag = manifest['abort']
 
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
@@ -62,10 +62,10 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})
+                           'cluster_id': cluster_id})['payload']
 
-            dataset_flag = manifest['job_status']['download_dataset']
-            abort_flag = manifest['job_status']['abort']
+            dataset_flag = manifest['download_dataset']
+            abort_flag = manifest['abort']
 
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
@@ -98,10 +98,10 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})
+                           'cluster_id': cluster_id})['payload']
 
-            process_stage = manifest['job_status']['process_stage']
-            abort_flag = manifest['job_status']['abort']
+            process_stage = manifest['process_stage']
+            abort_flag = manifest['abort']
 
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
@@ -112,9 +112,8 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
 
             # if process_stage is 1, break and exit
             if process_stage == 1 or process_stage == 3:
-                break
+                return process_stage
 
-            return process_stage
         except Exception:
             logger.error(
                 f'Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
@@ -135,10 +134,10 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})
+                           'cluster_id': cluster_id})['payload']
 
-            process_stage = manifest['job_status']['process_stage']
-            abort_flag = manifest['job_status']['abort']
+            process_stage = manifest['process_stage']
+            abort_flag = manifest['abort']
 
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
@@ -149,9 +148,8 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
 
             # if process_stage is 1, break and exit
             if process_stage == 2:
-                break
+                return process_stage
 
-            return process_stage
         except Exception:
             logger.error(
                 f'Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
@@ -172,10 +170,10 @@ def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: i
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})
+                           'cluster_id': cluster_id})['payload']
 
-            node_stage = manifest['job_status'][f'{node_type}_stage']
-            abort_flag = manifest['job_status']['abort']
+            node_stage = manifest[f'{node_type}_stage']
+            abort_flag = manifest['abort']
 
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 

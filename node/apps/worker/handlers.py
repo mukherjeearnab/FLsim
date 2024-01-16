@@ -13,6 +13,7 @@ from helpers.converters import tensor_to_data_loader, convert_base64_to_state_di
 from apps.worker import aggregation
 from apps.common.setters import _fail_exit
 from apps.common import getters
+from apps.client import training
 
 datadist_url = env['DATADIST_URL']
 node_id = args['node_id']
@@ -27,6 +28,7 @@ def download_dataset_metadata(job_name: str, cluster_id: str, node_type: str):
 
     dataset_metadata = getters.get_dataset_metadata(
         job_name, cluster_id, node_type)
+
     file_path = dataset_metadata['file']
     dataset_path = dataset_metadata['path']
     timestamp = dataset_metadata['timestamp']
@@ -89,6 +91,21 @@ def create_data_loaders(test_set, manifest: dict):
                                                manifest['aggregator_params']['batch_size'])
 
     return global_test_loader
+
+
+def init_model(job_name: str, cluster_id: str, manifest: dict, node_type: str):
+    '''
+    Initialize the model as defined in the job manifest and return the instance
+    '''
+
+    try:
+        local_model = training.init_model(
+            manifest['model_params']['model_file']['content'])
+        return local_model
+    except Exception:
+        logger.error(
+            f'Failed to init Model. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
+        _fail_exit(job_name, cluster_id, node_type)
 
 
 def get_client_params(job_name: str, cluster_id: str, node_type: str) -> list:
@@ -160,6 +177,10 @@ def get_global_param(job_name: str, cluster_id: str, node_type: str):
         job_name, cluster_id, node_type)
 
     param = p2p_store.getv(param_key)
-    extra_data = p2p_store.getv(extra_data_key)
+
+    if extra_data_key == 'empty':
+        extra_data = {}
+    else:
+        extra_data = p2p_store.getv(extra_data_key)
 
     return param, extra_data

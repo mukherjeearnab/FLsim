@@ -26,7 +26,7 @@ def update_node_status(job_name: str, cluster_id: str, node_type: str, status: i
         _fail_exit(job_name, cluster_id, node_type)
 
     try:
-        res = post(url, {'job_name': job_name, 'cluster_id': cluster_id,
+        res = post(url, {'job_name': job_name, 'cluster_id': cluster_id, f'{node_type}_id': node_id,
                    'status': status, 'extra_data': extra_data})
 
         logger.info(
@@ -50,8 +50,8 @@ def append_node_params(job_name: str, cluster_id: str, node_type: str, param: in
         _fail_exit(job_name, cluster_id, node_type)
 
     try:
-        res = post(url, {'job_name': job_name, 'cluster_id': cluster_id,
-                   'param': param, 'extra_data': extra_data})
+        res = post(url, {'job_name': job_name, 'cluster_id': cluster_id, f'{node_type}_id': node_id,
+                         'param': param, 'extra_data': extra_data})
 
         logger.info(
             f'{res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')

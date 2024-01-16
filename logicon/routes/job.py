@@ -12,6 +12,7 @@ from logic import handlers
 
 ROUTE_NAME = 'job-manager'
 blueprint = Blueprint(ROUTE_NAME, __name__)
+job_locks = dict()
 
 
 @blueprint.route('/')
@@ -31,7 +32,7 @@ def list_jobs():
     '''
 
     jobs = list(job_route_state.keys())
-    jobs = list(filter(lambda job: 'root' in job, jobs))
+    jobs = list(filter(lambda job: 'root' not in job, jobs))
 
     return jsonify(jobs)
 
@@ -153,18 +154,27 @@ def create_job_route():
     payload = request.get_json()
 
     job_name = payload['job_name']
-    job_manifest = request.args['manifest']
+    job_manifest = payload['manifest']
 
     if job_name in job_route_state:
         return jsonify({'message': f'Job with name [{job_name}] already exists.', 'status': False}), 403
 
     try:
         for cluster_id in job_manifest['clusters'].keys():
+            job_id = f'{job_name}#{cluster_id}'
+
+            # create the job lock
+            job_locks[job_id] = threading.Lock()
+
+            # create the job_object
             job = Job(job_name, cluster_id,
-                      job_manifest['clients'], job_manifest['workers'], job_manifest['clusters'])
+                      job_manifest['clients'], job_manifest['workers'], job_manifest['clusters'], job_locks[job_id])
+
             if job.is_primary:
                 job_route_state[f'{job_name}#root'] = job
-            job_route_state[f'{job_name}#{cluster_id}'] = job
+            job_route_state[job_id] = job
+
+            logger.info(f'Created job {job_id}')
 
         return jsonify({'message': 'Job instance created successfully!', 'status': True}), 200
     except Exception:
@@ -189,7 +199,8 @@ def start_job_route():
 
     try:
         root_job = job_route_state[root_job_name]
-        status = handlers.recursive_allow_jobsheet_download(root_job)
+        status = handlers.recursive_allow_jobsheet_download(
+            root_job, job_locks)
 
         if not status:
             return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
@@ -283,17 +294,19 @@ def update_client_status():
     if job_id not in job_route_state:
         return jsonify({'message': f'Job [{job_name}] for Cluster [{cluster_id}] does not exist.', 'status': False}), 404
 
+    status = True
+
     try:
         leaf_job = job_route_state[job_id]
 
         # special case: when client status is 2,
         # they also submit the initial global parameters, append it.
         if extra_data is not None and 'initial_param' in extra_data:
-            status = handlers.append_initial_params(
+            status = status and handlers.append_initial_params(
                 leaf_job, client_id, extra_data['initial_param'])
 
         status = status and handlers.recursive_client_status_handler(
-            leaf_job, client_id, client_status)
+            leaf_job, client_id, client_status, job_locks)
 
         if not status:
             return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
@@ -323,17 +336,19 @@ def update_worker_status():
     if job_id not in job_route_state:
         return jsonify({'message': f'Job [{job_name}] for Cluster [{cluster_id}] does not exist.', 'status': False}), 404
 
+    status = True
+
     try:
         leaf_job = job_route_state[job_id]
 
         # special case: when worker status is 2,
         # they also submit the initial global parameters, append it.
         if extra_data is not None and 'initial_param' in extra_data:
-            status = handlers.append_initial_params(
+            status = status and handlers.append_initial_params(
                 leaf_job, worker_id, extra_data['initial_param'])
 
         status = status and handlers.recursive_worker_status_handler(
-            leaf_job, worker_id, worker_status)
+            leaf_job, worker_id, worker_status, job_locks)
 
         if not status:
             return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
@@ -361,7 +376,7 @@ def set_abort():
 
     try:
         root_job = job_route_state[root_job_name]
-        status = handlers.recursive_abort_job(root_job)
+        status = handlers.recursive_abort_job(root_job, job_locks)
 
         if not status:
             return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
@@ -389,7 +404,7 @@ def terminate_training():
 
     try:
         root_job = job_route_state[root_job_name]
-        status = handlers.recursive_terminate_job(root_job)
+        status = handlers.recursive_terminate_job(root_job, job_locks)
 
         if not status:
             return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
@@ -417,7 +432,7 @@ def delete_job():
 
     try:
         root_job = job_route_state[root_job_name]
-        can_delete = handlers.recursive_check_delete_job(root_job)
+        can_delete = handlers.recursive_check_delete_job(root_job, job_locks)
 
         if can_delete:
             for job_id in job_route_state.keys():

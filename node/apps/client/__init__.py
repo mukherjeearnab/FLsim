@@ -116,7 +116,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
             job_name, cluster_id, manifest, node_type, global_model, prev_local_model)
 
         # update the parameters local and prev local models
-        set_base64_state_dict(local_model, curr_param)
+        local_model.load_state_dict(curr_param)
         set_base64_state_dict(prev_local_model, previous_param)
 
         # 8. Update Client Status to 3

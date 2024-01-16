@@ -12,13 +12,12 @@ from apps.client import client_process
 from apps.worker import worker_process
 
 
-def get_jobs_from_server(logicon_url: str) -> None:
+def get_jobs_from_server(logicon_url: str, job_set: set) -> None:
     '''
     Get job list from server
     '''
 
     url = f'{logicon_url}/job/list_jobs'
-    job_set = set()
 
     jobs = get(url, {})
 
@@ -51,15 +50,16 @@ def get_jobs_from_server(logicon_url: str) -> None:
     # add newly added jobs
     for job_id in jobs:
         if job_id not in job_set:
+            if 'root' not in job_id:
 
-            # add job ID to job set.
-            job_set.add(job_id)
+                # add job ID to job set.
+                job_set.add(job_id)
 
-            # get the job manifest
-            is_my_job = get_job_manifest(job_id, logicon_url)
+                # get the job manifest
+                is_my_job = get_job_manifest(job_id, logicon_url)
 
-            if not is_my_job:
-                job_set.remove(job_id)
+                if not is_my_job:
+                    job_set.remove(job_id)
 
 
 def get_job_manifest(job_id: str, logicon_url: str) -> bool:
@@ -75,7 +75,8 @@ def get_job_manifest(job_id: str, logicon_url: str) -> bool:
 
     logger.info(f'Fetching Job Manifest for [{job_id}].')
 
-    participants = get(url, {'job_name': job_name, 'cluster_id': cluster_id})
+    participants = get(url, {'job_name': job_name, 'cluster_id': cluster_id})[
+        'payload']
 
     # if a particiapnt in client, spawn client process
     if node_id in participants['clients']:
@@ -86,7 +87,7 @@ def get_job_manifest(job_id: str, logicon_url: str) -> bool:
         # start new job thread
         client_proc = Process(target=client_process,
                               args=(job_name, cluster_id),
-                              name=proc_name, daemon=True)
+                              name=proc_name, daemon=False)
 
         # start job process
         client_proc.start()
@@ -104,7 +105,7 @@ def get_job_manifest(job_id: str, logicon_url: str) -> bool:
         # start new job thread
         worker_proc = Process(target=worker_process,
                               args=(job_name, cluster_id),
-                              name=proc_name, daemon=True)
+                              name=proc_name, daemon=False)
 
         # start job process
         worker_proc.start()

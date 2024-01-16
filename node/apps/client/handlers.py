@@ -124,8 +124,14 @@ def get_global_param(job_name: str, cluster_id: str, node_type: str):
     param_key, extra_data_key = getters.get_global_param(
         job_name, cluster_id, node_type)
 
+    print("GETGP", param_key, extra_data_key)
+
     param = p2p_store.getv(param_key)
-    extra_data = p2p_store.getv(extra_data_key)
+
+    if extra_data_key == 'empty':
+        extra_data = {}
+    else:
+        extra_data = p2p_store.getv(extra_data_key)
 
     return param, extra_data
 

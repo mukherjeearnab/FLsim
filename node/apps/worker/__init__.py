@@ -85,7 +85,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
 
     # 4.1. Preprocess Dataset and Load it
     global_test_set = handlers.load_dataset(job_name, cluster_id, node_type,
-                                            file_name, dataset_path, manifest)
+                                            file_name, dataset_path)
 
     # also create the data loaders for the train set and test set
     global_test_loader = handlers.create_data_loaders(

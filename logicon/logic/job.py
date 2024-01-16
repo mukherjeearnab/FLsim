@@ -12,15 +12,15 @@ class Job(object):
     DistLearn Job Management Class
     '''
 
-    def __init__(self, job_name: str, cluster_id: str, client_config: dict, worker_config: dict, cluster_config: dict, load_from_db=False):
+    def __init__(self, job_name: str, cluster_id: str, client_config: dict, worker_config: dict, cluster_config: dict, lock: threading.Lock, load_from_db=False):
         '''
         constructor
         '''
         self.job_name = job_name
         self.cluster_id = cluster_id
+        self.modification_lock = lock
 
         if not load_from_db:
-            self.modification_lock = threading.Lock()
 
             self.cluster_config = cluster_config[self.cluster_id]
             self.is_primary = True if self.cluster_config['upstream_cluster'] is None else False
@@ -100,7 +100,7 @@ class Job(object):
         if fetch_only:
             return job_payload
 
-        self.modification_lock = job_payload['modification_lock']
+        # self.modification_lock = job_payload['modification_lock']
         self.is_primary = job_payload['is_primary']
         self.cluster_config = job_payload['cluster_config']
         self.client_configs = job_payload['client_configs']
@@ -113,7 +113,7 @@ class Job(object):
 
     def _update_state(self):
         job_payload = {
-            'modification_lock': self.modification_lock,
+            # 'modification_lock': self.modification_lock,
             'is_primary': self.is_primary,
             'cluster_config': self.cluster_config,
             'client_configs': self.client_configs,
@@ -261,6 +261,7 @@ class Job(object):
                 f'''Cannot ALLOW JobSheet Download! 
                 job_status.process_stage is {self.job_status["process_stage"]}, 
                 job_status.client_stage is {self.job_status["client_stage"]},
+                job_status.worker_stage is {self.job_status["worker_stage"]},
                 job_status.download_jobsheet is {self.job_status["download_jobsheet"]}, 
                 job_status.download_dataset is {self.job_status["download_dataset"]}.''')
             exec_status = False
@@ -296,6 +297,7 @@ class Job(object):
                 f'''Cannot ALLOW Dataset Download! 
                 job_status.process_stage is {self.job_status["process_stage"]}, 
                 job_status.client_stage is {self.job_status["client_stage"]},
+                job_status.worker_stage is {self.job_status["worker_stage"]},
                 job_status.download_jobsheet is {self.job_status["download_jobsheet"]}, 
                 job_status.download_dataset is {self.job_status["download_dataset"]}.''')
             exec_status = False
@@ -717,7 +719,7 @@ class Job(object):
         exec_status = True
 
         # method logic
-        if self.job_status['process_stage'] == 0 and self.job_status['client_stage'] == 1 and self.job_status['worker_stage'] == 1:
+        if self.job_status['process_stage'] == 0:
             # add submitted initial parameters
             self.exec_params['initial_params'].append(param)
 

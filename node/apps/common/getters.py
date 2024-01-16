@@ -70,7 +70,7 @@ def get_job_config(job_name: str, cluster_id: str, node_type: str) -> dict:
 
     try:
         manifest = get(
-            url, {'job_name': job_name, 'cluster_id': cluster_id, 'config_type': node_type})
+            url, {'job_name': job_name, 'cluster_id': cluster_id, 'config_type': node_type})['payload']
         node_config = manifest[node_id]
 
         logger.info(
@@ -95,7 +95,7 @@ def get_global_param(job_name: str, cluster_id: str, node_type: str) -> Tuple[st
 
     try:
         manifest = get(
-            url, {'job_name': job_name, 'cluster_id': cluster_id})
+            url, {'job_name': job_name, 'cluster_id': cluster_id})['payload']
 
         param_key = manifest['global_model_param']['param']
         extra_data_key = manifest['global_model_param']['extra_data']
@@ -122,7 +122,7 @@ def get_client_params(job_name: str, cluster_id: str, node_type: str) -> dict:
 
     try:
         manifest = get(
-            url, {'job_name': job_name, 'cluster_id': cluster_id})
+            url, {'job_name': job_name, 'cluster_id': cluster_id})['payload']
 
         client_params = manifest['client_trained_params']
 
