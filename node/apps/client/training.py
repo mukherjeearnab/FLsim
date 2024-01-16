@@ -55,19 +55,19 @@ def parameter_mixing(current_global_params: dict, previous_local_params: dict, m
     return params
 
 
-def train_model(job_manifest: dict, train_loader, local_model, global_model, prev_local_model, extra_data: dict, device) -> dict:
+def train_model(manifest: dict, train_loader, local_model, global_model, prev_local_model, extra_data: dict, device) -> dict:
     '''
     Execute the Training Loop
     '''
 
     # load the train loop module
     train_loop_module = load_module('train_loop_module',
-                                    job_manifest['client_params']['model_params']['training_loop_file']['content'])
+                                    manifest['model_params']['training_loop_file']['content'])
 
     # assemble the hyperparameters
-    num_epochs = job_manifest['client_params']['train_params']['local_epochs']
-    learning_rate = job_manifest['client_params']['train_params']['learning_rate']
-    extra_params = job_manifest['client_params']['train_params']['extra_params']
+    num_epochs = manifest['train_params']['local_epochs']
+    learning_rate = manifest['train_params']['learning_rate']
+    extra_params = manifest['train_params']['extra_params']
 
     logger.info(f'Starting Local Training with {num_epochs} EPOCHS')
 

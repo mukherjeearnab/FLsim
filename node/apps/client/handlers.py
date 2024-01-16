@@ -5,8 +5,11 @@ import traceback
 from env import env
 from helpers.argsparse import args
 from helpers.logging import logger
+from helpers.dynamod import load_module
 from helpers.file import check_OK_file, get_OK_file, create_dir_struct
-
+from helpers import p2p_store
+from helpers.torch import get_device
+from helpers.converters import tensor_to_data_loader
 from apps.client import training
 from apps.common import _fail_exit, getters
 
@@ -43,6 +46,87 @@ def load_dataset(job_name: str, cluster_id: str, node_type: str, file_name: str,
         logger.error(
             f'Failed to run Dataset Proprocessing. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
+
+
+def parameter_mixing(job_name: str, cluster_id: str, manifest: dict, node_type: str, global_model, prev_local_model):
+    '''
+    Use the Parameter Mixing algorithm to mix the global and prev local model parameters to create the current model params
+    '''
+
+    try:
+        curr_params = training.parameter_mixing(global_model.state_dict(), prev_local_model.state_dict(),
+                                                manifest['model_params']['parameter_mixer']['content'])
+        return curr_params
+    except Exception:
+        logger.error(
+            f'Failed to mix parameters. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
+        _fail_exit(job_name, cluster_id, node_type)
+
+
+def train_model(job_name: str, cluster_id: str, manifest: dict, node_type: str,
+                train_loader, local_model, global_model, prev_local_model, extra_data: dict):
+    '''
+    Train the Local Model
+    '''
+    device = get_device()
+
+    try:
+        training.train_model(manifest, train_loader, local_model,
+                             global_model, prev_local_model, extra_data, device)
+    except Exception:
+        logger.error(
+            f'Failed to train model. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
+        _fail_exit(job_name, cluster_id, node_type)
+
+
+def test_model(job_name: str, cluster_id: str, manifest: dict, node_type: str,
+               local_model, test_loader):
+    '''
+    Test the Local Model
+    '''
+    device = get_device()
+
+    try:
+        testing_module = load_module(
+            'testing_module', manifest['model_params']['test_file']['content'])
+        metrics = testing_module.test_runner(
+            local_model, test_loader, device)
+
+        return metrics
+    except Exception:
+        logger.error(
+            f'Failed to test model. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
+        _fail_exit(job_name, cluster_id, node_type)
+
+
+def create_data_loaders(train_set, test_set, manifest: dict):
+    '''
+    Create data loaders for training and testing sets
+
+    Returns:
+        train_loader, test_loader
+    '''
+
+    train_loader = tensor_to_data_loader(train_set,
+                                         manifest['train_params']['batch_size'])
+    test_loader = tensor_to_data_loader(test_set,
+                                        manifest['train_params']['batch_size'])
+
+    return train_loader, test_loader
+
+
+def get_global_params(job_name: str, cluster_id: str, node_type: str):
+    '''
+    Download and load the global params as pytorch object
+    '''
+
+    param_key, extra_data_key = getters.get_global_params(
+        job_name, cluster_id, node_type)
+
+    param = p2p_store.getv(param_key)
+    extra_data = p2p_store.getv(extra_data_key)
+
+    return param, extra_data
 
 
 def download_dataset_metadata(job_name: str, cluster_id: str, node_type: str):

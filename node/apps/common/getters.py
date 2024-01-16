@@ -2,6 +2,7 @@
 Getters for Job
 '''
 import traceback
+from typing import Tuple
 from env import env
 from helpers.argsparse import args
 from helpers.http import get, download_file
@@ -15,7 +16,7 @@ DELAY = env['DELAY']
 node_id = args['node_id']
 
 
-def get_dataset_metadata(job_name: str, cluster_id: str, node_type: str):
+def get_dataset_metadata(job_name: str, cluster_id: str, node_type: str) -> dict:
     '''
     Fetch the Dataset Metadata from Dataset Distributor
     '''
@@ -37,7 +38,7 @@ def get_dataset_metadata(job_name: str, cluster_id: str, node_type: str):
         _fail_exit(job_name, cluster_id, node_type)
 
 
-def get_dataset(job_name: str, cluster_id: str, node_type: str, file_path: str, dataset_path: str, timestamp: str):
+def get_dataset(job_name: str, cluster_id: str, node_type: str, file_path: str, dataset_path: str, timestamp: str) -> None:
     '''
     Fetch the Dataset from Dataset Distributor
     '''
@@ -79,4 +80,31 @@ def get_job_config(job_name, cluster_id, node_type: str) -> dict:
     except Exception:
         logger.error(
             f'Failed to download job config for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}].\n{traceback.format_exc()}')
+        _fail_exit(job_name, cluster_id, node_type)
+
+
+def get_global_params(job_name, cluster_id, node_type: str) -> Tuple[str, str]:
+    '''
+    Get Global Params for a given job at a given cluster
+
+    Returns:
+        param_key, extra_data_key
+    '''
+
+    url = f'{logicon_url}/job/get_exec_params'
+
+    try:
+        manifest = get(
+            url, {'job_name': job_name, 'cluster_id': cluster_id})
+
+        param_key = manifest['global_model_param']['param']
+        extra_data_key = manifest['global_model_param']['extra_data']
+
+        logger.info(
+            f'Downloaded global param for [{job_name}] at [{cluster_id}]')
+
+        return param_key, extra_data_key
+    except Exception:
+        logger.error(
+            f'Failed to download global param for [{job_name}] at [{cluster_id}].\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
