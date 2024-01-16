@@ -8,7 +8,7 @@ from helpers.argsparse import args
 from helpers.http import get, download_file
 from helpers.file import set_OK_file
 from helpers.logging import logger
-from apps.common import _fail_exit
+from apps.common.setters import _fail_exit
 
 logicon_url = env['LOGICON_URL']
 datadist_url = env['DATADIST_URL']
@@ -110,7 +110,7 @@ def get_global_param(job_name: str, cluster_id: str, node_type: str) -> Tuple[st
         _fail_exit(job_name, cluster_id, node_type)
 
 
-def get_client_params(job_name: str, cluster_id: str, node_type: str) -> :
+def get_client_params(job_name: str, cluster_id: str, node_type: str) -> dict:
     '''
     Get Client Params for a given job at a given cluster
 
@@ -123,9 +123,9 @@ def get_client_params(job_name: str, cluster_id: str, node_type: str) -> :
     try:
         manifest = get(
             url, {'job_name': job_name, 'cluster_id': cluster_id})
-        
-        client_params  =manifest['client_trained_params']
-        
+
+        client_params = manifest['client_trained_params']
+
         logger.info(
             f'Downloaded client params for [{job_name}] at [{cluster_id}]')
 

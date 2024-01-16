@@ -31,7 +31,7 @@ def list_jobs():
     '''
 
     jobs = list(job_route_state.keys())
-    jobs = filter(lambda job: 'root' in job, jobs)
+    jobs = list(filter(lambda job: 'root' in job, jobs))
 
     return jsonify(jobs)
 

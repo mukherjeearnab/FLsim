@@ -7,7 +7,7 @@ from env import env
 from helpers.argsparse import args
 from helpers.http import get
 from helpers.logging import logger
-from apps.common import setters, _fail_exit
+from apps.common.setters import _fail_exit
 
 logicon_url = env['LOGICON_URL']
 DELAY = env['DELAY']

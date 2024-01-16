@@ -1,12 +1,12 @@
 '''
 Setters for Job
 '''
+from apps.common import setters
 import traceback
 from env import env
 from helpers.argsparse import args
 from helpers.http import post
 from helpers.logging import logger
-from apps.common import _fail_exit
 
 logicon_url = env['LOGICON_URL']
 DELAY = env['DELAY']
@@ -59,3 +59,14 @@ def append_node_params(job_name: str, cluster_id: str, node_type: str, param: in
         logger.error(
             f'Failed to update client status.\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
+
+
+def _fail_exit(job_name: str, cluster_id: str, node_type: str):
+    '''
+    If Getter Method fails, terminate the client/worker process
+    and exit
+    '''
+
+    # update node status and exit
+    update_node_status(job_name, cluster_id, node_type, status=5)
+    exit()

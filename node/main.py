@@ -13,6 +13,7 @@ from helpers.networking import get_all_nic_ip
 from apps.servers import controller, gossip
 from apps.gossip.peer_management import PeerManager
 from apps.gossip.discovery import init_discovery_process
+from apps.job import job_keep_alive_process
 
 # set flask logging level
 log = logging.getLogger('werkzeug')
@@ -47,7 +48,4 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 
 if __name__ == '__main__':
-    while True:
-        sleep(5)
-        print(peer_manager.node_info())
-        print(peer_manager.get_alive_peers())
+    job_keep_alive_process()

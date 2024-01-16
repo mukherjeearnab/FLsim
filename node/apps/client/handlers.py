@@ -11,7 +11,8 @@ from helpers import p2p_store
 from helpers.torch import get_device
 from helpers.converters import tensor_to_data_loader
 from apps.client import training
-from apps.common import _fail_exit, getters
+from apps.common.setters import _fail_exit
+from apps.common import getters
 
 datadist_url = env['DATADIST_URL']
 node_id = args['node_id']
