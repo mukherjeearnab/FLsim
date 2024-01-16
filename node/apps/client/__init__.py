@@ -52,7 +52,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
     }
 
     # 0. Wait for JobsheetDownload Flag
-    listeners.wait_for_jobsheet_flag(job_name, cluster_id)
+    listeners.wait_for_jobsheet_flag(job_name, cluster_id, node_type)
 
     start_time = time()
 
@@ -74,7 +74,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
     previous_param = get_base64_state_dict(prev_local_model)
 
     # 3. Wait for DatasetDownload Flag
-    listeners.wait_for_dataset_flag(job_name, cluster_id)
+    listeners.wait_for_dataset_flag(job_name, cluster_id, node_type)
 
     # 4. Download the Dataset
     # 4.0. Download Dataset Metadata
@@ -101,7 +101,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
         job_name, cluster_id, node_type, 2, {'initial_param': init_param_key})
 
     # 6. Wait for process_stage to be 1
-    listeners.wait_for_start_end_training(job_name, cluster_id)
+    listeners.wait_for_start_end_training(job_name, cluster_id, node_type)
 
     # Process Loop
     while True:
@@ -154,7 +154,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 13. Wait for process_stage to be 1 or 3
         process_stage = listeners.wait_for_start_end_training(
-            job_name, cluster_id)
+            job_name, cluster_id, node_type)
 
         # 14. If process_stage is 1, start again from step 7,
         #     else Update Client Status to 5 and exit
