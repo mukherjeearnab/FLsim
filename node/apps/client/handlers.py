@@ -115,12 +115,12 @@ def create_data_loaders(train_set, test_set, manifest: dict):
     return train_loader, test_loader
 
 
-def get_global_params(job_name: str, cluster_id: str, node_type: str):
+def get_global_param(job_name: str, cluster_id: str, node_type: str):
     '''
     Download and load the global params as pytorch object
     '''
 
-    param_key, extra_data_key = getters.get_global_params(
+    param_key, extra_data_key = getters.get_global_param(
         job_name, cluster_id, node_type)
 
     param = p2p_store.getv(param_key)
