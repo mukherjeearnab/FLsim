@@ -12,8 +12,8 @@ load_dotenv()
 
 LISTEN_PORT = int(os.getenv('LISTEN_PORT'))
 
-# log = logging.getLogger('werkzeug')
-# log.setLevel(logging.ERROR)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
 

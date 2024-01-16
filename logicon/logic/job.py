@@ -656,7 +656,7 @@ class Job(object):
 
             # if all the client's parameters are submitted, set process_phase to 2, i.e., InCentralAggregation
             if len(self.exec_params['client_trained_params'].keys()) == (len(self.clients)+len(self.sub_clusters)):
-                self.job_status['process_phase'] = 2
+                self.job_status['process_stage'] = 2
                 logger.info(
                     'All client params are submitted, signalling Federated Aggregation.')
 

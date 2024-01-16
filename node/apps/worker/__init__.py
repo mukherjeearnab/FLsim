@@ -35,7 +35,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         2. Add Test Performance Metrics to PerfLog
     10. Upload Aggregated Model Parameter
     11. Update Worker Status to 4
-    12. Wait for worker_stage to be 4
+    12. Wait for worker_stage to be 4 and update to 2
     13. Wait for process_stage to be 1 or 3
     14. Add Global Parameter to Perflog and Commit Perflog
     15. If process_stage is 1, start again from step 6, 
@@ -133,14 +133,16 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         # 10. Upload Aggregated Model Parameter
         curr_param = get_base64_state_dict(local_model)
         trained_param_key = p2p_store.setv(curr_param)
+        extra_data_key = p2p_store.setv('empty')
         setters.append_node_params(
-            job_name, cluster_id, node_type, trained_param_key)
+            job_name, cluster_id, node_type, trained_param_key, extra_data_key)
 
         # 11. Update Worker Status to 4
         setters.update_node_status(job_name, cluster_id, node_type, 4)
 
-        # 12. Wait for worker_stage to be 4
+        # 12. Wait for worker_stage to be 4 and update to 2
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 4)
+        setters.update_node_status(job_name, cluster_id, node_type, 2)
 
         # 13. Wait for process_stage to be 1 or 3
         process_stage = listeners.wait_for_start_end_training(

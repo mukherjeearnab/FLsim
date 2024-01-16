@@ -19,6 +19,7 @@ def aggregate_client_params(job_name: str, cluster_id: str, node_type: str, mani
     The Aggregation Process Executor
     '''
     device = get_device()
+    global_model = global_model.to(device)
 
     # load the model module
     try:

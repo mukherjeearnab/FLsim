@@ -142,14 +142,17 @@ def client_process(job_name: str, cluster_id: str) -> None:
         # 10. Upload Trained Model Parameter
         curr_param = get_base64_state_dict(local_model)
         trained_param_key = p2p_store.setv(curr_param)
+        extra_data_key = p2p_store.setv(global_extra_data)
         setters.append_node_params(
-            job_name, cluster_id, node_type, trained_param_key)
+            job_name, cluster_id, node_type, trained_param_key, extra_data_key)
 
         # 11. Update Client Status to 4
         setters.update_node_status(job_name, cluster_id, node_type, 4)
 
         # 12. Wait for client_stage to be 4
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 4)
+
+        listeners.wait_for_aggregation_phase(job_name, cluster_id, node_type)
 
         # 13. Wait for process_stage to be 1 or 3
         process_stage = listeners.wait_for_start_end_training(

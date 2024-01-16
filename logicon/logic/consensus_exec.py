@@ -25,7 +25,8 @@ def exec_consensus(job: Job) -> Tuple[bool, str, Union[str, None]]:
     # organize the data
     params, extra_datas = [], []
     for _, payload in job.exec_params['worker_aggregated_params'].items():
-        params.append(payload['param'], payload['extra_data'])
+        params.append(payload['param'])
+        extra_datas.append(payload['extra_data'])
 
     # execute the consensus module
     try:

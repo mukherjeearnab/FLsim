@@ -128,7 +128,7 @@ def get_client_params(job_name: str, cluster_id: str, node_type: str) -> list:
             payload['param'], device)
 
         # fetch the extra_data from the p2p store
-        payload['extra_data'] = p2p_store.getv(payload['extra_data_key'])
+        payload['extra_data'] = p2p_store.getv(payload['extra_data'])
 
         # also add the client's dataset weight
         payload['weight'] = dataset_metadata['weights'][client_id]
