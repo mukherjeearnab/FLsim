@@ -6,7 +6,8 @@ dataset:
       distribution:
         distributor: random_dist # diritchlet_dist
         chunks:
-          - 1.0
+          - 0.1
+          - 0.9
         extra_params:
           diritchlet:
             alpha: 1.0
@@ -65,9 +66,13 @@ worker_configs:
 clients:
   node_0:
     <<: *def_client
+  node_1:
+    <<: *def_client
 
 workers:
   node_0:
+    <<: *def_worker
+  node_1:
     <<: *def_worker
 
 clusters:
@@ -75,8 +80,10 @@ clusters:
     upstream_cluster: null
     clients:
       - node_0
+      - node_1
     workers:
       - node_0
+      - node_1
     consensus_params:
       <<: *default_2_3
     train_params:

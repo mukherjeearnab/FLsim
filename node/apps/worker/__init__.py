@@ -127,7 +127,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         logger.info(f'[{node_type}] Total Round Time: {time_delta} s')
 
         # 9.2. Add Test Performance Metrics to PerfLog
-        perflog.add_record(node_id, job_name, metrics,
+        perflog.add_record(f'{node_type}_{node_id}', job_name, metrics,
                            global_round, time_delta)
 
         # 10. Upload Aggregated Model Parameter
