@@ -133,7 +133,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
         # calculate round time
         end_time = time()
         time_delta = (end_time - start_time)
-        logger.info(f'Total Round Time: {time_delta} s')
+        logger.info(f'[{node_type}] Total Round Time: {time_delta} s')
 
         # 9.2. Add Test Performance Metrics to PerfLog
         perflog.add_record(node_id, job_name, metrics,
@@ -168,6 +168,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
             start_time = time()
 
         if process_stage == 3:
-            logger.info("Job [{job_name}] terminated. Exiting Process.")
+            logger.info(
+                f"[{node_type}] Job [{job_name}] terminated. Exiting Process.")
             setters.update_node_status(job_name, cluster_id, node_type, 5)
             break

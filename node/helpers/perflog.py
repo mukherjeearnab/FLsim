@@ -16,7 +16,7 @@ def init_project(job_id: str, config: dict):
     Initialize the project at PerfLog Server
     '''
     post(f'{PERFLOG_URL}/init_project', {'job_id': job_id, 'config': config})
-    logger.info('PerfLog initialized for Job [{job_id}]')
+    logger.info(f'PerfLog initialized for Job [{job_id}]')
 
 
 def add_record(client_id: str, job_id: str, metrics: dict, round_num: int, time_delta: float):
@@ -26,7 +26,7 @@ def add_record(client_id: str, job_id: str, metrics: dict, round_num: int, time_
     post(f'{PERFLOG_URL}/add_record',
          {'client_id': client_id, 'job_id': job_id, 'metrics': metrics, 'round_num': round_num, 'time_delta': time_delta})
     logger.info(
-        'Adding PerfLog Metrics for Job [{job_id}] at Round {round_num}')
+        f'Adding PerfLog Metrics for Job [{job_id}] at Round {round_num}')
 
 
 def add_params(job_id: str, round_num: int, params: dict):
@@ -36,7 +36,7 @@ def add_params(job_id: str, round_num: int, params: dict):
     post(f'{PERFLOG_URL}/add_params',
          {'job_id': job_id, 'round_num': round_num, 'params': params})
     logger.info(
-        'Adding PerfLog Params for Job [{job_id}] at Round {round_num}')
+        f'Adding PerfLog Params for Job [{job_id}] at Round {round_num}')
 
 
 def save_logs(job_id: str):
@@ -45,4 +45,4 @@ def save_logs(job_id: str):
     '''
     post(f'{PERFLOG_URL}/save_logs', {'job_id': job_id})
     logger.info(
-        'Saved PerfLog Metrics for Job [{job_id}]')
+        f'Saved PerfLog Metrics for Job [{job_id}]')

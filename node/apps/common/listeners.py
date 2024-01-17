@@ -35,7 +35,7 @@ def wait_for_jobsheet_flag(job_name: str, cluster_id: str, node_type: str):
 
             if prev_flag != jobsheet_flag:
                 logger.info(
-                    f"Got jobsheet download flag [{jobsheet_flag}], expecting [True] for [{job_name}] at cluster {cluster_id}")
+                    f"[{node_type}] Got jobsheet download flag [{jobsheet_flag}], expecting [True] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = jobsheet_flag
 
             # if download jobsheet flag is true, break and exit
@@ -44,7 +44,7 @@ def wait_for_jobsheet_flag(job_name: str, cluster_id: str, node_type: str):
 
         except Exception:
             logger.error(
-                f'Failed to fetch jobsheet download flag. Aborting.\n{traceback.format_exc()}')
+                f'[{node_type}] Failed to fetch jobsheet download flag. Aborting.\n{traceback.format_exc()}')
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY)
@@ -71,7 +71,7 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
 
             if prev_flag != dataset_flag:
                 logger.info(
-                    f"Got dataset download flag [{dataset_flag}], expecting [True] for [{job_name}] at cluster {cluster_id}")
+                    f"[{node_type}] Got dataset download flag [{dataset_flag}], expecting [True] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = dataset_flag
 
             # if download dataset flag is true, break and exit
@@ -80,7 +80,7 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
 
         except Exception:
             logger.error(
-                f'Failed to fetch dataset download flag. Aborting.\n{traceback.format_exc()}')
+                f'[{node_type}] Failed to fetch dataset download flag. Aborting.\n{traceback.format_exc()}')
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY)
@@ -107,7 +107,7 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
 
             if prev_flag != process_stage:
                 logger.info(
-                    f"Got process_stage [{process_stage}], expecting [1,3] for [{job_name}] at cluster {cluster_id}")
+                    f"[{node_type}] Got process_stage [{process_stage}], expecting [1,3] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = process_stage
 
             # if process_stage is 1, break and exit
@@ -116,7 +116,7 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
 
         except Exception:
             logger.error(
-                f'Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
+                f'[{node_type}] Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY)
@@ -143,7 +143,7 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
 
             if prev_flag != process_stage:
                 logger.info(
-                    f"Got process_stage [{process_stage}], expecting [2] for [{job_name}] at cluster {cluster_id}")
+                    f"[{node_type}] Got process_stage [{process_stage}], expecting [2] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = process_stage
 
             # if process_stage is 1, break and exit
@@ -152,7 +152,7 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
 
         except Exception:
             logger.error(
-                f'Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
+                f'[{node_type}] Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY)
@@ -179,7 +179,7 @@ def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: i
 
             if prev_flag != node_stage:
                 logger.info(
-                    f"Got {node_type}_stage [{node_stage}], expecting [{stage}] for [{job_name}] at cluster {cluster_id}")
+                    f"[{node_type}] Got {node_type}_stage [{node_stage}], expecting [{stage}] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = node_stage
 
             # if if node_stage matches stage, break and exit
@@ -188,7 +188,7 @@ def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: i
 
         except Exception:
             logger.error(
-                f'Failed to fetch {node_type}_stage flag. Aborting.\n{traceback.format_exc()}')
+                f'[{node_type}] Failed to fetch {node_type}_stage flag. Aborting.\n{traceback.format_exc()}')
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY)
@@ -201,5 +201,5 @@ def listen_abort(job_name: str, cluster_id: str, node_type: str, abort_flag: boo
 
     if abort_flag:
         logger.info(
-            f'Received Abort Signal. Exiting Job Process for [{job_name}] at cluster [{cluster_id}].')
+            f'[{node_type}] Received Abort Signal. Exiting Job Process for [{job_name}] at cluster [{cluster_id}].')
         _fail_exit(job_name, cluster_id, node_type)

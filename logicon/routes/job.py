@@ -435,7 +435,7 @@ def delete_job():
         can_delete = handlers.recursive_check_delete_job(root_job, job_locks)
 
         if can_delete:
-            for job_id in job_route_state.keys():
+            for job_id in list(job_route_state.keys()):
                 if job_name == job_id.split('#')[0]:
                     del job_route_state[job_id]
 

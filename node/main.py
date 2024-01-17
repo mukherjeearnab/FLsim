@@ -10,6 +10,7 @@ from helpers.argsparse import args
 from helpers.networking import get_all_nic_ip
 # from helpers.logging import logger
 # from helpers import torch as _
+from state import jobs_proc_state
 from apps.servers import controller, gossip
 from apps.gossip.peer_management import PeerManager
 from apps.gossip.discovery import init_discovery_process
@@ -39,8 +40,16 @@ init_discovery_process()
 
 
 def sigint_handler(signum, frame):
+
+    # stop the servers and exit
     controller.stop_server()
     gossip.stop_server()
+
+    # stop all job processes
+    for _, proc in jobs_proc_state.items():
+        proc.kill()
+        proc.join()
+
     sys.exit()
 
 

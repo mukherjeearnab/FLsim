@@ -543,8 +543,9 @@ class Job(object):
         process_stage = self.job_status['process_stage'] == 0 or self.job_status['process_stage'] == 2
         client_stage = self.job_status['client_stage'] == 2 or self.job_status['client_stage'] == 4
         worker_stage = self.job_status['worker_stage'] == 2 or self.job_status['worker_stage'] == 4
+        abort_status = not self.job_status['abort'] and self.job_status['process_stage'] != 3
 
-        if process_stage and client_stage and worker_stage:
+        if process_stage and client_stage and worker_stage and abort_status:
             self.job_status['process_stage'] = 1
             # self.exec_params['client_model_params'] = []
 
@@ -565,14 +566,23 @@ class Job(object):
 
     def terminate_training(self) -> bool:
         '''
+        Wrapper around the _terminate_training,
+        to expose to external calls
+        '''
+
+        return self._terminate_training(_internal=False)
+
+    def _terminate_training(self, _internal: bool) -> bool:
+        '''
         Signal to Terminate the Training process. This sets the process_stage to 3, i.e., TrainingComplete
         Requires Clients to be waiting for Model Params, i.e., client_stage is 4,
         and Workers to be Aggregated Param Uploaded, i.e., worker_stage is 4,
         and process stage is at InCentralAggregation, i.e., process_stage is 2.
         '''
         # method prefixed with locking and reading state
-        self.modification_lock.acquire()
-        self._read_state()
+        if not _internal:
+            self.modification_lock.acquire()
+            self._read_state()
         exec_status = True
 
         # method logic
@@ -580,14 +590,16 @@ class Job(object):
             self.job_status['process_stage'] = 3
 
             # method suffixed with update state and lock release
-            self._update_state()
+            if not _internal:
+                self._update_state()
         else:
             logger.warning(
                 f'Cannot Terminate Training Process!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
             exec_status = False
 
         # method suffixed with update state and lock release
-        self.modification_lock.release()
+        if not _internal:
+            self.modification_lock.release()
         return exec_status
 
     def set_global_model_param(self, param: Union[str, dict], extra_data: Union[str, dict]) -> bool:
@@ -615,8 +627,12 @@ class Job(object):
             # increment global round
             self.job_status['global_round'] += 1
 
-            logger.info(
-                'Global Model Parameters are Set. Waiting for process_stage to be in [1] Local Training.')
+            if self.job_status['global_round'] > self.cluster_config['train_params']['rounds']:
+                logger.info('Total Global Rounds Completed! Terminating Job.')
+                self._terminate_training(_internal=True)
+            else:
+                logger.info(
+                    'Global Model Parameters are Set. Waiting for process_stage to be in [1] Local Training.')
 
             # set process stage to 1
             # self._allow_start_training(_internal=True)

@@ -29,12 +29,12 @@ def get_dataset_metadata(job_name: str, cluster_id: str, node_type: str) -> dict
             url, {'job_name': job_name, 'cluster_id': cluster_id, 'client_id': client_id})
 
         logger.info(
-            f'Downloaded dataset metadata for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}]')
+            f'[{node_type}] Downloaded dataset metadata for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}]')
 
         return manifest
     except Exception:
         logger.error(
-            f'Failed to download dataset metadata for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}].\n{traceback.format_exc()}')
+            f'[{node_type}] Failed to download dataset metadata for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}].\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
 
 
@@ -52,11 +52,11 @@ def get_dataset(job_name: str, cluster_id: str, node_type: str, file_path: str, 
         set_OK_file(dataset_path, timestamp)
 
         logger.info(
-            f'Downloaded dataset for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}]')
+            f'[{node_type}] Downloaded dataset for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}]')
 
     except Exception:
         logger.error(
-            f'Failed to download dataset for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}].\n{traceback.format_exc()}')
+            f'[{node_type}] Failed to download dataset for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}].\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
 
 
@@ -74,12 +74,12 @@ def get_job_config(job_name: str, cluster_id: str, node_type: str) -> dict:
         node_config = manifest[node_id]
 
         logger.info(
-            f'Downloaded job config for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}]')
+            f'[{node_type}] Downloaded job config for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}]')
 
         return node_config
     except Exception:
         logger.error(
-            f'Failed to download job config for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}].\n{traceback.format_exc()}')
+            f'[{node_type}] Failed to download job config for [{job_name}] at [{cluster_id}] for {node_type} [{node_id}].\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
 
 
@@ -101,12 +101,12 @@ def get_global_param(job_name: str, cluster_id: str, node_type: str) -> Tuple[st
         extra_data_key = manifest['global_model_param']['extra_data']
 
         logger.info(
-            f'Downloaded global param for [{job_name}] at [{cluster_id}]')
+            f'[{node_type}] Downloaded global param for [{job_name}] at [{cluster_id}]')
 
         return param_key, extra_data_key
     except Exception:
         logger.error(
-            f'Failed to download global param for [{job_name}] at [{cluster_id}].\n{traceback.format_exc()}')
+            f'[{node_type}] Failed to download global param for [{job_name}] at [{cluster_id}].\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
 
 
@@ -127,10 +127,10 @@ def get_client_params(job_name: str, cluster_id: str, node_type: str) -> dict:
         client_params = manifest['client_trained_params']
 
         logger.info(
-            f'Downloaded client params for [{job_name}] at [{cluster_id}]')
+            f'[{node_type}] Downloaded client params for [{job_name}] at [{cluster_id}]')
 
         return client_params
     except Exception:
         logger.error(
-            f'Failed to download client params for [{job_name}] at [{cluster_id}].\n{traceback.format_exc()}')
+            f'[{node_type}] Failed to download client params for [{job_name}] at [{cluster_id}].\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)

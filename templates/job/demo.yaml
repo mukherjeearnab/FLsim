@@ -83,3 +83,6 @@ clusters:
       cluster_epochs: 1
     dataset_params:
       <<: *def_random_dist
+
+job_params:
+  rounds: 3

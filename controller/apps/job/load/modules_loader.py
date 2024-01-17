@@ -57,6 +57,7 @@ def cluster_module_loader(config: dict):
             config['clusters'][cluster_id]['consensus_params'])
         load_dataset_params(
             config['clusters'][cluster_id]['dataset_params'])
+        config['clusters'][cluster_id]['train_params']['rounds'] = config['job_params']['rounds']
 
 
 def load_model_params(config: dict):
