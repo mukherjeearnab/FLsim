@@ -22,6 +22,8 @@ def getv(key: str) -> Any:
     '''
     Get Value from Key
     '''
+    print('P2P GET:', key)
+
     value = kv_get_legacy(key)
 
     return value
@@ -33,6 +35,8 @@ def setv(value: Any) -> str:
     '''
     key = kv_set_legacy(value)
 
+    print('P2P SET:', key)
+
     return key
 
 
@@ -40,6 +44,8 @@ def delete(key: str) -> Any:
     '''
     Delete Value with Key
     '''
+    print('P2P DEL:', key)
+
     value = kv_delete_legacy(key)
 
     return value
@@ -53,7 +59,6 @@ def kv_get_legacy(key: str) -> Any:
     '''
     Get Value from Key
     '''
-    print('GETKEY', key)
 
     try:
         reply = http.get(f'{KVS_URL}/get?key={key}',
@@ -83,8 +88,6 @@ def kv_set_legacy(value: Any) -> str:
 
     if reply['status'] == 500:
         return None
-
-    print(reply)
 
     return reply['key']
 

@@ -26,7 +26,6 @@ def get_val():
     '''
     get value of key
     '''
-    print(request.args)
 
     key = request.args['key']
 
@@ -40,7 +39,6 @@ def delete_val():
     '''
     get value of key
     '''
-    print(request.args)
 
     key = request.args['key']
 

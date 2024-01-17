@@ -119,7 +119,6 @@ def recursive_client_status_handler(job: Job, client_id: str, client_status: str
 
         # set process_phase to 1 (allow start training)
         # but before that set the initial global params
-        print('INITG')
         status = status and job.set_global_model_param(
             job.exec_params['initial_params'][0], 'empty')
         status = status and job.allow_start_training()
