@@ -21,6 +21,16 @@ class DatasetDistributor(object):
         self.jobs = dict()
         self.locks = dict()
 
+    def delete_job(self, job_name: str) -> bool:
+        '''
+        Delete dataset config for a given job
+        '''
+        if job_name not in self.jobs:
+            return False
+
+        del self.jobs[job_name]
+        return True
+
     def get_dataset_metadata(self, job_name: str, cluster_id: str, metadata: str) -> Union[str, None]:
         '''
         Get the dataset metadata based on the cluster_id, i.e.: 
@@ -161,7 +171,7 @@ class DatasetDistributor(object):
         extra_params = cluster['params']['distribution']['extra_params']
         num_clients = cluster['num_clients']
         chunks_ratio = [
-            0.1 for _ in num_clients] if dynamic_dist else cluster['params']['distribution']['chunks']
+            0.1 for _ in range(num_clients)] if dynamic_dist else cluster['params']['distribution']['chunks']
 
         # if chunk datasets are already not prepared, then prepare them
         if dynamic_dist or (not check_OK_file(chunk_save_path)):

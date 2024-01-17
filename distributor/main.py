@@ -21,6 +21,18 @@ def root():
     return jsonify(data)
 
 
+@app.route('/delete')
+def delete():
+    '''
+    Delete Dataset Config for Job
+    '''
+    job_name = request.args['job_name']
+
+    status = datasetDistributor.delete_job(job_name)
+
+    return jsonify({'status': status}), 200 if status else 500
+
+
 @app.route('/prepare', methods=['POST'])
 def prepare():
     '''

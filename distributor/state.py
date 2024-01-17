@@ -8,4 +8,4 @@ manager = Manager()
 global_state = manager.dict()
 
 # init peer state
-job_config_state = manager.dict()
+# job_config_state = manager.dict()

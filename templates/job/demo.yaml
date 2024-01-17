@@ -4,10 +4,10 @@ dataset:
       prep: cifar_def
       preprocessor: default
       distribution:
-        distributor: random_dist # diritchlet_dist
-        chunks:
-          - 0.1
-          - 0.9
+        distributor: diritchlet_dist
+        # chunks:
+        #   - 0.1
+        #   - 0.9
         extra_params:
           diritchlet:
             alpha: 1.0
