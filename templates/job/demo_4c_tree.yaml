@@ -131,7 +131,7 @@ clusters:
     consensus_params:
       <<: *default_2_3
     train_params:
-      cluster_epochs: 1
+      cluster_epochs: 2
     dataset_params:
       <<: *def_random_dist
 

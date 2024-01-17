@@ -3,6 +3,7 @@ Module containing listeners to flags
 '''
 import traceback
 from time import sleep
+from typing import Tuple
 from env import env
 from helpers.argsparse import args
 from helpers.http import get
@@ -86,7 +87,7 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
         sleep(DELAY)
 
 
-def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) -> int:
+def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) -> Tuple[int, int, int]:
     '''
     Method to wait for process_stage to turn 1 or 3
     '''
@@ -102,6 +103,8 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
 
             process_stage = manifest['process_stage']
             abort_flag = manifest['abort']
+            global_round = manifest['global_round']
+            cluster_epoch = manifest['current_epoch']
 
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
@@ -112,7 +115,7 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
 
             # if process_stage is 1, break and exit
             if process_stage == 1 or process_stage == 3:
-                return process_stage
+                return process_stage, global_round, cluster_epoch
 
         except Exception:
             logger.error(

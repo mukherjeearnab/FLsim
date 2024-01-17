@@ -98,7 +98,8 @@ def client_process(job_name: str, cluster_id: str) -> None:
         job_name, cluster_id, node_type, 2, {'initial_param': init_param_key})
 
     # 6. Wait for process_stage to be 1
-    listeners.wait_for_start_end_training(job_name, cluster_id, node_type)
+    _, global_round, cluster_epoch = listeners.wait_for_start_end_training(
+        job_name, cluster_id, node_type)
 
     # Process Loop
     while True:
@@ -137,7 +138,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 9.2. Add Test Performance Metrics to PerfLog
         perflog.add_record(f'{cluster_id}_{node_type}_{node_id}', job_name, metrics,
-                           global_round, time_delta)
+                           f'{global_round}-{cluster_epoch}', time_delta)
 
         # 10. Upload Trained Model Parameter
         curr_param = get_base64_state_dict(local_model)
@@ -155,7 +156,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
         listeners.wait_for_aggregation_phase(job_name, cluster_id, node_type)
 
         # 13. Wait for process_stage to be 1 or 3
-        process_stage = listeners.wait_for_start_end_training(
+        process_stage, global_round, cluster_epoch = listeners.wait_for_start_end_training(
             job_name, cluster_id, node_type)
 
         # 14. If process_stage is 1, start again from step 7,
@@ -163,7 +164,6 @@ def client_process(job_name: str, cluster_id: str) -> None:
         if process_stage == 1:
             # update previous params and global round
             previous_param = curr_param
-            global_round += 1
 
             start_time = time()
 

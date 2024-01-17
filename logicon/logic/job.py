@@ -608,7 +608,7 @@ class Job(object):
             self.modification_lock.release()
         return exec_status
 
-    def set_global_model_param(self, param: Union[str, dict], extra_data: Union[str, dict]) -> bool:
+    def set_global_model_param(self, param: Union[str, dict], extra_data: Union[str, dict], is_epoch=False) -> bool:
         '''
         Set or Update the Global Model Parameters, for initial time, or aggregated update time.
         Only set, if process_stage is 0 or 2, i.e., NotStarted or InAggregation.
@@ -633,7 +633,10 @@ class Job(object):
             self.exec_params['worker_aggregated_params'] = dict()
 
             # increment global round
-            self.job_status['global_round'] += 1
+            if is_epoch:
+                self.job_status['current_epoch'] += 1
+            else:
+                self.job_status['global_round'] += 1
 
             if self.job_status['global_round'] > self.cluster_config['train_params']['rounds']:
                 logger.info(

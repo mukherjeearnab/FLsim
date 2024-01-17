@@ -1,7 +1,7 @@
 '''
 Setters for Job
 '''
-from apps.common import setters
+from time import sleep
 import traceback
 from env import env
 from helpers.argsparse import args
@@ -38,6 +38,8 @@ def update_node_status(job_name: str, cluster_id: str, node_type: str, status: i
             logger.error(
                 f'[{node_type}] Failed to update client status.\n{traceback.format_exc()}')
             # _fail_exit(job_name, cluster_id, node_type)
+
+        sleep(DELAY*2)
 
 
 def append_node_params(job_name: str, cluster_id: str, node_type: str, param: int, extra_data=None) -> None:

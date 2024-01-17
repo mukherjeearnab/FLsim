@@ -181,7 +181,7 @@ def recursive_worker_status_handler(job: Job, worker_id: str, worker_status: str
         if job.is_primary:
             print(F'EXEC 301 PRIMARY {job.job_name}#{job.cluster_id}')
             status = recursive_set_global_params_and_start_training(
-                job, global_param, global_extra_data, job_locks) and status
+                job, global_param, global_extra_data, False, job_locks) and status
         else:
             # if the current cluster epoch is the final epoch
             if job.is_final_cluster_epoch():
@@ -202,21 +202,21 @@ def recursive_worker_status_handler(job: Job, worker_id: str, worker_status: str
             else:
                 print(F'EXEC 301 NONFE {job.job_name}#{job.cluster_id}')
                 # resume training and increment epoch by 1
-                job.increment_cluster_epoch()
+                # job.increment_cluster_epoch()
                 status = recursive_set_global_params_and_start_training(
-                    job, global_param, global_extra_data, job_locks) and status
+                    job, global_param, global_extra_data, True, job_locks) and status
 
     return status
 
 
-def recursive_set_global_params_and_start_training(job: Job, param: str, extra_data: str, job_locks: Dict[str, threading.Lock]) -> bool:
+def recursive_set_global_params_and_start_training(job: Job, param: str, extra_data: str, is_epoch: bool, job_locks: Dict[str, threading.Lock]) -> bool:
     '''
     Recursively set the global params for the job in all clusters and 
     set process_stage to 1.
     from root to leaf
     '''
     print('REC_SETTING_GLOBAL_PARAM', job.cluster_id)
-    status = job.set_global_model_param(param, extra_data)
+    status = job.set_global_model_param(param, extra_data, is_epoch)
 
     for cluster_id in job.sub_clusters:
         job_id = f'{job.job_name}#{cluster_id}'
@@ -224,7 +224,7 @@ def recursive_set_global_params_and_start_training(job: Job, param: str, extra_d
         sub_job = Job(job.job_name, cluster_id, {}, {}, {},
                       job_locks[job_id], load_from_db=True)
         status = recursive_set_global_params_and_start_training(
-            sub_job, param, extra_data, job_locks) and status
+            sub_job, param, extra_data, is_epoch, job_locks) and status
 
     status = job.allow_start_training() and status
 

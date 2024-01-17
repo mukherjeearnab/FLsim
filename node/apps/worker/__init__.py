@@ -46,6 +46,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
     node_type = 'worker'
 
     global_round = 1
+    cluster_epoch = 1
     extra_data = {
         'round_info': {'current_round': global_round},
         'global_extra_data': None
@@ -128,7 +129,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
 
         # 9.2. Add Test Performance Metrics to PerfLog
         perflog.add_record(f'{cluster_id}_{node_type}_{node_id}', job_name, metrics,
-                           global_round, time_delta)
+                           f'{global_round}-{cluster_epoch}', time_delta)
 
         # 10. Upload Aggregated Model Parameter
         curr_param = get_base64_state_dict(local_model)
@@ -144,7 +145,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 4)
 
         # 13. Wait for process_stage to be 1 or 3
-        process_stage = listeners.wait_for_start_end_training(
+        process_stage, global_round, cluster_epoch = listeners.wait_for_start_end_training(
             job_name, cluster_id, node_type)
 
         # 14. Add Global Parameter to Perflog and Commit Perflog
@@ -157,9 +158,6 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         # 15. If process_stage is 1, start again from step 6,
         #     else Update Worker Status to 5 and exit
         if process_stage == 1:
-            # update global round
-            global_round += 1
-
             start_time = time()
 
         if process_stage == 3:
