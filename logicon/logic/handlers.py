@@ -18,8 +18,8 @@ def recursive_allow_jobsheet_download(job: Job, job_locks: Dict[str, threading.L
         job_id = f'{job.job_name}#{cluster_id}'
         sub_job = Job(job.job_name, cluster_id, {}, {}, {},
                       job_locks[job_id], load_from_db=True)
-        status = status and recursive_allow_jobsheet_download(
-            sub_job, job_locks)
+        status = recursive_allow_jobsheet_download(
+            sub_job, job_locks) and status
 
     return status
 
@@ -35,8 +35,8 @@ def recursive_allow_dataset_download(job: Job, job_locks: Dict[str, threading.Lo
         job_id = f'{job.job_name}#{cluster_id}'
         sub_job = Job(job.job_name, cluster_id, {}, {}, {},
                       job_locks[job_id], load_from_db=True)
-        status = status and recursive_allow_dataset_download(
-            sub_job, job_locks)
+        status = recursive_allow_dataset_download(
+            sub_job, job_locks) and status
 
     return status
 
@@ -52,7 +52,7 @@ def recursive_abort_job(job: Job, job_locks: Dict[str, threading.Lock]) -> bool:
         job_id = f'{job.job_name}#{cluster_id}'
         sub_job = Job(job.job_name, cluster_id, {}, {}, {},
                       job_locks[job_id], load_from_db=True)
-        status = status and recursive_abort_job(sub_job, job_locks)
+        status = recursive_abort_job(sub_job, job_locks) and status
 
     return status
 
@@ -68,7 +68,7 @@ def recursive_terminate_job(job: Job, job_locks: Dict[str, threading.Lock]) -> b
         job_id = f'{job.job_name}#{cluster_id}'
         sub_job = Job(job.job_name, cluster_id, {}, {}, {},
                       job_locks[job_id], load_from_db=True)
-        status = status and recursive_terminate_job(sub_job, job_locks)
+        status = recursive_terminate_job(sub_job, job_locks) and status
 
     return status
 
@@ -84,7 +84,7 @@ def recursive_check_delete_job(job: Job, job_locks: Dict[str, threading.Lock]) -
         job_id = f'{job.job_name}#{cluster_id}'
         sub_job = Job(job.job_name, cluster_id, {}, {}, {},
                       job_locks[job_id], load_from_db=True)
-        status = status and recursive_check_delete_job(sub_job, job_locks)
+        status = recursive_check_delete_job(sub_job, job_locks) and status
 
     return status
 
@@ -102,11 +102,11 @@ def recursive_client_status_handler(job: Job, client_id: str, client_status: str
             job_id = f'{job.job_name}#{job.cluster_config["upstream_cluster"]}'
             upstream_job = Job(
                 job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, job_locks[job_id], load_from_db=True)
-            status = status and recursive_client_status_handler(
-                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks)
+            status = recursive_client_status_handler(
+                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks) and status
 
         # set download flag true (allow dataset download)
-        status = status and job.allow_dataset_download()
+        status = job.allow_dataset_download() and status
 
     if side_effect == 102:
         # send dataset download ack to upstream cluster
@@ -114,23 +114,24 @@ def recursive_client_status_handler(job: Job, client_id: str, client_status: str
             job_id = f'{job.job_name}#{job.cluster_config["upstream_cluster"]}'
             upstream_job = Job(
                 job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, job_locks[job_id], load_from_db=True)
-            status = status and recursive_client_status_handler(
-                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks)
+            status = recursive_client_status_handler(
+                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks) and status
 
         # set process_phase to 1 (allow start training)
         # but before that set the initial global params
-        status = status and job.set_global_model_param(
-            job.exec_params['initial_params'][0], 'empty')
-        status = status and job.allow_start_training()
+        status = job.set_global_model_param(
+            job.exec_params['initial_params'][0], 'empty') and status
+        status = job.allow_start_training() and status
 
     if side_effect == 201:
         # update client / cluster status to upstream cluster
         if not job.is_primary:
             job_id = f'{job.job_name}#{job.cluster_config["upstream_cluster"]}'
+            print(f'EXEC SE 201 {job_id}')
             upstream_job = Job(
                 job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, job_locks[job_id], load_from_db=True)
-            status = status and recursive_client_status_handler(
-                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks)
+            status = recursive_client_status_handler(
+                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks) and status
 
     return status
 
@@ -148,11 +149,11 @@ def recursive_worker_status_handler(job: Job, worker_id: str, worker_status: str
             job_id = f'{job.job_name}#{job.cluster_config["upstream_cluster"]}'
             upstream_job = Job(
                 job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, job_locks[job_id], load_from_db=True)
-            status = status and recursive_client_status_handler(
-                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks)
+            status = recursive_client_status_handler(
+                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks) and status
 
         # set download flag true (allow dataset download)
-        status = status and job.allow_dataset_download()
+        status = job.allow_dataset_download() and status
 
     if side_effect == 102:
         # send dataset download ack to upstream cluster
@@ -160,47 +161,50 @@ def recursive_worker_status_handler(job: Job, worker_id: str, worker_status: str
             job_id = f'{job.job_name}#{job.cluster_config["upstream_cluster"]}'
             upstream_job = Job(
                 job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, job_locks[job_id], load_from_db=True)
-            status = status and recursive_client_status_handler(
-                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks)
+            status = recursive_client_status_handler(
+                upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks) and status
 
         # set process_phase to 1 (allow start training)
         # but before that set the initial global params
-        status = status and job.set_global_model_param(
-            job.exec_params['initial_params'][0], 'empty')
-        status = status and job.allow_start_training()
+        status = job.set_global_model_param(
+            job.exec_params['initial_params'][0], 'empty') and status
+        status = job.allow_start_training() and status
 
     if side_effect == 301:
         # execute the consensus to select global update param
         exec_status, global_param, global_extra_data = exec_consensus(job)
 
-        status = status and exec_status
+        status = exec_status and status
 
         # update process_phase (or) continue training (or) upload global update to upstream cluster
         # refer to last stage of point 7, in docs/workflow.md
         if job.is_primary:
-            status = status and recursive_set_global_params_and_start_training(
-                job, global_param, global_extra_data, job_locks)
+            print(F'EXEC 301 PRIMARY {job.job_name}#{job.cluster_id}')
+            status = recursive_set_global_params_and_start_training(
+                job, global_param, global_extra_data, job_locks) and status
         else:
             # if the current cluster epoch is the final epoch
             if job.is_final_cluster_epoch():
+                print(F'EXEC 301 FINE {job.job_name}#{job.cluster_id}')
                 # upload global param to upstream job and update client / cluster status
                 job_id = f'{job.job_name}#{job.cluster_id}'
                 upstream_job = Job(
-                    job.job_name, job.cluster_id, {}, {}, {}, job_locks[job_id], load_from_db=True)
+                    job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, job_locks[job_id], load_from_db=True)
 
-                status = status and upstream_job.append_client_params(
-                    job.cluster_id, global_param, global_extra_data)
+                status = upstream_job.append_client_params(
+                    job.cluster_id, global_param, global_extra_data) and status
 
-                status = status and recursive_client_status_handler(
-                    upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks)
+                status = recursive_client_status_handler(
+                    upstream_job, job.cluster_id, job.job_status['client_stage'], job_locks) and status
 
                 # reset the current cluster epoch to 1
                 job.reset_cluster_epoch()
             else:
+                print(F'EXEC 301 NONFE {job.job_name}#{job.cluster_id}')
                 # resume training and increment epoch by 1
                 job.increment_cluster_epoch()
-                status = status and recursive_set_global_params_and_start_training(
-                    job, global_param, global_extra_data, job_locks)
+                status = recursive_set_global_params_and_start_training(
+                    job, global_param, global_extra_data, job_locks) and status
 
     return status
 
@@ -211,16 +215,18 @@ def recursive_set_global_params_and_start_training(job: Job, param: str, extra_d
     set process_stage to 1.
     from root to leaf
     '''
+    print('REC_SETTING_GLOBAL_PARAM', job.cluster_id)
     status = job.set_global_model_param(param, extra_data)
 
     for cluster_id in job.sub_clusters:
         job_id = f'{job.job_name}#{cluster_id}'
+        print('REC_SET_GLOBAL_PARAM', job_id)
         sub_job = Job(job.job_name, cluster_id, {}, {}, {},
                       job_locks[job_id], load_from_db=True)
-        status = status and recursive_set_global_params_and_start_training(
-            sub_job, param, extra_data, job_locks)
+        status = recursive_set_global_params_and_start_training(
+            sub_job, param, extra_data, job_locks) and status
 
-    status = status and job.allow_start_training()
+    status = job.allow_start_training() and status
 
     return status
 

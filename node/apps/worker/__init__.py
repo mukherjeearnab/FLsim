@@ -127,7 +127,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         logger.info(f'[{node_type}] Total Round Time: {time_delta} s')
 
         # 9.2. Add Test Performance Metrics to PerfLog
-        perflog.add_record(f'{node_type}_{node_id}', job_name, metrics,
+        perflog.add_record(f'{cluster_id}_{node_type}_{node_id}', job_name, metrics,
                            global_round, time_delta)
 
         # 10. Upload Aggregated Model Parameter
@@ -140,9 +140,8 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         # 11. Update Worker Status to 4
         setters.update_node_status(job_name, cluster_id, node_type, 4)
 
-        # 12. Wait for worker_stage to be 4 and update to 2
+        # 12. Wait for worker_stage to be 4
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 4)
-        setters.update_node_status(job_name, cluster_id, node_type, 2)
 
         # 13. Wait for process_stage to be 1 or 3
         process_stage = listeners.wait_for_start_end_training(

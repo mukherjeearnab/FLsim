@@ -13,7 +13,10 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 
 # create formatter
-formatter = logging.Formatter('%(asctime)s [%(levelname)s] - [%(pathname)s > %(funcName)s() > %(lineno)d]\n[MSG] %(message)s',
+# formatter = logging.Formatter('%(asctime)s [%(levelname)s] - [%(pathname)s > %(funcName)s() > %(lineno)d]\n[MSG] %(message)s',
+#                               datefmt='%d-%b-%y %H:%M:%S')
+
+formatter = logging.Formatter('[%(levelname)s] %(message)s',
                               datefmt='%d-%b-%y %H:%M:%S')
 
 # add formatter to ch

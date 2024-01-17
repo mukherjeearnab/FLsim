@@ -20,6 +20,7 @@ class Job(object):
         self.cluster_id = cluster_id
         self.modification_lock = lock
 
+        self.modification_lock.acquire()
         if not load_from_db:
 
             self.cluster_config = cluster_config[self.cluster_id]
@@ -32,7 +33,7 @@ class Job(object):
                 'download_dataset': False,      # flag to denote whether to download the dataset
                 'process_stage': 0,             # denotes the stage at which the job is
                 'global_round': 0,              # denotes the current global round of federated training
-                'current_epoch': 0,             # denotes the current epoch for the cluster
+                'current_epoch': 1,             # denotes the current epoch for the cluster
                 'abort': False,                 # denotes whether to abort the job or not
                 'client_info': [                # stores the information of the client's individual status
                     # {
@@ -86,6 +87,7 @@ class Job(object):
         else:
             # load the existing state
             self._read_state()
+        self.modification_lock.release()
 
     def _read_state(self, fetch_only=False):
         job_id = f'{self.job_name}#{self.cluster_id}'
@@ -258,7 +260,7 @@ class Job(object):
         else:
             # log output and set execution status to False
             logger.warning(
-                f'''Cannot ALLOW JobSheet Download! 
+                f'''[{self.job_name}#{self.cluster_id}] Cannot ALLOW JobSheet Download! 
                 job_status.process_stage is {self.job_status["process_stage"]}, 
                 job_status.client_stage is {self.job_status["client_stage"]},
                 job_status.worker_stage is {self.job_status["worker_stage"]},
@@ -294,7 +296,7 @@ class Job(object):
         else:
             # log output and set execution status to False
             logger.warning(
-                f'''Cannot ALLOW Dataset Download! 
+                f'''[{self.job_name}#{self.cluster_id}] Cannot ALLOW Dataset Download! 
                 job_status.process_stage is {self.job_status["process_stage"]}, 
                 job_status.client_stage is {self.job_status["client_stage"]},
                 job_status.worker_stage is {self.job_status["worker_stage"]},
@@ -358,7 +360,7 @@ class Job(object):
         else:
             # log output and set execution status to False
             logger.warning(
-                f'''Cannot ADD Client!
+                f'''[{self.job_name}#{self.cluster_id}] Cannot ADD Client!
                 job_status.process_stage is {self.job_status["process_stage"]}.''')
             exec_status = False
 
@@ -398,7 +400,7 @@ class Job(object):
         else:
             # log output and set execution status to False
             logger.warning(
-                f'''Cannot ADD Worker!
+                f'''[{self.job_name}#{self.cluster_id}] Cannot ADD Worker!
                 job_status.process_stage is {self.job_status["process_stage"]}.''')
             exec_status = False
 
@@ -437,7 +439,7 @@ class Job(object):
         if len(all_client_status) == 1:
             self.job_status['client_stage'] = list(all_client_status)[0]
             logger.info(
-                f"All clients are at Stage: [{self.job_status['client_stage']}]")
+                f"[{self.job_name}#{self.cluster_id}] All clients are at Stage: [{self.job_status['client_stage']}]")
             next_signal = self._cw_stage_update_handler()
 
         # method suffixed with update state and lock release
@@ -457,29 +459,32 @@ class Job(object):
         exec_status = True
         next_signal = 0
 
-        # method logic
-        all_worker_status = set()
+        if status > (self.job_status['worker_stage']+1):
+            exec_status = False
+        else:
+            # method logic
+            all_worker_status = set()
 
-        for i in range(len(self.job_status['worker_info'])):
-            # find the worker and update their status
-            if self.job_status['worker_info'][i]['worker_id'] == worker_id:
-                self.job_status['worker_info'][i]['status'] = status
+            for i in range(len(self.job_status['worker_info'])):
+                # find the worker and update their status
+                if self.job_status['worker_info'][i]['worker_id'] == worker_id:
+                    self.job_status['worker_info'][i]['status'] = status
 
-            # collect the status of all the workers
-            all_worker_status.add(
-                self.job_status['worker_info'][i]['status'])
+                # collect the status of all the workers
+                all_worker_status.add(
+                    self.job_status['worker_info'][i]['status'])
 
-        logger.info(
-            f"Worker [{worker_id}] is at stage [{status}].")
-
-        if len(all_worker_status) == 1:
-            self.job_status['worker_stage'] = list(all_worker_status)[0]
             logger.info(
-                f"All workers are at Stage: [{self.job_status['worker_stage']}]")
-            next_signal = self._cw_stage_update_handler()
+                f"Worker [{worker_id}] is at stage [{status}].")
 
-        # method suffixed with update state and lock release
-        self._update_state()
+            if len(all_worker_status) == 1:
+                self.job_status['worker_stage'] = list(all_worker_status)[0]
+                logger.info(
+                    f"[{self.job_name}#{self.cluster_id}] All workers are at Stage: [{self.job_status['worker_stage']}]")
+                next_signal = self._cw_stage_update_handler()
+
+            # method suffixed with update state and lock release
+            self._update_state()
         self.modification_lock.release()
         return exec_status, next_signal
 
@@ -549,14 +554,15 @@ class Job(object):
             self.job_status['process_stage'] = 1
             # self.exec_params['client_model_params'] = []
 
-            logger.info("Changed process_stage to 1, Start training.")
+            logger.info(
+                f"[{self.job_name}#{self.cluster_id}] Changed process_stage to 1, Start training.")
 
             # method suffixed with update state and lock release
             if not _internal:
                 self._update_state()
         else:
             logger.warning(
-                f'Cannot SET process_stage to 1 (InLocalTraining)!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
+                f'[{self.job_name}#{self.cluster_id}] Cannot SET process_stage to 1 (InLocalTraining)!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
             exec_status = False
 
         # method suffixed with update state and lock release
@@ -594,7 +600,7 @@ class Job(object):
                 self._update_state()
         else:
             logger.warning(
-                f'Cannot Terminate Training Process!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
+                f'[{self.job_name}#{self.cluster_id}] Cannot Terminate Training Process!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
             exec_status = False
 
         # method suffixed with update state and lock release
@@ -610,6 +616,8 @@ class Job(object):
         Remember to call allow_start_training() to update the process_stage to 1,
         to signal Clients to download params and start training.
         '''
+        print('GP_LOCK_STATUS', self.modification_lock.locked())
+
         # method prefixed with locking and reading state
         self.modification_lock.acquire()
         self._read_state()
@@ -628,11 +636,12 @@ class Job(object):
             self.job_status['global_round'] += 1
 
             if self.job_status['global_round'] > self.cluster_config['train_params']['rounds']:
-                logger.info('Total Global Rounds Completed! Terminating Job.')
+                logger.info(
+                    f'[{self.job_name}#{self.cluster_id}] Total Global Rounds Completed! Terminating Job.')
                 self._terminate_training(_internal=True)
             else:
                 logger.info(
-                    'Global Model Parameters are Set. Waiting for process_stage to be in [1] Local Training.')
+                    f'[{self.job_name}#{self.cluster_id}] Global Model Parameters are Set. Waiting for process_stage to be in [1] Local Training.')
 
             # set process stage to 1
             # self._allow_start_training(_internal=True)
@@ -642,7 +651,7 @@ class Job(object):
             self._update_state()
         else:
             logger.warning(
-                f'Global model parameters NOT SET! process_phase is {self.job_status["process_phase"]}.')
+                f'[{self.job_name}#{self.cluster_id}] Global model parameters NOT SET! process_phase is {self.job_status["process_phase"]}.')
             exec_status = False
 
         # method suffixed with update state and lock release
@@ -660,7 +669,8 @@ class Job(object):
         exec_status = True
 
         # method logic
-        if self.job_status['process_stage'] == 1 and self.job_status['worker_stage'] == 2:
+        # and self.job_status['worker_stage'] == 2:
+        if self.job_status['process_stage'] == 1:
             # add client submitted parameters
             self.exec_params['client_trained_params'][client_id] = {
                 'param': param,
@@ -674,13 +684,13 @@ class Job(object):
             if len(self.exec_params['client_trained_params'].keys()) == (len(self.clients)+len(self.sub_clusters)):
                 self.job_status['process_stage'] = 2
                 logger.info(
-                    'All client params are submitted, signalling Federated Aggregation.')
+                    f'[{self.job_name}#{self.cluster_id}] All client params are submitted, signalling Federated Aggregation.')
 
             # method suffixed with update state and lock release
             self._update_state()
         else:
             logger.warning(
-                f'Cannot APPEND client model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
+                f'[{self.job_name}#{self.cluster_id}] Cannot APPEND client model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
             exec_status = False
 
         # method suffixed with update state and lock release
@@ -717,7 +727,7 @@ class Job(object):
             self._update_state()
         else:
             logger.warning(
-                f'Cannot APPEND worker model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
+                f'[{self.job_name}#{self.cluster_id}] Cannot APPEND worker model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
             exec_status = False
 
         # method suffixed with update state and lock release
@@ -746,7 +756,7 @@ class Job(object):
             self._update_state()
         else:
             logger.warning(
-                f'Cannot APPEND initial model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
+                f'[{self.job_name}#{self.cluster_id}] Cannot APPEND initial model params!\nprocess_stage is {self.job_status["process_stage"]}\nclient_stage is {self.job_status["client_stage"]}\nworker_stage is {self.job_status["worker_stage"]}')
             exec_status = False
 
         # method suffixed with update state and lock release

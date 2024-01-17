@@ -302,11 +302,11 @@ def update_client_status():
         # special case: when client status is 2,
         # they also submit the initial global parameters, append it.
         if extra_data is not None and 'initial_param' in extra_data:
-            status = status and handlers.append_initial_params(
-                leaf_job, client_id, extra_data['initial_param'])
+            status = handlers.append_initial_params(
+                leaf_job, client_id, extra_data['initial_param']) and status
 
-        status = status and handlers.recursive_client_status_handler(
-            leaf_job, client_id, client_status, job_locks)
+        status = handlers.recursive_client_status_handler(
+            leaf_job, client_id, client_status, job_locks) and status
 
         if not status:
             return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403
@@ -344,11 +344,11 @@ def update_worker_status():
         # special case: when worker status is 2,
         # they also submit the initial global parameters, append it.
         if extra_data is not None and 'initial_param' in extra_data:
-            status = status and handlers.append_initial_params(
-                leaf_job, worker_id, extra_data['initial_param'])
+            status = handlers.append_initial_params(
+                leaf_job, worker_id, extra_data['initial_param']) and status
 
-        status = status and handlers.recursive_worker_status_handler(
-            leaf_job, worker_id, worker_status, job_locks)
+        status = handlers.recursive_worker_status_handler(
+            leaf_job, worker_id, worker_status, job_locks) and status
 
         if not status:
             return jsonify({'message': 'Failure in compliance with Job Logic.', 'status': False}), 403

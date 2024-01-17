@@ -14,11 +14,12 @@ def job_keep_alive_process():
     '''
     logger.info('Job keep alive process started.')
     job_set = set()
+    not_job_set = set()
 
     # the infinite loop
     while True:
         try:
-            get_jobs_from_server(env['LOGICON_URL'], job_set)
+            get_jobs_from_server(env['LOGICON_URL'], job_set, not_job_set)
         except Exception:
             logger.error(
                 f'Failed to fetch job list from LogiCon! {traceback.format_exc()}')
