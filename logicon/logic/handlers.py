@@ -46,9 +46,12 @@ def recursive_allow_training(job: Job, job_locks: Dict[str, threading.Lock]) -> 
     Recursively allow training in top to bottom
     '''
 
-    status = job.set_global_model_param(
+    status, terminate = job.set_global_model_param(
         job.exec_params['initial_params'][0], 'empty')
-    status = job.allow_start_training() and status
+    if terminate:
+        status = job.terminate_training() and status
+    else:
+        status = job.allow_start_training() and status
 
     for cluster_id in job.sub_clusters:
         job_id = f'{job.job_name}#{cluster_id}'
@@ -244,8 +247,11 @@ def recursive_set_global_params_and_start_training(job: Job, param: str, extra_d
     from root to leaf
     '''
     print('REC_SETTING_GLOBAL_PARAM', job.cluster_id)
-    status = job.set_global_model_param(param, extra_data, is_epoch)
-    status = job.allow_start_training() and status
+    status, terminate = job.set_global_model_param(param, extra_data, is_epoch)
+    if terminate:
+        status = job.terminate_training() and status
+    else:
+        status = job.allow_start_training() and status
 
     for cluster_id in job.sub_clusters:
         job_id = f'{job.job_name}#{cluster_id}'

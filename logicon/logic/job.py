@@ -610,7 +610,7 @@ class Job(object):
             self.modification_lock.release()
         return exec_status
 
-    def set_global_model_param(self, param: Union[str, dict], extra_data: Union[str, dict], is_epoch=False) -> bool:
+    def set_global_model_param(self, param: Union[str, dict], extra_data: Union[str, dict], is_epoch=False) -> Tuple[bool, bool]:
         '''
         Set or Update the Global Model Parameters, for initial time, or aggregated update time.
         Only set, if process_stage is 0 or 2, i.e., NotStarted or InAggregation.
@@ -624,6 +624,7 @@ class Job(object):
         self.modification_lock.acquire()
         self._read_state()
         exec_status = True
+        terminate_job = False
 
         # method logic
         if self.job_status['process_stage'] == 0 or self.job_status['process_stage'] == 2:
@@ -642,8 +643,8 @@ class Job(object):
 
             if self.job_status['global_round'] > self.cluster_config['train_params']['rounds']:
                 logger.info(
-                    f'[{self.job_name}#{self.cluster_id}] Total Global Rounds Completed! Terminating Job.')
-                self._terminate_training(_internal=True)
+                    f'[{self.job_name}#{self.cluster_id}] Total Global Rounds Completed! Sending Termination Signal.')
+                terminate_job = True
             else:
                 logger.info(
                     f'[{self.job_name}#{self.cluster_id}] Global Model Parameters are Set. Waiting for process_stage to be in [1] Local Training.')
@@ -661,7 +662,7 @@ class Job(object):
 
         # method suffixed with update state and lock release
         self.modification_lock.release()
-        return exec_status
+        return exec_status, terminate_job
 
     def append_client_params(self, client_id: str, param: Union[str, dict], extra_data: Union[str, dict]) -> bool:
         '''
