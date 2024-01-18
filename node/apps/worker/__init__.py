@@ -60,6 +60,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
 
     # 2. ACK of Job Sheet Download (Client Status to 1)
     setters.update_node_status(job_name, cluster_id, node_type, 1)
+    listeners.wait_for_node_stage(job_name, cluster_id, node_type, 1)
 
     # 2.1 Initialize the Model and Obtain Intial Parameters
     local_model = handlers.init_model(
@@ -98,6 +99,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
     # 5.2 ACK of Dataset Download (Client Status to 2)
     setters.update_node_status(
         job_name, cluster_id, node_type, 2, {'initial_param': init_param_key})
+    listeners.wait_for_node_stage(job_name, cluster_id, node_type, 2)
 
     # Process Loop
     while True:
@@ -113,6 +115,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
 
         # 8. Update Worker Status to 3
         setters.update_node_status(job_name, cluster_id, node_type, 3)
+        listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
 
         # 9. Start Aggregation Process
         local_model = handlers.run_aggregator(job_name, cluster_id, node_type, manifest,

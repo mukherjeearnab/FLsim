@@ -58,6 +58,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
     # 2. ACK of Job Sheet Download (Client Status to 1)
     setters.update_node_status(job_name, cluster_id, node_type, 1)
+    listeners.wait_for_node_stage(job_name, cluster_id, node_type, 1)
 
     # 2.1 Initialize the Model and Obtain Intial Parameters
     local_model = handlers.init_model(
@@ -96,6 +97,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
     # 5.2 ACK of Dataset Download (Client Status to 2)
     setters.update_node_status(
         job_name, cluster_id, node_type, 2, {'initial_param': init_param_key})
+    listeners.wait_for_node_stage(job_name, cluster_id, node_type, 2)
 
     # 6. Wait for process_stage to be 1
     _, global_round, cluster_epoch = listeners.wait_for_start_end_training(
@@ -122,6 +124,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 8. Update Client Status to 3
         setters.update_node_status(job_name, cluster_id, node_type, 3)
+        listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
 
         # 9. Load Model and Start Local Training
         handlers.train_model(job_name, cluster_id, manifest, node_type, train_loader,

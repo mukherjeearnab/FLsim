@@ -524,6 +524,8 @@ class Job(object):
             # update process_phase (or) continue training (or) upload global update to upstream cluster
             return 301
 
+        return 0
+
     def allow_start_training(self) -> bool:
         '''
         Wrapper around the _allow_start_training,

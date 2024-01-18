@@ -163,7 +163,7 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
 
 def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: int):
     '''
-    Method to wait for process_stage to turn 1
+    Method to wait for node_stage to turn 1
     '''
     prev_flag = -1
     # listen to check if dataset flag is true or false
