@@ -40,7 +40,7 @@ training:
   client_configs:
     - &cifar_train_def
       learning_rate: 0.0001
-      batch_size: 256
+      batch_size: 64
       local_epochs: 5
       extra_params:
         fed_prox:
@@ -152,4 +152,4 @@ clusters:
       <<: *def_random_dist2
 
 job_params:
-  rounds: 3
+  rounds: 50

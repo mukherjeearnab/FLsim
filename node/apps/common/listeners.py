@@ -35,7 +35,7 @@ def wait_for_jobsheet_flag(job_name: str, cluster_id: str, node_type: str):
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
             if prev_flag != jobsheet_flag:
-                logger.info(
+                logger.success(
                     f"[{node_type}] Got jobsheet download flag [{jobsheet_flag}], expecting [True] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = jobsheet_flag
 
@@ -71,7 +71,7 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
             if prev_flag != dataset_flag:
-                logger.info(
+                logger.success(
                     f"[{node_type}] Got dataset download flag [{dataset_flag}], expecting [True] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = dataset_flag
 
@@ -109,7 +109,7 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
             if prev_flag != process_stage:
-                logger.info(
+                logger.success(
                     f"[{node_type}] Got process_stage [{process_stage}], expecting [1,3] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = process_stage
 
@@ -145,7 +145,7 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
             if prev_flag != process_stage:
-                logger.info(
+                logger.success(
                     f"[{node_type}] Got process_stage [{process_stage}], expecting [2] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = process_stage
 
@@ -181,7 +181,7 @@ def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: i
             listen_abort(job_name, cluster_id, node_type, abort_flag)
 
             if prev_flag != node_stage:
-                logger.info(
+                logger.success(
                     f"[{node_type}] Got {node_type}_stage [{node_stage}], expecting [{stage}] for [{job_name}] at cluster {cluster_id}")
                 prev_flag = node_stage
 

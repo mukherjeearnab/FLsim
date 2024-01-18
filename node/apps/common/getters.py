@@ -100,7 +100,7 @@ def get_global_param(job_name: str, cluster_id: str, node_type: str) -> Tuple[st
         param_key = manifest['global_model_param']['param']
         extra_data_key = manifest['global_model_param']['extra_data']
 
-        logger.info(
+        logger.success(
             f'[{node_type}] Downloaded global param for [{job_name}] at [{cluster_id}]')
 
         return param_key, extra_data_key
@@ -126,7 +126,7 @@ def get_client_params(job_name: str, cluster_id: str, node_type: str) -> dict:
 
         client_params = manifest['client_trained_params']
 
-        logger.info(
+        logger.success(
             f'[{node_type}] Downloaded client params for [{job_name}] at [{cluster_id}]')
 
         return client_params

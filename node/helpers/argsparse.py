@@ -1,3 +1,6 @@
+'''
+Args Parser Module
+'''
 import os
 import argparse
 from dotenv import load_dotenv
@@ -14,6 +17,9 @@ parser.add_argument("-g", "--gossip")
 parser.add_argument("-c", "--client", action="store_true")
 parser.add_argument("-m", "--middleware", action="store_true")
 parser.add_argument("-w", "--worker", action="store_true")
+
+# extra args
+parser.add_argument("-d", "--debug", action="store_true")
 
 
 parsed_args = parser.parse_args()
@@ -58,3 +64,5 @@ else:
 args['is_client'] = parsed_args.client
 args['is_middleware'] = parsed_args.middleware
 args['is_worker'] = parsed_args.worker
+
+args['debug'] = parsed_args.debug

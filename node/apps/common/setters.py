@@ -33,10 +33,19 @@ def update_node_status(job_name: str, cluster_id: str, node_type: str, status: i
             logger.info(
                 f'[{node_type}] {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
 
+            if not res['status']:
+                logger.error(
+                    f'[{node_type}] {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
+                raise AssertionError(
+                    f'[{node_type}] Failed to Update Node Status for job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
+            else:
+                logger.success(
+                    f'[{node_type}] {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
+
             break
         except Exception:
             logger.error(
-                f'[{node_type}] Failed to update client status.\n{traceback.format_exc()}')
+                f'[{node_type}] Failed to update {node_type} status.\n{traceback.format_exc()}')
             # _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY*2)
@@ -62,7 +71,7 @@ def append_node_params(job_name: str, cluster_id: str, node_type: str, param: in
             f'[{node_type}] {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
     except Exception:
         logger.error(
-            f'[{node_type}] Failed to update client status.\n{traceback.format_exc()}')
+            f'[{node_type}] Failed to upload {node_type} params.\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
 
 

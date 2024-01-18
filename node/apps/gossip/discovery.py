@@ -136,7 +136,7 @@ def register_discovered_nodes(node_id: str, node_info: dict, ip_override=None):
     try:
         post(f"http://{old_idis}:{node_info['gossip_port']}/peer/register_node",
              {'node_id': my_id, 'node_info': my_info}, timeout=30)
-        logger.info(
+        logger.success(
             f"Successfully established connection with node [{node_id}].")
         node_idis_ip = old_idis
     except Exception:
@@ -152,7 +152,7 @@ def register_discovered_nodes(node_id: str, node_info: dict, ip_override=None):
             try:
                 post(f"http://{ip_address}:{node_info['gossip_port']}/peer/register_node",
                      {'node_id': my_id, 'node_info': my_info}, timeout=30)
-                logger.info(
+                logger.success(
                     f"Successfully established connection with node [{node_id}].")
                 node_idis_ip = ip_address
                 break
