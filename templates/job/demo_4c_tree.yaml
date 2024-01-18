@@ -152,4 +152,4 @@ clusters:
       <<: *def_random_dist2
 
 job_params:
-  rounds: 2
+  rounds: 3

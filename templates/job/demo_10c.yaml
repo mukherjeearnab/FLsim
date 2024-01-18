@@ -68,11 +68,25 @@ clients:
     <<: *def_client
   node_1:
     <<: *def_client
+  node_2:
+    <<: *def_client
+  node_3:
+    <<: *def_client
+  node_4:
+    <<: *def_client
+  node_5:
+    <<: *def_client
+  node_6:
+    <<: *def_client
+  node_7:
+    <<: *def_client
+  node_8:
+    <<: *def_client
+  node_9:
+    <<: *def_client
 
 workers:
   node_0:
-    <<: *def_worker
-  node_1:
     <<: *def_worker
 
 clusters:
@@ -81,9 +95,16 @@ clusters:
     clients:
       - node_0
       - node_1
+      - node_2
+      - node_3
+      - node_4
+      - node_5
+      - node_6
+      - node_7
+      - node_8
+      - node_9
     workers:
       - node_0
-      - node_1
     consensus_params:
       <<: *default_2_3
     train_params:
