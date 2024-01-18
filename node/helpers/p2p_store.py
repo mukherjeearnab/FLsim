@@ -61,7 +61,7 @@ def kv_get_legacy(key: str) -> Any:
     '''
 
     try:
-        reply = http.get(f'{KVS_URL}/get?key={key}',
+        reply = http.get(f'{KVS_URL}/get',
                          {'key': key})
     except Exception:
         logger.error(
