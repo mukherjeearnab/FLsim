@@ -656,7 +656,7 @@ class Job(object):
             self._update_state()
         else:
             logger.warning(
-                f'[{self.job_name}#{self.cluster_id}] Global model parameters NOT SET! process_phase is {self.job_status["process_phase"]}.')
+                f'[{self.job_name}#{self.cluster_id}] Global model parameters NOT SET! process_phase is {self.job_status["process_stage"]}.')
             exec_status = False
 
         # method suffixed with update state and lock release

@@ -245,6 +245,7 @@ def recursive_set_global_params_and_start_training(job: Job, param: str, extra_d
     '''
     print('REC_SETTING_GLOBAL_PARAM', job.cluster_id)
     status = job.set_global_model_param(param, extra_data, is_epoch)
+    status = job.allow_start_training() and status
 
     for cluster_id in job.sub_clusters:
         job_id = f'{job.job_name}#{cluster_id}'
@@ -253,8 +254,6 @@ def recursive_set_global_params_and_start_training(job: Job, param: str, extra_d
                       job_locks[job_id], load_from_db=True)
         status = recursive_set_global_params_and_start_training(
             sub_job, param, extra_data, is_epoch, job_locks) and status
-
-    status = job.allow_start_training() and status
 
     return status
 
