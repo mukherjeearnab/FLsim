@@ -1,16 +1,16 @@
 dataset:
   cluster_configs:
-    - &def_random_dist
+    - &def_dir_dist
       prep: cifar_def
       preprocessor: default
       distribution:
         distributor: diritchlet_dist
         # chunks:
-        #   - 0.1
-        #   - 0.9
+        #   - 0.5
+        #   - 0.5
         extra_params:
           diritchlet:
-            alpha: 1.0
+            alpha: 0.5
             seed: 10
       train_test_split:
         train: 0.8
@@ -24,8 +24,8 @@ training:
   client_configs:
     - &cifar_train_def
       learning_rate: 0.0001
-      batch_size: 256
-      local_epochs: 2
+      batch_size: 64
+      local_epochs: 5
       extra_params:
         fed_prox:
           mu: 0.01
@@ -52,7 +52,7 @@ client_configs:
     train_params:
       <<: *cifar_train_def
     dataset_params:
-      <<: *def_random_dist
+      <<: *def_dir_dist
 
 worker_configs:
   - &def_worker
@@ -61,11 +61,9 @@ worker_configs:
     aggregator_params:
       <<: *fed_avg_def
     dataset_params:
-      <<: *def_random_dist
+      <<: *def_dir_dist
 
 clients:
-  node_0:
-    <<: *def_client
   node_1:
     <<: *def_client
   node_2:
@@ -88,29 +86,97 @@ clients:
 workers:
   node_0:
     <<: *def_worker
+  node_1:
+    <<: *def_worker
+  node_2:
+    <<: *def_worker
+  node_3:
+    <<: *def_worker
+  node_4:
+    <<: *def_worker
+  node_5:
+    <<: *def_worker
+  node_6:
+    <<: *def_worker
+  node_7:
+    <<: *def_worker
+  node_8:
+    <<: *def_worker
+  node_9:
+    <<: *def_worker
 
 clusters:
   cluster_0:
     upstream_cluster: null
     clients:
-      - node_0
-      - node_1
-      - node_2
-      - node_3
-      - node_4
-      - node_5
-      - node_6
-      - node_7
-      - node_8
-      - node_9
+      - cluster_0_0
+      - cluster_0_1
+      - cluster_0_2
     workers:
       - node_0
+      - node_1
+      - node_4
+      - node_7
     consensus_params:
       <<: *default_2_3
     train_params:
       cluster_epochs: 1
     dataset_params:
-      <<: *def_random_dist
+      <<: *def_dir_dist
+
+  cluster_0_0:
+    upstream_cluster: cluster_0
+    clients:
+      - node_1
+      - node_2
+      - node_3
+    workers:
+      - node_0
+      - node_2
+      - node_5
+      - node_8
+    consensus_params:
+      <<: *default_2_3
+    train_params:
+      cluster_epochs: 1
+    dataset_params:
+      <<: *def_dir_dist
+
+  cluster_0_1:
+    upstream_cluster: cluster_0
+    clients:
+      - node_4
+      - node_5
+      - node_6
+    workers:
+      - node_0
+      - node_3
+      - node_6
+      - node_9
+    consensus_params:
+      <<: *default_2_3
+    train_params:
+      cluster_epochs: 1
+    dataset_params:
+      <<: *def_dir_dist
+
+  cluster_0_2:
+    upstream_cluster: cluster_0
+    clients:
+      - node_7
+      - node_8
+      - node_9
+    workers:
+      - node_0
+      - node_1
+      - node_4
+      - node_7
+    consensus_params:
+      <<: *default_2_3
+    train_params:
+      cluster_epochs: 1
+    dataset_params:
+      <<: *def_dir_dist
 
 job_params:
-  rounds: 20
+  rounds: 10

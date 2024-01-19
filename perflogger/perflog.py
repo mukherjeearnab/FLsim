@@ -30,7 +30,7 @@ class PerformanceLog(object):
         # else:
         #     self._save_config_single()
 
-    def add_perflog(self, client_id: str, round_num: int, metrics: dict, time_delta: float) -> None:
+    def add_perflog(self, cluster_id: str, node_id: str, node_type: str, round_num: str, epoch_num: str, metrics: dict, time_delta: float) -> None:
         '''
         Add a Performance Log Row to the perflogs
         '''
@@ -38,7 +38,7 @@ class PerformanceLog(object):
             self._generate_csv_header(metrics)
 
         self.perflogs.append(self._metrics_to_csvline(
-            client_id, round_num, metrics, time_delta))
+            cluster_id, node_id, node_type, round_num, epoch_num, metrics, time_delta))
 
     def save(self):
         '''
@@ -54,17 +54,18 @@ class PerformanceLog(object):
         write_file(f'{round_num}.json', f'{self.project_path}/params',
                    json.dumps(params, indent=4))
 
-    def _metrics_to_csvline(self, client_id: str, round_num: int, metrics: dict, time_delta: float) -> str:
+    def _metrics_to_csvline(self, cluster_id: str, node_id: str, node_type: str, round_num: str, epoch_num: str, metrics: dict, time_delta: float) -> str:
         '''
         Generate a CSV string row from a dictionary of metrics
         '''
-        record = f'{client_id},{round_num},'
+        record = f'{cluster_id},{node_id},{node_type},{round_num},{epoch_num},'
         for key in self.metric_names:
             if key in ['confusion_matrix', 'classification_report']:
                 continue
             record += f'{metrics[key]:.6f},'
 
-        self._save_extra_metrics(client_id, round_num, metrics)
+        self._save_extra_metrics(
+            f'{cluster_id}-{node_id}-{node_type}', round_num, metrics)
 
         # finally add time_delta
         record += f'{time_delta},'
@@ -89,7 +90,7 @@ class PerformanceLog(object):
         '''
         Generate the CSV header from the metrics dictionary
         '''
-        self.csv_header = 'node,round,'
+        self.csv_header = 'cluster_id,node_id,node_type,global_round,cluster_epoch,'
         self.metric_names = list(metrics.keys())
         for key in self.metric_names:
             if key in ['confusion_matrix', 'classification_report']:

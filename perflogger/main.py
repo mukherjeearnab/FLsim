@@ -29,15 +29,15 @@ def init_project():
     '''
     payload = request.get_json()
 
-    job_id = payload['job_id']
+    job_name = payload['job_name']
     config = payload['config']
 
     # WRITE_LOCK.wait()
 
-    project = PerformanceLog(job_id, config)
-    PROJECTS[job_id] = project
+    project = PerformanceLog(job_name, config)
+    PROJECTS[job_name] = project
 
-    return jsonify({'message': f'Project Init [{job_id}]', 'res': 200})
+    return jsonify({'message': f'Project Init [{job_name}]', 'res': 200})
 
 
 @app.route('/add_record', methods=['POST'])
@@ -47,15 +47,19 @@ def add_record():
     '''
     payload = request.get_json()
 
-    client_id = payload['client_id']
+    job_name = payload['job_name']
+    cluster_id = payload['cluster_id']
+    node_id = payload['node_id']
+    node_type = payload['node_type']
     round_num = payload['round_num']
-    job_id = payload['job_id']
+    epoch_num = payload['epoch_num']
     metrics = payload['metrics']
     time_delta = payload['time_delta']
 
     WRITE_LOCK.acquire()
 
-    PROJECTS[job_id].add_perflog(client_id, round_num, metrics, time_delta)
+    PROJECTS[job_name].add_perflog(
+        cluster_id, node_id, node_type, round_num, epoch_num, metrics, time_delta)
 
     WRITE_LOCK.release()
     return jsonify({'res': 200})
@@ -68,13 +72,13 @@ def add_params():
     '''
     payload = request.get_json()
 
-    job_id = payload['job_id']
+    job_name = payload['job_name']
     params = payload['params']
     round_num = payload['round_num']
 
     WRITE_LOCK.acquire()
 
-    PROJECTS[job_id].save_params(round_num, params)
+    PROJECTS[job_name].save_params(round_num, params)
 
     WRITE_LOCK.release()
     return jsonify({'res': 200})
@@ -87,11 +91,11 @@ def save_logs():
     '''
     payload = request.get_json()
 
-    job_id = payload['job_id']
+    job_name = payload['job_name']
 
     WRITE_LOCK.acquire()
 
-    PROJECTS[job_id].save()
+    PROJECTS[job_name].save()
 
     WRITE_LOCK.release()
     return jsonify({'res': 200})

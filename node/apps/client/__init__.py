@@ -140,8 +140,8 @@ def client_process(job_name: str, cluster_id: str) -> None:
         logger.info(f'[{node_type}] Total Round Time: {time_delta} s')
 
         # 9.2. Add Test Performance Metrics to PerfLog
-        perflog.add_record(f'{cluster_id}_{node_type}_{node_id}', job_name, metrics,
-                           f'{global_round}-{cluster_epoch}', time_delta)
+        perflog.add_record(job_name, cluster_id, node_id, node_type,
+                           global_round, cluster_epoch, metrics, time_delta)
 
         # 10. Upload Trained Model Parameter
         curr_param = get_base64_state_dict(local_model)
