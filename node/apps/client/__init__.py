@@ -1,8 +1,9 @@
 '''
 The Client Process Module
 '''
-from time import time
+from time import time, sleep
 from copy import deepcopy
+from env import env
 from helpers.argsparse import args
 from helpers.logging import logger
 from helpers import p2p_store, perflog
@@ -49,6 +50,10 @@ def client_process(job_name: str, cluster_id: str) -> None:
         'round_info': {'current_round': global_round},
         'global_extra_data': None
     }
+
+    startup_delay = env['DELAY'] * 5
+    logger.info(f'[{node_type}] Sleeping for {startup_delay} seconds')
+    sleep(startup_delay)
 
     # 0. Wait for JobsheetDownload Flag
     listeners.wait_for_jobsheet_flag(job_name, cluster_id, node_type)

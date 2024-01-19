@@ -55,17 +55,11 @@ def get_jobs_from_server(logicon_url: str, job_set: set, not_job_set: set) -> No
                 # add job ID to job set.
                 job_set.add(job_id)
 
-                if job_id not in not_job_set:
-                    logger.info(f'Fetching Job Manifest for [{job_id}].')
-
                 # get the job manifest
                 is_my_job = get_job_manifest(job_id, logicon_url)
 
                 if not is_my_job:
                     job_set.remove(job_id)
-                    not_job_set.add(job_id)
-                else:
-                    not_job_set.remove(job_id)
 
 
 def get_job_manifest(job_id: str, logicon_url: str) -> bool:
