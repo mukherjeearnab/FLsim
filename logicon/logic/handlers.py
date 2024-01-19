@@ -153,7 +153,6 @@ def recursive_client_status_handler(job: Job, client_id: str, client_status: str
         # update client / cluster status to upstream cluster
         if not job.is_primary:
             job_id = f'{job.job_name}#{job.cluster_config["upstream_cluster"]}'
-            print(f'EXEC SE 201 {job_id}')
             upstream_job = Job(
                 job.job_name, job.cluster_config['upstream_cluster'], {}, {}, {}, job_locks[job_id], load_from_db=True)
             _status, side_effect = recursive_client_status_handler(
@@ -209,13 +208,11 @@ def recursive_worker_status_handler(job: Job, worker_id: str, worker_status: str
         # update process_phase (or) continue training (or) upload global update to upstream cluster
         # refer to last stage of point 7, in docs/workflow.md
         if job.is_primary:
-            print(F'EXEC 301 PRIMARY {job.job_name}#{job.cluster_id}')
             status = recursive_set_global_params_and_start_training(
                 job, global_param, global_extra_data, False, job_locks) and status
         else:
             # if the current cluster epoch is the final epoch
             if job.is_final_cluster_epoch():
-                print(F'EXEC 301 FINE {job.job_name}#{job.cluster_id}')
                 # upload global param to upstream job and update client / cluster status
                 job_id = f'{job.job_name}#{job.cluster_id}'
                 upstream_job = Job(
@@ -231,7 +228,6 @@ def recursive_worker_status_handler(job: Job, worker_id: str, worker_status: str
                 # reset the current cluster epoch to 1
                 job.reset_cluster_epoch()
             else:
-                print(F'EXEC 301 NONFE {job.job_name}#{job.cluster_id}')
                 # resume training and increment epoch by 1
                 # job.increment_cluster_epoch()
                 status = recursive_set_global_params_and_start_training(
@@ -246,7 +242,6 @@ def recursive_set_global_params_and_start_training(job: Job, param: str, extra_d
     set process_stage to 1.
     from root to leaf
     '''
-    print('REC_SETTING_GLOBAL_PARAM', job.cluster_id)
     status, terminate = job.set_global_model_param(param, extra_data, is_epoch)
     if terminate:
         status = job.terminate_training() and status
@@ -255,7 +250,6 @@ def recursive_set_global_params_and_start_training(job: Job, param: str, extra_d
 
     for cluster_id in job.sub_clusters:
         job_id = f'{job.job_name}#{cluster_id}'
-        print('REC_SET_GLOBAL_PARAM', job_id)
         sub_job = Job(job.job_name, cluster_id, {}, {}, {},
                       job_locks[job_id], load_from_db=True)
         status = recursive_set_global_params_and_start_training(

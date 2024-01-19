@@ -618,7 +618,6 @@ class Job(object):
         Remember to call allow_start_training() to update the process_stage to 1,
         to signal Clients to download params and start training.
         '''
-        print('GP_LOCK_STATUS', self.modification_lock.locked())
 
         # method prefixed with locking and reading state
         self.modification_lock.acquire()
