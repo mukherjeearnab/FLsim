@@ -87,9 +87,12 @@ def find_new_nodes_and_connect():
 
     connected_peers = peer_manager.get_alive_peers()
 
+    logger.info(
+        f'[Peer Discovery] Connected to {len(connected_peers.keys())} peers.')
+
     # 1. Get node records from all (connected) peers
     for node_id, node_info in connected_peers.items():
-        logger.info(f"Fetching peer list from node [{node_id}]")
+        # logger.info(f"Fetching peer list from node [{node_id}]")
         try:
             nodes = get(
                 f"http://{node_info['idis_ip']}:{node_info['gossip_port']}/peer/get_alive_peers", timeout=60)

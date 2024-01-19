@@ -3,10 +3,11 @@ Application Logic for Peer Management
 '''
 from time import time
 from state import peer_state
+from env import env
 from helpers.semaphore import Semaphore
 
 # Client alove threshold in seconds
-ALIVE_THRESHOLD = 10
+ALIVE_THRESHOLD = env['DISCOVERY_INTERVAL']+5
 
 UPDATE_LOCK = Semaphore()
 

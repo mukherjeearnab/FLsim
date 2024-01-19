@@ -68,11 +68,18 @@ tmux select-pane -t 4
 tmux send-keys 'cd ./kvstore' C-m
 tmux send-keys "python main.py" C-m
 
-for n in {5..14}; do
+# start the bootnode
+tmux select-pane -t 5
+tmux send-keys 'cd ./node' C-m
+tmux send-keys 'sleep 5' C-m
+tmux send-keys "python main.py -n node_0 -c -w -m" C-m
+
+# start the rest of the nodes
+for n in {6..14}; do
     tmux select-pane -t $n
     tmux send-keys 'cd ./node' C-m
-    tmux send-keys 'sleep 5' C-m
-    tmux send-keys "python main.py -n node_$((n - 5)) -c -w -m" C-m
+    tmux send-keys 'sleep 10' C-m
+    tmux send-keys "python main.py -n node_$((n - 5)) -b 5000 -c -w -m" C-m
 done
 
 tmux select-pane -t 0
