@@ -3,6 +3,7 @@ Key Value Store Class
 '''
 import traceback
 import threading
+import hashlib
 from typing import Tuple, Any, Union
 from logic.job_object import Job
 from logic.data_ops import create_central_testset, train_test_split
@@ -164,8 +165,10 @@ class DatasetDistributor(object):
         # create chunk dir name (if client weights are specified)
         if not dynamic_dist:
             chunk_dir_name = f"{cluster['params']['distribution']['distributor']['file']}/dist"
-            chunk_dir_name = chunk_dir_name + "".join(
+            dist = "".join(
                 [f"-{chunk}" for chunk in cluster['params']['distribution']['chunks']])
+            chunk_dir_name = chunk_dir_name + \
+                hashlib.md5(dist.encode()).hexdigest()
             chunk_save_path = f"{chunk_path}/{chunk_dir_name}"
 
         extra_params = cluster['params']['distribution']['extra_params']
@@ -192,9 +195,11 @@ class DatasetDistributor(object):
 
             # if dynamic distribution, update the dist chunk dir name with updated weights
             if dynamic_dist:
-                chunk_dir_name = f"{cluster['params']['distribution']['distributor']['file']}/dist"
-                chunk_dir_name = chunk_dir_name + "".join(
+                chunk_dir_name = f"{cluster['params']['distribution']['distributor']['file']}/dist-"
+                dist = "".join(
                     [f"-{chunk}" for chunk in cluster['params']['distribution']['chunks']])
+                chunk_dir_name = chunk_dir_name + \
+                    hashlib.md5(dist.encode()).hexdigest()
                 chunk_save_path = f"{chunk_path}/{chunk_dir_name}"
 
             # check if already done with distribution
@@ -242,6 +247,11 @@ class DatasetDistributor(object):
 
                     logger.info(
                         f'Saved Global Test Set with size {len(global_test_set[1])}')
+
+                    # write the distribution ratio file
+                    with open(f'{chunk_save_path}/distribution_ratio.txt', 'w', encoding='utf8') as f:
+                        f.writelines(
+                            [f'{chunk}\n' for chunk in cluster['params']['distribution']['chunks']])
 
                     # set the OK file
                     set_OK_file(chunk_save_path)
