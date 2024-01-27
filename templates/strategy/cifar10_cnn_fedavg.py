@@ -27,12 +27,17 @@ class CIFAR10Strategy(LearnStrategyBase):
             self.local_model = SimpleCNN()
             self.prev_local_model = SimpleCNN()
 
+            raise NotImplementedError
+
     def parameter_mixing(self) -> None:
         '''
         An empty parameter mixing,
         Basically load the global parameters to the local model
         '''
+        # move local model to previous local model
+        self.prev_local_model = self.local_model
 
+        # set the parameters for local as global model
         self.local_model.load_state_dict(self.global_model.state_dict())
 
     def train(self, train_loader: torch.utils.data.DataLoader) -> None:

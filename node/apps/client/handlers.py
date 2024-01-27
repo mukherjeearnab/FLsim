@@ -1,8 +1,11 @@
 '''
 Logic Handlers
 '''
+import dill
+import base64
 import traceback
 from env import env
+from base.learn_strategy import LearnStrategyBase
 from helpers.argsparse import args
 from helpers.logging import logger
 from helpers.dynamod import load_module
@@ -18,15 +21,25 @@ datadist_url = env['DATADIST_URL']
 node_id = args['node_id']
 
 
-def init_model(job_name: str, cluster_id: str, manifest: dict, node_type: str):
+def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict) -> LearnStrategyBase:
     '''
-    Initialize the model as defined in the job manifest and return the instance
+    Initialize the strategy as defined in the job manifest and return the instance
     '''
 
     try:
-        local_model = training.init_model(
-            manifest['model_params']['model_file']['content'])
-        return local_model
+        hyperparams = {
+            'learning_rate': manifest['train_params']['learning_rate'],
+            'train_epochs': manifest['train_params']['local_epochs'],
+            'client_extra_params': manifest['train_params']['extra_params']
+        }
+
+        StrategyClass = dill.loads(base64.b64decode(
+            manifest['model_params']['strategy']['definition'].encode()))
+
+        strategy = StrategyClass(
+            hyperparams, is_local=True, device=get_device())
+
+        return strategy
     except Exception:
         logger.error(
             f'Failed to init Model. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
@@ -64,34 +77,26 @@ def parameter_mixing(job_name: str, cluster_id: str, manifest: dict, node_type: 
         _fail_exit(job_name, cluster_id, node_type)
 
 
-def train_model(job_name: str, cluster_id: str, manifest: dict, node_type: str,
-                train_loader, local_model, global_model, prev_local_model, extra_data: dict):
+def train_model(job_name: str, cluster_id: str, node_type: str,
+                strategy: LearnStrategyBase, train_loader):
     '''
     Train the Local Model
     '''
-    device = get_device()
-
     try:
-        training.train_model(manifest, train_loader, local_model,
-                             global_model, prev_local_model, extra_data, device)
+        strategy.train(train_loader)
     except Exception:
         logger.error(
             f'Failed to train model. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
 
 
-def test_model(job_name: str, cluster_id: str, manifest: dict, node_type: str,
-               local_model, test_loader):
+def test_model(job_name: str, cluster_id: str, node_type: str,
+               strategy: LearnStrategyBase, test_loader):
     '''
     Test the Local Model
     '''
-    device = get_device()
-
     try:
-        testing_module = load_module(
-            'testing_module', manifest['model_params']['test_file']['content'])
-        metrics = testing_module.test_runner(
-            local_model, test_loader, device)
+        metrics = strategy.test(test_loader)
 
         return metrics
     except Exception:
@@ -116,22 +121,17 @@ def create_data_loaders(train_set, test_set, manifest: dict):
     return train_loader, test_loader
 
 
-def get_global_param(job_name: str, cluster_id: str, node_type: str):
+def get_global_state(job_name: str, cluster_id: str, node_type: str) -> str:
     '''
     Download and load the global params as pytorch object
     '''
 
-    param_key, extra_data_key = getters.get_global_param(
+    param_key, _ = getters.get_global_param(
         job_name, cluster_id, node_type)
 
-    param = p2p_store.getv(param_key)
+    global_state = p2p_store.getv(param_key)
 
-    if extra_data_key == 'empty':
-        extra_data = {}
-    else:
-        extra_data = p2p_store.getv(extra_data_key)
-
-    return param, extra_data
+    return global_state
 
 
 def download_dataset_metadata(job_name: str, cluster_id: str, node_type: str):

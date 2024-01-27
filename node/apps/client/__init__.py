@@ -2,12 +2,10 @@
 The Client Process Module
 '''
 from time import time, sleep
-from copy import deepcopy
 from env import env
 from helpers.argsparse import args
 from helpers.logging import logger
 from helpers import p2p_store, perflog
-from helpers.converters import get_base64_state_dict, set_base64_state_dict
 from apps.client import handlers
 from apps.common import getters, setters, listeners
 
@@ -66,15 +64,11 @@ def client_process(job_name: str, cluster_id: str) -> None:
     listeners.wait_for_node_stage(job_name, cluster_id, node_type, 1)
 
     # 2.1 Initialize the Model and Obtain Intial Parameters
-    local_model = handlers.init_model(
-        job_name, cluster_id, manifest, node_type)
+    strategy = handlers.init_strategy(
+        job_name, cluster_id, node_type, manifest)
 
-    # set global and prev local model
-    global_model = deepcopy(local_model)
-    prev_local_model = deepcopy(local_model)
-
-    # obtain parameters of the model
-    previous_param = get_base64_state_dict(prev_local_model)
+    # obtain initial global state of the model
+    initial_global_state = strategy.get_base64_global_payload()
 
     # 3. Wait for DatasetDownload Flag
     listeners.wait_for_dataset_flag(job_name, cluster_id, node_type)
@@ -98,10 +92,10 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
     # 5. ACK of Dataset Download (Client Status to 2) & Send Back Initial Model (Global) Parameters
     # 5.1 Upload Initial Model (Global) Parameters to P2P Store
-    init_param_key = p2p_store.setv(previous_param)
+    init_global_state_key = p2p_store.setv(initial_global_state)
     # 5.2 ACK of Dataset Download (Client Status to 2)
     setters.update_node_status(
-        job_name, cluster_id, node_type, 2, {'initial_param': init_param_key})
+        job_name, cluster_id, node_type, 2, {'initial_param': init_global_state_key})
     listeners.wait_for_node_stage(job_name, cluster_id, node_type, 2)
 
     # 6. Wait for process_stage to be 1
@@ -114,30 +108,24 @@ def client_process(job_name: str, cluster_id: str) -> None:
         start_time = time()
 
         # 7. Donwload Global Parameter
-        global_param, global_extra_data = handlers.get_global_param(
+        global_state = handlers.get_global_state(
             job_name, cluster_id, node_type)
-        set_base64_state_dict(global_model, global_param)
-        extra_data['global_extra_data'] = global_extra_data
+        strategy.load_base64_state(global_state)
 
         # 7.1. Apply Parameter Mixing
-        curr_param = handlers.parameter_mixing(
-            job_name, cluster_id, manifest, node_type, global_model, prev_local_model)
-
-        # update the parameters local and prev local models
-        local_model.load_state_dict(curr_param)
-        set_base64_state_dict(prev_local_model, previous_param)
+        strategy.parameter_mixing()
 
         # 8. Update Client Status to 3
         setters.update_node_status(job_name, cluster_id, node_type, 3)
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
 
         # 9. Load Model and Start Local Training
-        handlers.train_model(job_name, cluster_id, manifest, node_type, train_loader,
-                             local_model, global_model, prev_local_model, extra_data)
+        handlers.train_model(job_name, cluster_id, node_type,
+                             strategy, train_loader)
 
         # 9.1. Test Trained Model
-        metrics = handlers.test_model(job_name, cluster_id, manifest, node_type,
-                                      local_model, test_loader)
+        metrics = handlers.test_model(job_name, cluster_id, node_type,
+                                      strategy, test_loader)
 
         # calculate round time
         end_time = time()
@@ -149,11 +137,10 @@ def client_process(job_name: str, cluster_id: str) -> None:
                            global_round, cluster_epoch, metrics, time_delta)
 
         # 10. Upload Trained Model Parameter
-        curr_param = get_base64_state_dict(local_model)
-        trained_param_key = p2p_store.setv(curr_param)
-        extra_data_key = p2p_store.setv(global_extra_data)
+        trained_local_state = strategy.get_base64_local_payload()
+        trained_state_key = p2p_store.setv(trained_local_state)
         setters.append_node_params(
-            job_name, cluster_id, node_type, trained_param_key, extra_data_key)
+            job_name, cluster_id, node_type, trained_state_key)
 
         # 11. Update Client Status to 4
         setters.update_node_status(job_name, cluster_id, node_type, 4)
@@ -170,9 +157,6 @@ def client_process(job_name: str, cluster_id: str) -> None:
         # 14. If process_stage is 1, start again from step 7,
         #     else Update Client Status to 5 and exit
         if process_stage == 1:
-            # update previous params and global round
-            previous_param = curr_param
-
             start_time = time()
 
         if process_stage == 3:
