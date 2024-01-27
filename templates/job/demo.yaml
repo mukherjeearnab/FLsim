@@ -33,17 +33,13 @@ training:
 
   worker_configs:
     - &fed_avg_def
-      aggregator: fed_avg
       batch_size: 256
       extra_params:
         fed_avg_momentum: 0.9
 
 model_params:
   - &cifar_simple_cnn
-    model_file: cifar10CNN_wp
-    parameter_mixer: default
-    training_loop_file: cel_simple
-    test_file: multi_cel_simple
+    strategy: cifar10_cnn_fedavg
 
 client_configs:
   - &def_client
