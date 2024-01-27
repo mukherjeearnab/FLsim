@@ -6,7 +6,7 @@ import math
 from copy import deepcopy
 import torch
 from sklearn import metrics
-from base.learn_strategy import LearnStrategyBase
+from templates.strategy.base.learn_strategy import LearnStrategyBase
 from templates.models.simple_cnn_cifar import ModelClass as SimpleCNN
 
 

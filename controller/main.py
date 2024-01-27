@@ -3,8 +3,10 @@ This is the Commandline interface for managing the server
 '''
 import os
 import sys
-import readline
+import shutil
 import logging
+import readline
+
 from commands import job
 
 log = logging.getLogger('werkzeug')
@@ -20,6 +22,11 @@ To get started, enter 'help' in the command prompt below.
 '''
 
 SINGLE_COMMANDS = ['exit']
+
+# copy templates directory
+temp_src = '../templates'
+temp_dest = './templates'
+shutil.copytree(temp_src, temp_dest)
 
 
 # start the server
