@@ -18,16 +18,15 @@ class CIFAR10Strategy(LearnStrategyBase):
     def __init__(self, hyperparams: dict, is_local: bool, device='cpu', base64_state=None):
         super().__init__(hyperparams, is_local, device, base64_state)
 
-        # init the global model
-        self.global_model = SimpleCNN()
+        if base64_state is None:
+            # init the global model
+            self.global_model = SimpleCNN()
 
-        # if instance is local client instance,
-        # then set the local models
-        if self.is_local:
-            self.local_model = SimpleCNN()
-            self.prev_local_model = SimpleCNN()
-
-            raise NotImplementedError
+            # if instance is local client instance,
+            # then set the local models
+            if self.is_local:
+                self.local_model = SimpleCNN()
+                self.prev_local_model = SimpleCNN()
 
     def parameter_mixing(self) -> None:
         '''
@@ -124,6 +123,9 @@ class CIFAR10Strategy(LearnStrategyBase):
         results['loss'] = average_loss if not math.isnan(
             average_loss) else -420.0
 
+        print(
+            f"Model Test Report:\n{results['classification_report']}\nLoss: {results['loss']}")
+
         return results
 
     def aggregate(self):
@@ -133,26 +135,28 @@ class CIFAR10Strategy(LearnStrategyBase):
 
         with torch.no_grad():
             # get the model parameters
+            self.global_model = self.global_model.to(self.device)
             global_params = self.global_model.state_dict()
 
-            new_global_params = deepcopy(global_params)  # Create a deep copy
-
             # Initialize global parameters to zeros
-            for param_name, param in new_global_params.items():
-                param = param.to(self.device)
+            for param_name, param in global_params.items():
                 param.zero_()
 
             # Aggregate client updates
+
             for client_obj, weight in zip(self.client_objects, self.client_weights):
+                client_obj.local_model = client_obj.local_model.to(self.device)
                 client_state_dict = client_obj.local_model.state_dict()
+
                 for param_name, param in client_state_dict.items():
-                    # move client param to gpu
-                    param = param.to(self.device)
+                    global_params[param_name] += (weight * param).type(
+                        global_params[param_name].dtype)
 
-                    new_global_params[param_name] += (weight * param).type(
-                        new_global_params[param_name].dtype)
+            self.global_model.load_state_dict(global_params)
 
-            self.global_model.load_state_dict(new_global_params)
+        # empty out client_objects
+        self.client_objects = list()
+        self.client_weights = list()
 
     def append_client_object(self, bash64_state: str, client_weight: float) -> None:
         '''

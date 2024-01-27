@@ -111,6 +111,14 @@ def load_dataset_params(config: dict, template_set: set):
     }
     template_set.add(file)
 
+    # load the dataset preprocessor file
+    file = f"./templates/preprocessor/{config['preprocessor']}"
+    config['preprocessor'] = {
+        'file': config['prep'],
+        'content': read_py_module(file)
+    }
+    template_set.add(file)
+
     # load the dataset distributor file
     file = f"./templates/distribution/{config['distribution']['distributor']}"
 

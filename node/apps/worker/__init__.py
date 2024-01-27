@@ -117,8 +117,8 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
 
         # 9. Start Aggregation Process
-        local_model = handlers.run_aggregator(job_name, cluster_id, node_type,
-                                              strategy, client_params)
+        handlers.run_aggregator(job_name, cluster_id, node_type,
+                                strategy, client_params)
 
         # 9.1. Test Aggregated Model
         metrics = handlers.test_model(job_name, cluster_id, node_type,
@@ -150,7 +150,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
             job_name, cluster_id, node_type)
 
         # 14. Add Global Parameter to Perflog and Commit Perflog
-        global_param, _ = handlers.get_global_state(
+        global_param = handlers.get_global_state(
             job_name, cluster_id, node_type)
         perflog.add_params(
             job_name, global_round, global_param)
