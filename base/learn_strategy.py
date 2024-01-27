@@ -8,12 +8,12 @@ from copy import deepcopy
 import torch
 
 
-class LearnStrategy(object):
+class LearnStrategyBase(object):
     '''
     Base class for learning strategies for DistLearn Framework
     '''
 
-    def __init__(self, hyperparams: dict, base64_state=None):
+    def __init__(self, hyperparams: dict, is_local: bool, device='cpu', base64_state=None):
         # model attributes
         self.global_model = None
         self.local_model = None
@@ -21,6 +21,7 @@ class LearnStrategy(object):
 
         # client objects
         self.client_objects = list()
+        self.client_weights = list()
 
         # client and worker learning hyper-parameters
         self.learning_rate = hyperparams['learning_rate'] if 'learning_rate' in hyperparams else None
@@ -30,26 +31,49 @@ class LearnStrategy(object):
         self.client_extra_params = hyperparams['client_extra_params'] if 'client_extra_params' in hyperparams else None
         self.worker_extra_params = hyperparams['worker_extra_params'] if 'worker_extra_params' in hyperparams else None
 
+        # extra states
+        self.is_local = is_local
+        self.device = device
+
         if base64_state is not None:
             self.load_base64_state(base64_state)
 
-    def train(self):
+    def parameter_mixing(self):
         '''
-        Method to train the model for e epochs
+        Method to mix parameters from global and previous local parameters
+        This also sets the local parameter as the new global parameter
         '''
 
         raise NotImplementedError
 
-    def test(self):
+    def train(self, train_loader: torch.utils.data.DataLoader):
+        '''
+        Method to train the model for e epochs
+        '''
+
+        _ = train_loader
+
+        raise NotImplementedError
+
+    def test(self, test_loader: torch.utils.data.DataLoader):
         '''
         Method to test the model
         '''
+
+        _ = test_loader
 
         raise NotImplementedError
 
     def aggregate(self):
         '''
         Method to execute Federated Aggregation 
+        '''
+
+        raise NotImplementedError
+
+    def append_client_object(self, bash64_state: Any, client_weight: float) -> None:
+        '''
+        Append client objects from their base64 state strings
         '''
 
         raise NotImplementedError
@@ -65,7 +89,24 @@ class LearnStrategy(object):
         # delete the unnecessary fields
         del payload['global_model']
         del payload['prev_local_model']
+
         del payload['client_objects']
+        del payload['client_weights']
+
+        del payload['learning_rate']
+        del payload['train_batch_size']
+        del payload['test_batch_size']
+        del payload['train_epochs']
+        del payload['client_extra_params']
+        del payload['worker_extra_params']
+
+        del payload['is_local']
+        del payload['device']
+
+        # remove private and protected fields
+        for key in payload.keys():
+            if key.startswith('_'):
+                del payload[key]
 
         return payload
 
@@ -80,7 +121,24 @@ class LearnStrategy(object):
         # delete the unnecessary fields
         del payload['local_model']
         del payload['prev_local_model']
+
         del payload['client_objects']
+        del payload['client_weights']
+
+        del payload['learning_rate']
+        del payload['train_batch_size']
+        del payload['test_batch_size']
+        del payload['train_epochs']
+        del payload['client_extra_params']
+        del payload['worker_extra_params']
+
+        del payload['is_local']
+        del payload['device']
+
+        # remove private and protected fields
+        for key in payload.keys():
+            if key.startswith('_'):
+                del payload[key]
 
         return payload
 
