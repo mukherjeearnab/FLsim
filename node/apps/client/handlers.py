@@ -8,7 +8,6 @@ from env import env
 from base.learn_strategy import LearnStrategyBase
 from helpers.argsparse import args
 from helpers.logging import logger
-from helpers.dynamod import load_module
 from helpers.file import check_OK_file, get_OK_file, create_dir_struct
 from helpers import p2p_store
 from helpers.torch import get_device
@@ -101,7 +100,7 @@ def test_model(job_name: str, cluster_id: str, node_type: str,
         return metrics
     except Exception:
         logger.error(
-            f'Failed to test model. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
+            f'Failed to test Strategy. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
 
 
@@ -123,7 +122,7 @@ def create_data_loaders(train_set, test_set, manifest: dict):
 
 def get_global_state(job_name: str, cluster_id: str, node_type: str) -> str:
     '''
-    Download and load the global params as pytorch object
+    Download and load the global state as LearningStrategy state
     '''
 
     param_key, _ = getters.get_global_param(

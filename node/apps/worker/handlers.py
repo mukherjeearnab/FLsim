@@ -1,19 +1,19 @@
 '''
 Logic Handlers
 '''
+import dill
+import base64
 import traceback
 from env import env
+from base.learn_strategy import LearnStrategyBase
 from helpers.argsparse import args
 from helpers.logging import logger
-from helpers.dynamod import load_module
 from helpers.file import check_OK_file, get_OK_file, create_dir_struct, torch_read
 from helpers import p2p_store
 from helpers.torch import get_device
-from helpers.converters import tensor_to_data_loader, convert_base64_to_state_dict
-from apps.worker import aggregation
+from helpers.converters import tensor_to_data_loader
 from apps.common.setters import _fail_exit
 from apps.common import getters
-from apps.client import training
 
 datadist_url = env['DATADIST_URL']
 node_id = args['node_id']
@@ -93,18 +93,26 @@ def create_data_loaders(test_set, manifest: dict):
     return global_test_loader
 
 
-def init_model(job_name: str, cluster_id: str, manifest: dict, node_type: str):
+def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict) -> LearnStrategyBase:
     '''
-    Initialize the model as defined in the job manifest and return the instance
+    Initialize the strategy as defined in the job manifest and return the instance
     '''
 
     try:
-        local_model = training.init_model(
-            manifest['model_params']['model_file']['content'])
-        return local_model
+        hyperparams = {
+            'worker_extra_params': manifest['aggregator_params']['extra_params']
+        }
+
+        StrategyClass = dill.loads(base64.b64decode(
+            manifest['model_params']['strategy']['definition'].encode()))
+
+        strategy = StrategyClass(
+            hyperparams, is_local=False, device=get_device())
+
+        return strategy
     except Exception:
         logger.error(
-            f'Failed to init Model. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
+            f'Failed to init Strategy. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
         _fail_exit(job_name, cluster_id, node_type)
 
 
@@ -112,7 +120,6 @@ def get_client_params(job_name: str, cluster_id: str, node_type: str) -> list:
     '''
     Download the trained client params, load them as state_dict(s) and return
     '''
-    device = get_device()
 
     client_params = getters.get_client_params(
         job_name, cluster_id, node_type)
@@ -123,12 +130,6 @@ def get_client_params(job_name: str, cluster_id: str, node_type: str) -> list:
     for client_id, payload in client_params.items():
         # fetch the params from the p2p store
         payload['param'] = p2p_store.getv(payload['param'])
-        # convert to tensor state dict
-        payload['param'] = convert_base64_to_state_dict(
-            payload['param'], device)
-
-        # fetch the extra_data from the p2p store
-        payload['extra_data'] = p2p_store.getv(payload['extra_data'])
 
         # also add the client's dataset weight
         payload['weight'] = dataset_metadata['weights'][client_id]
@@ -136,30 +137,30 @@ def get_client_params(job_name: str, cluster_id: str, node_type: str) -> list:
     return client_params
 
 
-def run_aggregator(job_name: str, cluster_id: str, node_type: str, manifest: dict,
-                   global_model, client_params: dict, extra_data: dict):
+def run_aggregator(job_name: str, cluster_id: str, node_type: str,
+                   strategy: LearnStrategyBase, client_params: dict):
     '''
     Method to execute the aggregator
     '''
+    try:
+        for _, client_payload in client_params.items():
+            strategy.append_client_object(client_payload['param'],
+                                          client_payload['weight'])
 
-    global_model = aggregation.aggregate_client_params(job_name, cluster_id, node_type, manifest,
-                                                       global_model, client_params, extra_data)
+        strategy.aggregate()
+    except Exception:
+        logger.error(
+            f'Failed to aggregate params. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
+        _fail_exit(job_name, cluster_id, node_type)
 
-    return global_model
 
-
-def test_model(job_name: str, cluster_id: str, manifest: dict, node_type: str,
-               local_model, test_loader):
+def test_model(job_name: str, cluster_id: str, node_type: str,
+               strategy: LearnStrategyBase, test_loader):
     '''
     Test the Aggregated Global Model
     '''
-    device = get_device()
-
     try:
-        testing_module = load_module(
-            'testing_module', manifest['model_params']['test_file']['content'])
-        metrics = testing_module.test_runner(
-            local_model, test_loader, device)
+        metrics = strategy.test(test_loader)
 
         return metrics
     except Exception:
@@ -168,19 +169,14 @@ def test_model(job_name: str, cluster_id: str, manifest: dict, node_type: str,
         _fail_exit(job_name, cluster_id, node_type)
 
 
-def get_global_param(job_name: str, cluster_id: str, node_type: str):
+def get_global_state(job_name: str, cluster_id: str, node_type: str):
     '''
-    Download and load the global params as pytorch object
+    Download and load the global state as LearningStrategy state
     '''
 
-    param_key, extra_data_key = getters.get_global_param(
+    param_key, _ = getters.get_global_param(
         job_name, cluster_id, node_type)
 
     param = p2p_store.getv(param_key)
 
-    if extra_data_key == 'empty':
-        extra_data = {}
-    else:
-        extra_data = p2p_store.getv(extra_data_key)
-
-    return param, extra_data
+    return param
