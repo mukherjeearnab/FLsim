@@ -2,7 +2,6 @@ dataset:
   cluster_configs:
     - &def_random_dist
       prep: cifar_def
-      preprocessor: default
       distribution:
         distributor: diritchlet_dist
         # chunks:

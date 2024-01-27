@@ -26,6 +26,8 @@ SINGLE_COMMANDS = ['exit']
 # copy templates directory
 temp_src = '../templates'
 temp_dest = './templates'
+if os.path.exists(temp_dest):
+    shutil.rmtree(temp_dest)
 shutil.copytree(temp_src, temp_dest)
 
 

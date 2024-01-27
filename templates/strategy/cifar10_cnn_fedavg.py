@@ -194,3 +194,7 @@ class CIFAR10Strategy(LearnStrategyBase):
         }
 
         return results
+
+
+# Dont forget to set this the alias as 'StrategyDefinition'
+StrategyDefinition = CIFAR10Strategy
