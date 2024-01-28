@@ -39,10 +39,14 @@ class DatasetDistributor(object):
         metadata == 'global_test' ==> returns the dataset chunk path for the global_test (for workers) 
         metadata == 'ok_file' ==> returns the ok_file path for the dataset chunk
         metadata == 'weights' ==> returns the weights of the clients
+        metadata == 'complete' ==> returns the complete cluster2chunk_mapping object
         '''
 
         if job_name not in self.jobs:
             return None
+
+        if metadata == 'complete':
+            return self.jobs[job_name].cluster2chunk_mapping
 
         if cluster_id not in self.jobs[job_name].cluster2chunk_mapping:
             return None

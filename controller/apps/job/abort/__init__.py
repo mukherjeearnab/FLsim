@@ -11,7 +11,7 @@ def abort_job(job_name: str):
     '''
     Abort a Job
     '''
-    logger.info('Sending Abort Signal to LogiCon for Job {job_name}')
+    logger.info(f'Sending Abort Signal to LogiCon for Job {job_name}')
 
     try:
         res = post(f"{env['LOGICON_URL']}/job/set_abort",

@@ -3,9 +3,10 @@ This is the Commandline interface for managing the server
 '''
 import os
 import sys
-import readline
 import logging
-from commands import job
+import readline
+
+from commands import job, sanitize_command
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -28,6 +29,10 @@ if __name__ == '__main__':
     while True:
         try:
             command = input('> ')
+
+            # sanitize the input
+            command = sanitize_command(command)
+
             args = command.split(' ')
             if len(args) <= 1 and args[0] not in SINGLE_COMMANDS:
                 continue
