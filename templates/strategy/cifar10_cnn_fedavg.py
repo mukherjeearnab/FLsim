@@ -7,7 +7,7 @@ from copy import deepcopy
 import torch
 from sklearn import metrics
 from templates.strategy.base.learn_strategy import LearnStrategyBase
-from templates.models.simple_cnn_cifar import ModelClass as SimpleCNN
+from templates.models.tiny_cnn_cifar import CIFAR10SimpleCNN
 
 
 class CIFAR10Strategy(LearnStrategyBase):
@@ -20,13 +20,13 @@ class CIFAR10Strategy(LearnStrategyBase):
 
         if base64_state is None:
             # init the global model
-            self.global_model = SimpleCNN()
+            self.global_model = CIFAR10SimpleCNN()
 
             # if instance is local client instance,
             # then set the local models
             if self.is_local:
-                self.local_model = SimpleCNN()
-                self.prev_local_model = SimpleCNN()
+                self.local_model = CIFAR10SimpleCNN()
+                self.prev_local_model = CIFAR10SimpleCNN()
 
     def parameter_mixing(self) -> None:
         '''
