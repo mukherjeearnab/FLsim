@@ -106,8 +106,10 @@ def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict
         StrategyClass = dill.loads(base64.b64decode(
             manifest['model_params']['strategy']['definition'].encode()))
 
+        device = get_device() if env['WORKER_USE_CUDA'] == 1 else 'cpu'
+
         strategy = StrategyClass(
-            hyperparams, is_local=False, device=get_device())
+            hyperparams, is_local=False, device=device)
 
         return strategy
     except Exception:

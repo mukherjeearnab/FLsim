@@ -132,6 +132,8 @@ class CIFAR10Strategy(LearnStrategyBase):
         super()._pre_aggregation()
 
         with torch.no_grad():
+            self.global_model = self.global_model.to(self.device)
+
             # get the model parameters
             global_params = self.global_model.state_dict()
 
@@ -141,7 +143,9 @@ class CIFAR10Strategy(LearnStrategyBase):
 
             # Aggregate client updates
             for client_obj, weight in zip(self.client_objects, self.client_weights):
+                client_obj.local_model = client_obj.local_model.to(self.device)
                 client_state_dict = client_obj.local_model.state_dict()
+
                 for param_name, param in client_state_dict.items():
                     global_params[param_name] += (weight * param).type(
                         global_params[param_name].dtype)

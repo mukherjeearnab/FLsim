@@ -182,9 +182,8 @@ class LearnStrategyBase(object):
 
         for client_obj in self.client_objects:
             if client_obj.local_model is None:
-                client_obj.local_model = client_obj.global_model
-
-                client_obj.local_model = client_obj.local_model.to(self.device)
+                client_obj.local_model = client_obj.global_model.to(
+                    self.device)
 
     def _post_aggregation(self):
         '''

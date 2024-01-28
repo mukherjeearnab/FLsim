@@ -35,8 +35,10 @@ def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict
         StrategyClass = dill.loads(base64.b64decode(
             manifest['model_params']['strategy']['definition'].encode()))
 
+        device = get_device() if env['CLIENT_USE_CUDA'] == 1 else 'cpu'
+
         strategy = StrategyClass(
-            hyperparams, is_local=True, device=get_device())
+            hyperparams, is_local=True, device=device)
 
         return strategy
     except Exception:
@@ -82,7 +84,11 @@ def train_model(job_name: str, cluster_id: str, node_type: str,
     Train the Local Model
     '''
     try:
+        logger.info(
+            f'Starting Local Training with {strategy.train_epochs} EPOCHS')
         strategy.train(train_loader)
+        logger.info(
+            f'Completed Local Training with {strategy.train_epochs} EPOCHS')
     except Exception:
         logger.error(
             f'Failed to train model. Aborting Process for [{job_name}] at cluster [{cluster_id}]!\n{traceback.format_exc()}')
