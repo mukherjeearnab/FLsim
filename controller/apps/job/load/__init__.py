@@ -35,6 +35,9 @@ def load_job(job_name: str, job_config: str):
     # load the job config file
     config = read_yaml_file(config_file)
 
+    with open(config_file, 'r', encoding='utf8') as f:
+        raw_config = f.read()
+
     logger.info(f'Reading Job Config: {job_config}')
 
     # job_config_state[job_name] = config
@@ -55,9 +58,11 @@ def load_job(job_name: str, job_config: str):
     logger.info(f'Starting Dataset Preperation for Job {job_name}')
     try:
         _, dataset_manifest = create_dist_tree(config)
-        post(f"{env['DATADIST_URL']}/prepare",
-             {'job_name': job_name, 'manifest': dataset_manifest})
+        res = post(f"{env['DATADIST_URL']}/prepare",
+                   {'job_name': job_name, 'manifest': dataset_manifest})
         logger.info(f'Dataset Preperation Complete for Job {job_name}')
+
+        dist_metadata = res['metadata']
     except Exception:
         logger.error(
             f'Error Preparing Dataset!\n{traceback.format_exc()}')
@@ -66,7 +71,9 @@ def load_job(job_name: str, job_config: str):
     # add job config details to state variable
     job_config_state[job_name] = {
         'config': config,
-        'dataset_manifest': dataset_manifest
+        'dataset_manifest': dataset_manifest,
+        'raw_config': raw_config,
+        'dist_metadata': dist_metadata
     }
 
     logger.info(f'Loading Job Complete for Job {job_name}')

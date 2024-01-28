@@ -153,7 +153,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         global_param = handlers.get_global_state(
             job_name, cluster_id, node_type)
         perflog.add_params(
-            job_name, global_round, global_param)
+            job_name, global_round-1, global_param)
         perflog.save_logs(job_name)
 
         # 15. If process_stage is 1, start again from step 6,

@@ -43,8 +43,10 @@ def prepare():
     manifest = req['manifest']
 
     status, message = datasetDistributor.register_n_prepare(job_name, manifest)
+    metadata = datasetDistributor.get_dataset_metadata(
+        job_name, None, 'complete')
 
-    return jsonify({'status': status, 'message': message}), 200 if status else 500
+    return jsonify({'status': status, 'message': message, 'metadata': metadata}), 200 if status else 500
 
 
 @app.route('/download_dataset')
