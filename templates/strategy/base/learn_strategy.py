@@ -174,6 +174,27 @@ class LearnStrategyBase(object):
         for key, value in state_dict.items():
             self.__dict__[key] = value
 
+    def _pre_aggregation(self):
+        '''
+        Pre-aggregation Checks and Actions
+        '''
+        self.global_model = self.global_model.to(self.device)
+
+        for client_obj in self.client_objects:
+            if client_obj.local_model is None:
+                client_obj.local_model = client_obj.global_model
+
+                client_obj.local_model = client_obj.local_model.to(self.device)
+
+    def _post_aggregation(self):
+        '''
+        Post-aggregation Checks and Actions
+        '''
+
+        # empty out client_objects
+        self.client_objects = list()
+        self.client_weights = list()
+
     @staticmethod
     def __base64_encode(obj: Any) -> str:
         '''

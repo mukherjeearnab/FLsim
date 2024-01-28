@@ -24,7 +24,7 @@ training:
   client_configs:
     - &cifar_train_def
       learning_rate: 0.0001
-      batch_size: 64
+      batch_size: 256
       local_epochs: 5
       extra_params:
         fed_prox:
@@ -33,17 +33,13 @@ training:
 
   worker_configs:
     - &fed_avg_def
-      aggregator: fed_avg
       batch_size: 256
       extra_params:
         fed_avg_momentum: 0.9
 
 model_params:
   - &cifar_simple_cnn
-    model_file: cifar10CNN_wp
-    parameter_mixer: default
-    training_loop_file: cel_simple
-    test_file: multi_cel_simple
+    strategy: cifar10_cnn_fedavg
 
 client_configs:
   - &def_client

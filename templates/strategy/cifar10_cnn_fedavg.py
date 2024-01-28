@@ -22,11 +22,8 @@ class CIFAR10Strategy(LearnStrategyBase):
             # init the global model
             self.global_model = CIFAR10SimpleCNN()
 
-            # if instance is local client instance,
-            # then set the local models
-            if self.is_local:
-                self.local_model = CIFAR10SimpleCNN()
-                self.prev_local_model = CIFAR10SimpleCNN()
+            self.local_model = CIFAR10SimpleCNN()
+            self.prev_local_model = CIFAR10SimpleCNN()
 
     def parameter_mixing(self) -> None:
         '''
@@ -132,10 +129,10 @@ class CIFAR10Strategy(LearnStrategyBase):
         '''
         Implementaion of the FedAvg Aggregation Algorithm for this strategy.
         '''
+        super()._pre_aggregation()
 
         with torch.no_grad():
             # get the model parameters
-            self.global_model = self.global_model.to(self.device)
             global_params = self.global_model.state_dict()
 
             # Initialize global parameters to zeros
@@ -143,20 +140,15 @@ class CIFAR10Strategy(LearnStrategyBase):
                 param.zero_()
 
             # Aggregate client updates
-
             for client_obj, weight in zip(self.client_objects, self.client_weights):
-                client_obj.local_model = client_obj.local_model.to(self.device)
                 client_state_dict = client_obj.local_model.state_dict()
-
                 for param_name, param in client_state_dict.items():
                     global_params[param_name] += (weight * param).type(
                         global_params[param_name].dtype)
 
             self.global_model.load_state_dict(global_params)
 
-        # empty out client_objects
-        self.client_objects = list()
-        self.client_weights = list()
+        super()._post_aggregation()
 
     def append_client_object(self, bash64_state: str, client_weight: float) -> None:
         '''
