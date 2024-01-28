@@ -3,11 +3,10 @@ This is the Commandline interface for managing the server
 '''
 import os
 import sys
-import shutil
 import logging
 import readline
 
-from commands import job
+from commands import job, sanitize_command
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -23,13 +22,6 @@ To get started, enter 'help' in the command prompt below.
 
 SINGLE_COMMANDS = ['exit']
 
-# copy templates directory
-temp_src = '../templates'
-temp_dest = './templates'
-if os.path.exists(temp_dest):
-    shutil.rmtree(temp_dest)
-shutil.copytree(temp_src, temp_dest)
-
 
 # start the server
 if __name__ == '__main__':
@@ -37,6 +29,10 @@ if __name__ == '__main__':
     while True:
         try:
             command = input('> ')
+
+            # sanitize the input
+            command = sanitize_command(command)
+
             args = command.split(' ')
             if len(args) <= 1 and args[0] not in SINGLE_COMMANDS:
                 continue

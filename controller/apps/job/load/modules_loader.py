@@ -25,6 +25,19 @@ def load_module_files(config: dict):
 
     detached_config['templates'] = list(detached_config['templates'])
 
+    # populate the template files
+    for i, template_path in enumerate(detached_config['templates']):
+        if not template_path.endswith('.py'):
+            template_path = f'{template_path}.py'
+
+        with open(template_path, 'r', encoding='utf8') as f:
+            content = f.read()
+
+        detached_config['templates'][i] = {
+            'path': template_path,
+            'content': content
+        }
+
     return detached_config
 
 

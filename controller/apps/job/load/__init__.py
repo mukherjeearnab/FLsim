@@ -1,7 +1,8 @@
 '''
 Job Load Module
 '''
-import json
+import os
+import shutil
 import traceback
 from env import env
 from state import job_config_state
@@ -16,7 +17,16 @@ def load_job(job_name: str, job_config: str):
     '''
     Load the Job Config and perform some preliminary validation.
     '''
-    config_file = f'../templates/job/{job_config}.yaml'
+
+    logger.info(f'Updating Templates Cache.')
+    # copy over the templates directory
+    temp_src = '../templates'
+    temp_dest = './templates'
+    if os.path.exists(temp_dest):
+        shutil.rmtree(temp_dest)
+    shutil.copytree(temp_src, temp_dest)
+
+    config_file = f'./templates/job/{job_config}.yaml'
 
     if not exists(config_file):
         logger.error('Job Config file [{job_config}.yaml] not found!')
@@ -25,7 +35,7 @@ def load_job(job_name: str, job_config: str):
     # load the job config file
     config = read_yaml_file(config_file)
 
-    logger.info(f'Reading Job Config: \n{job_config}')
+    logger.info(f'Reading Job Config: {job_config}')
 
     # job_config_state[job_name] = config
 

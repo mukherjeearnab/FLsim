@@ -1,5 +1,6 @@
 '''
 Sample C Neural Network Module using the CIFAR dataset
+From https://medium.com/analytics-vidhya/classifying-cifar-10-using-a-simple-cnn-4e9a6dd7600b
 '''
 import torch.nn as nn
 

@@ -17,7 +17,7 @@ def delete_job(job_name: str):
         return
 
     logger.info(
-        'Sending DEL Request to Dataset Distributor for Job {job_name}')
+        f'Sending DEL Request to Dataset Distributor for Job {job_name}')
     try:
         res = get(f"{env['DATADIST_URL']}/delete",
                   {'job_name': job_name})

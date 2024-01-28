@@ -13,6 +13,7 @@ from logic import handlers
 ROUTE_NAME = 'job-manager'
 blueprint = Blueprint(ROUTE_NAME, __name__)
 job_locks = dict()
+job_template_files = dict()
 
 
 @blueprint.route('/')
@@ -35,6 +36,26 @@ def list_jobs():
     jobs = list(filter(lambda job: 'root' not in job, jobs))
 
     return jsonify(jobs)
+
+
+@blueprint.route('/get_templates')
+def get_templates():
+    '''
+    get job template files
+    '''
+    job_name = request.args['job_name']
+
+    if job_name not in job_template_files:
+        return jsonify({'message': f'Job [{job_name}] does not exist.', 'payload': None, 'status': False}), 404
+
+    try:
+        templates = job_template_files[job_name]
+
+        return jsonify({'message': 'Fetch successful!', 'templates': templates, 'status': True}), 200
+    except Exception:
+        logger.error(
+            f'Failed to Fetch Job Instance.\n{traceback.format_exc()}')
+        return jsonify({'message': 'Failed to fetch job templates!', 'payload': None, 'status': False}), 500
 
 
 @blueprint.route('/get_config')
@@ -158,6 +179,8 @@ def create_job_route():
 
     if job_name in job_route_state:
         return jsonify({'message': f'Job with name [{job_name}] already exists.', 'status': False}), 403
+
+    job_template_files[job_name] = job_manifest['templates']
 
     try:
         for cluster_id in job_manifest['clusters'].keys():
