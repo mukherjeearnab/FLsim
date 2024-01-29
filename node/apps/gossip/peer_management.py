@@ -7,7 +7,7 @@ from env import env
 from helpers.semaphore import Semaphore
 
 # Client alove threshold in seconds
-ALIVE_THRESHOLD = env['DISCOVERY_INTERVAL']+5
+ALIVE_THRESHOLD = env['DISCOVERY_INTERVAL']*3
 
 UPDATE_LOCK = Semaphore()
 
