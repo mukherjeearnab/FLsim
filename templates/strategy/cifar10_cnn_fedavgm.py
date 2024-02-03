@@ -25,6 +25,11 @@ class CIFAR10Strategy(LearnStrategyBase):
             self.local_model = CIFAR10SimpleCNN()
             # self.prev_local_model = CIFAR10SimpleCNN()
 
+            self.v_momenutm = None
+
+        if not self.is_local:
+            self.beta = self.worker_extra_params['fed_avg_momentum']
+
     def parameter_mixing(self) -> None:
         '''
         An empty parameter mixing,
@@ -137,20 +142,56 @@ class CIFAR10Strategy(LearnStrategyBase):
             # get the model parameters
             global_params = self.global_model.state_dict()
 
+            # define the next global parameters
+            new_global_params = deepcopy(
+                global_params)  # Create a deep copy
+
+            # also create the gradient
+            gradient = deepcopy(global_params)
+
             # Initialize global parameters to zeros
-            for param_name, param in global_params.items():
+            for param_name, param in new_global_params.items():
+                param = param.to(self.device)
                 param.zero_()
 
-            # Aggregate client updates
+            # Initialize v_momentum to zero if not already (saves memory at client side)
+            if self.v_momenutm is None:
+                self.v_momenutm = deepcopy(global_params)
+                for param_name, param in self.v_momenutm.items():
+                    param = param.to(self.device)
+                    param.zero_()
+
+            # Aggregate client updates (basically FedAvg)
             for client_obj, weight in zip(self.client_objects, self.client_weights):
                 client_obj.local_model = client_obj.local_model.to(self.device)
                 client_state_dict = client_obj.local_model.state_dict()
 
                 for param_name, param in client_state_dict.items():
-                    global_params[param_name] += (weight * param).type(
-                        global_params[param_name].dtype)
+                    # move client param to gpu
+                    param = param.to(self.device)
 
-            self.global_model.load_state_dict(global_params)
+                    new_global_params[param_name] += (weight * param).type(
+                        new_global_params[param_name].dtype)
+
+            # compute the gradient (dw = w_old - w_new)
+            for param_name, param in new_global_params.items():
+                global_params[param_name] = global_params[param_name].to(
+                    self.device)
+
+                gradient[param_name] = torch.sub(
+                    global_params[param_name], new_global_params[param_name])
+
+            # compute new v_momentum (v = beta.v + dw)
+            for param_name, param in self.v_momenutm.items():
+                self.v_momenutm[param_name] = torch.add((self.beta * param).type(
+                    new_global_params[param_name].dtype), gradient[param_name])
+
+            # compute new global parameters (w_new = w_old - v)
+            for param_name, param in new_global_params.items():
+                new_global_params[param_name] = torch.sub(
+                    global_params[param_name], self.v_momenutm[param_name])
+
+            self.global_model.load_state_dict(new_global_params)
 
         super()._post_aggregation()
 

@@ -39,7 +39,7 @@ training:
 
 model_params:
   - &cifar_simple_cnn
-    strategy: cifar10_cnn_fedavg
+    strategy: cifar10_cnn_fedavgm
 
 client_configs:
   - &def_client
