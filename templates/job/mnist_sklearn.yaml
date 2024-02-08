@@ -1,7 +1,7 @@
 dataset:
   cluster_configs:
     - &def_random_dist
-      prep: cifar_def
+      prep: mnist_sklearn
       preprocessor: default
       distribution:
         distributor: uniform_dist_sklearn
@@ -25,7 +25,7 @@ training:
     - &cifar_train_def
       learning_rate: 0.0001
       batch_size: 256
-      local_epochs: 2
+      local_epochs: 1
       extra_params:
         fed_prox:
           mu: 0.01
@@ -39,7 +39,7 @@ training:
 
 model_params:
   - &cifar_simple_cnn
-    strategy: cifar10_cnn_fedavg
+    strategy: mnist_fedavg_sklearn
 
 client_configs:
   - &def_client
@@ -79,7 +79,6 @@ clusters:
       - node_1
     workers:
       - node_0
-      - node_1
     consensus_params:
       <<: *default_2_3
     train_params:
@@ -88,4 +87,4 @@ clusters:
       <<: *def_random_dist
 
 job_params:
-  rounds: 3
+  rounds: 10

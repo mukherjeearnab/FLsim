@@ -104,7 +104,7 @@ class LearnStrategyBase(object):
         del payload['device']
 
         # remove private and protected fields
-        for key in payload.keys():
+        for key in self.__dict__.keys():
             if key.startswith('_'):
                 del payload[key]
 
@@ -136,7 +136,7 @@ class LearnStrategyBase(object):
         del payload['device']
 
         # remove private and protected fields
-        for key in payload.keys():
+        for key in self.__dict__.keys():
             if key.startswith('_'):
                 del payload[key]
 
@@ -178,12 +178,10 @@ class LearnStrategyBase(object):
         '''
         Pre-aggregation Checks and Actions
         '''
-        self.global_model = self.global_model.to(self.device)
 
         for client_obj in self.client_objects:
             if client_obj.local_model is None:
-                client_obj.local_model = client_obj.global_model.to(
-                    self.device)
+                client_obj.local_model = client_obj.global_model
 
     def _post_aggregation(self):
         '''

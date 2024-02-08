@@ -49,7 +49,7 @@ def create_central_testset(client_test_sets: list) -> tuple:
     labels = [t[1] for t in client_test_sets]
 
     # concatenate the data and labels into a single tensor
-    if isinstance(data[0], numpy.ndarray) and isinstance(data[1], numpy.ndarray):
+    if isinstance(data[0], numpy.ndarray):
         # if numpy ndarray
         data = numpy.concatenate(data, 0)
         labels = numpy.concatenate(labels, 0)
