@@ -2,6 +2,7 @@
 Modue Containing Functions to operate on torch dataset
 '''
 import torch
+import numpy
 
 
 def train_test_split(dataset: tuple, split_weights: list) -> tuple:
@@ -48,7 +49,13 @@ def create_central_testset(client_test_sets: list) -> tuple:
     labels = [t[1] for t in client_test_sets]
 
     # concatenate the data and labels into a single tensor
-    data = torch.cat(data, 0)
-    labels = torch.cat(labels, 0)
+    if isinstance(data[0], numpy.ndarray) and isinstance(data[1], numpy.ndarray):
+        # if numpy ndarray
+        data = numpy.concatenate(data, 0)
+        labels = numpy.concatenate(labels, 0)
+    else:
+        # if pytorch tensor
+        data = torch.cat(data, 0)
+        labels = torch.cat(labels, 0)
 
     return (data, labels)
