@@ -4,6 +4,7 @@ Logic Handlers
 import dill
 import base64
 import traceback
+import numpy
 from env import env
 from base.learn_strategy import LearnStrategyBase
 from helpers.argsparse import args
@@ -86,6 +87,10 @@ def create_data_loaders(test_set, manifest: dict):
     Returns:
         train_loader, test_loader
     '''
+
+    # if instance of datasets are numpy arrays, not need for data loader
+    if isinstance(test_set[0], numpy.ndarray):
+        return test_set
 
     global_test_loader = tensor_to_data_loader(test_set,
                                                manifest['aggregator_params']['batch_size'])
