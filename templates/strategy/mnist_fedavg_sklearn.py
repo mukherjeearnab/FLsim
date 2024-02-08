@@ -6,7 +6,7 @@ from time import sleep
 from sklearn import metrics
 from templates.strategy.base.learn_strategy import LearnStrategyBase
 import numpy as np
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import LogisticRegression
 
 
 class SKLearnMNIST(LearnStrategyBase):
@@ -22,16 +22,22 @@ class SKLearnMNIST(LearnStrategyBase):
 
         if base64_state is None:
             # init the global model
-            self.global_model = SGDClassifier(
-                loss='log_loss', learning_rate='constant', eta0=0.0001, random_state=42)
+            self.global_model = LogisticRegression(
+                penalty="l2",
+                max_iter=1,  # local epoch
+                warm_start=True,  # prevent refreshing weights when fitting
+            )
             self.global_model.coef_ = np.zeros(
                 (self._n_classes, self._n_features))
             self.global_model.intercept_ = np.zeros((self._n_classes,))
             self.global_model.classes_ = np.array(
                 [i for i in range(self._n_classes)])
 
-            self.local_model = SGDClassifier(
-                loss='log_loss', learning_rate='constant', eta0=0.0001, random_state=42)
+            self.local_model = LogisticRegression(
+                penalty="l2",
+                max_iter=1,  # local epoch
+                warm_start=True,  # prevent refreshing weights when fitting
+            )
 
     def parameter_mixing(self) -> None:
         '''
@@ -59,8 +65,8 @@ class SKLearnMNIST(LearnStrategyBase):
 
         # Epoch loop
         for epoch in range(self.train_epochs):
-            self.local_model.partial_fit(
-                data, labels, classes=np.unique(labels))
+            self.local_model.fit(
+                data, labels)  # , classes=np.unique(labels))
 
             print(f"Epoch [{epoch + 1}/{self.train_epochs}]")
 

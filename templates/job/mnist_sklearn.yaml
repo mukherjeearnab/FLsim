@@ -87,4 +87,4 @@ clusters:
       <<: *def_random_dist
 
 job_params:
-  rounds: 10
+  rounds: 20
