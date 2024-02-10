@@ -14,6 +14,5 @@ class Job(object):
         '''
         self.job_name = job_name
         self.manifest = manifest
-        self.dataset_object = None
         self.dataset_root_path = None
         self.cluster2chunk_mapping = dict()

@@ -59,7 +59,8 @@ def load_job(job_name: str, job_config: str):
     try:
         _, dataset_manifest = create_dist_tree(config)
         res = post(f"{env['DATADIST_URL']}/prepare",
-                   {'job_name': job_name, 'manifest': dataset_manifest})
+                   {'job_name': job_name, 'manifest': dataset_manifest,
+                    'templates': config['templates']})
         logger.info(f'Dataset Preperation Complete for Job {job_name}')
 
         dist_metadata = res['metadata']

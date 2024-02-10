@@ -133,7 +133,7 @@ def load_consensus_params(config: dict, template_set: set):
     '''
 
     # load the dataset distributor file
-    file = f"./templates/consensus/{config['runnable']}"
+    file = f"./templates/modules/consensus/{config['runnable']}"
     config['runnable'] = {
         'file': config['runnable'],
         'content': read_py_module(file)

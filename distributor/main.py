@@ -41,8 +41,10 @@ def prepare():
     req = request.get_json()
     job_name = req['job_name']
     manifest = req['manifest']
+    templates = req['templates']
 
-    status, message = datasetDistributor.register_n_prepare(job_name, manifest)
+    status, message = datasetDistributor.register_n_prepare(
+        job_name, manifest, templates)
     metadata = datasetDistributor.get_dataset_metadata(
         job_name, None, 'complete')
 

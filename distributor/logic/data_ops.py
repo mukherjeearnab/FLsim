@@ -1,9 +1,20 @@
 '''
 Modue Containing Functions to operate on torch dataset
 '''
-import torch
-import numpy
-from templates.dataset.base.dataset_base import DatasetBase
+import dill
+import base64
+from base.dataset_base import DatasetBase
+
+
+def init_dataset_object(definition: str, dist_params: dict) -> DatasetBase:
+    '''
+    Create the dataset object and return it
+    '''
+
+    DatasetClass = dill.loads(base64.b64decode(definition.encode()))
+    dataset_obj = DatasetClass(dist_params)
+
+    return dataset_obj
 
 
 def train_test_split(train_set, dataset: DatasetBase) -> tuple:

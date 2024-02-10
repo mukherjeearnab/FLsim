@@ -77,6 +77,24 @@ def get_job_manifest(job_id: str, logicon_url: str) -> bool:
     participants = get(url, {'job_name': job_name, 'cluster_id': cluster_id})[
         'payload']
 
+    # if it is their job, download the template files first
+    if node_id in participants['clients'] or node_id in participants['workers']:
+        # set my_job flag to True
+        is_my_job = True
+
+        # download the template files
+        url = f'{logicon_url}/job/get_templates'
+        templates = get(url, {'job_name': job_name})['templates']
+
+        for template in templates:
+            filename = template['path'].split('/')[-1]
+            directory = template['path'].replace(filename, '')
+
+            create_dir_struct(directory)
+
+            with open(template['path'], 'w', encoding='utf8') as f:
+                f.write(template['content'])
+
     # if a particiapnt in client, spawn client process
     if node_id in participants['clients']:
         logger.info(f'Starting Client Process for Job [{job_id}]')
@@ -93,8 +111,6 @@ def get_job_manifest(job_id: str, logicon_url: str) -> bool:
 
         jobs_proc_state[proc_name] = client_proc
 
-        is_my_job = True
-
     # if a particiapnt in worker, spawn client process
     if node_id in participants['workers']:
         logger.info(f'Starting Worker Process for Job [{job_id}]')
@@ -110,21 +126,5 @@ def get_job_manifest(job_id: str, logicon_url: str) -> bool:
         worker_proc.start()
 
         jobs_proc_state[proc_name] = worker_proc
-
-        is_my_job = True
-
-    # if it is node's enrolled job, download the template files
-    if is_my_job:
-        url = f'{logicon_url}/job/get_templates'
-        templates = get(url, {'job_name': job_name})['templates']
-
-        for template in templates:
-            filename = template['path'].split('/')[-1]
-            directory = template['path'].replace(filename, '')
-
-            create_dir_struct(directory)
-
-            with open(template['path'], 'w', encoding='utf8') as f:
-                f.write(template['content'])
 
     return is_my_job
