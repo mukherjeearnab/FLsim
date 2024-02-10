@@ -6,11 +6,11 @@ import math
 from copy import deepcopy
 import torch
 from sklearn import metrics
-from templates.strategy.base.learn_strategy import LearnStrategyBase
-from templates.models.tiny_cnn_cifar import CIFAR10SimpleCNN
+from templates.strategy.base.torch_strategy import TorchStrategyBase
+from templates.modules.models.tiny_cnn_cifar import CIFAR10SimpleCNN
 
 
-class CIFAR10Strategy(LearnStrategyBase):
+class CIFAR10Strategy(TorchStrategyBase):
     '''
     Class for CIFAR-10 using CNN and FedAvg
     '''

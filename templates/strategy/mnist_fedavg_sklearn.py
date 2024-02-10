@@ -3,9 +3,9 @@ DistLearn Strategy for training CIFAR-10 on a simple CNN,
 using FedAvg Aggregation
 '''
 from time import sleep
+import numpy as np
 from sklearn import metrics
 from templates.strategy.base.learn_strategy import LearnStrategyBase
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 
