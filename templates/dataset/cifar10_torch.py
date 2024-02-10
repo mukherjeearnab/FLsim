@@ -39,10 +39,10 @@ class CIFAR10Dataset(TorchDatasetBase):
         returns: client_chunks (data, labels), new_client_weights
         '''
 
-        self.client_chunks, self.client_weights = torch_distribute(
+        client_chunks, self.client_weights = torch_distribute(
             self.root_dataset, self.client_weights, self.extra_params)
 
-        return self.client_chunks, self.client_weights
+        return client_chunks, self.client_weights
 
     def preprocess_data(self, train_tuple, test_tuple):
         '''
@@ -53,3 +53,7 @@ class CIFAR10Dataset(TorchDatasetBase):
         '''
 
         return train_tuple, test_tuple
+
+
+# Dont forget to set this the alias as 'DatasetDefinition'
+DatasetDefinition = CIFAR10Dataset

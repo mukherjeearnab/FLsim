@@ -28,21 +28,19 @@ class MNISTDataset(SKLearnDatasetBase):
         ((train_data, train_labels), (test_data, test_labels))
         '''
 
-        self.root_dataset = prepare_torch_dataset()
+        return prepare_torch_dataset()
 
-        return self.root_dataset
-
-    def distribute_into_chunks(self):
+    def distribute_into_chunks(self, root_dataset):
         '''
         Distribute the Root Dataset into client chunks using a distribution algorithm
 
         returns: client_chunks (data, labels), new_client_weights
         '''
 
-        self.client_chunks, self.client_weights = distribute_into_client_chunks(
-            self.root_dataset, self.client_weights, self.extra_params)
+        client_chunks, self.client_weights = distribute_into_client_chunks(
+            root_dataset, self.client_weights, self.extra_params)
 
-        return self.client_chunks, self.client_weights
+        return client_chunks, self.client_weights
 
     def preprocess_data(self, train_tuple, test_tuple):
         '''
@@ -53,3 +51,7 @@ class MNISTDataset(SKLearnDatasetBase):
         '''
 
         return train_tuple, test_tuple
+
+
+# Dont forget to set this the alias as 'DatasetDefinition'
+DatasetDefinition = MNISTDataset

@@ -22,10 +22,6 @@ class DatasetBase(object):
         self.train_test_split = dataset_params['train_test_split'] if 'train_test_split' in dataset_params else [
             0.8, 0.2]
 
-        # the root dataset and client_chunks objects
-        self.root_dataset = None
-        self.client_chunks = list()
-
     def prepare_root_dataset(self):
         '''
         Method to prepare the dataset root dataset and return it as a tuple of:
