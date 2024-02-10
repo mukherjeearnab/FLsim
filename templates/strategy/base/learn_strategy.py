@@ -6,6 +6,7 @@ import base64
 from typing import Any
 from copy import deepcopy
 import torch
+from templates.dataset.base.dataset_base import DatasetBase
 
 
 class LearnStrategyBase(object):
@@ -13,7 +14,7 @@ class LearnStrategyBase(object):
     Base class for learning strategies for DistLearn Framework
     '''
 
-    def __init__(self, hyperparams: dict, is_local: bool, device='cpu', base64_state=None):
+    def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
         # model attributes
         self.global_model = None
         self.local_model = None
@@ -31,12 +32,27 @@ class LearnStrategyBase(object):
         self.client_extra_params = hyperparams['client_extra_params'] if 'client_extra_params' in hyperparams else None
         self.worker_extra_params = hyperparams['worker_extra_params'] if 'worker_extra_params' in hyperparams else None
 
+        # dataset_object =
+        self.dataset = DatasetBase(dataset_params)
+        self._train_set = None
+        self._test_set = None
+
         # extra states
         self.is_local = is_local
         self.device = device
 
         if base64_state is not None:
             self.load_base64_state(base64_state)
+
+    def load_dataset(self, train_set, test_set):
+        '''
+        Load the training and testing datasets
+        '''
+
+        if self.is_local:
+            self._train_set = train_set
+
+        self._test_set = test_set
 
     def parameter_mixing(self):
         '''
@@ -105,7 +121,7 @@ class LearnStrategyBase(object):
 
         # remove private and protected fields
         for key in self.__dict__.keys():
-            if key.startswith('_'):
+            if key.startswith('_') and key in payload:
                 del payload[key]
 
         return payload
@@ -137,7 +153,7 @@ class LearnStrategyBase(object):
 
         # remove private and protected fields
         for key in self.__dict__.keys():
-            if key.startswith('_'):
+            if key.startswith('_') and key in payload:
                 del payload[key]
 
         return payload

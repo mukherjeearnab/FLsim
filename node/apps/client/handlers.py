@@ -33,6 +33,8 @@ def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict
             'client_extra_params': manifest['train_params']['extra_params']
         }
 
+        dataset_params = manifest['dataset_params']
+
         StrategyClass = dill.loads(base64.b64decode(
             manifest['model_params']['strategy']['definition'].encode()))
 

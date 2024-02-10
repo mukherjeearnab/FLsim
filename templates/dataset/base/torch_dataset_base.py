@@ -2,6 +2,7 @@
 DistLearn Dataset Definition Class for PyTorch
 '''
 import torch
+import torch.utils.data as data_utils
 from templates.dataset.base.dataset_base import DatasetBase
 
 
@@ -74,6 +75,14 @@ class TorchDatasetBase(DatasetBase):
         # returns (train_set, test_set)
         return (train_test_chunks[0], train_test_chunks[1])
 
+    def load_dataset(self, dataset, batch_size: int):
+        '''
+        Load Dataset after reading it's pickle from file
+        What it does is creates torch data loaders for the dataset
+        '''
+
+        return self._tensor_to_data_loader(dataset, batch_size)
+
     @staticmethod
     def concatenate_method(tensors: list):
         '''
@@ -90,3 +99,17 @@ class TorchDatasetBase(DatasetBase):
         '''
 
         raise NotImplementedError
+
+    @staticmethod
+    def _tensor_to_data_loader(dataset: tuple, batch_size: int):
+        '''
+        convert dataset tensor to data loader object
+        '''
+
+        data, labels = dataset
+
+        train = data_utils.TensorDataset(data, labels)
+        train_loader = data_utils.DataLoader(
+            train, batch_size, shuffle=True, num_workers=2)
+
+        return train_loader

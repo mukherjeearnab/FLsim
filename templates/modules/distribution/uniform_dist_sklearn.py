@@ -5,7 +5,7 @@ returns as a list of np arrays
 import numpy as np
 
 
-def distribute_into_client_chunks(dataset: tuple, client_weights: list, extra_params: dict, train=False) -> list:
+def distribute_into_client_chunks(dataset: tuple, client_weights: list, extra_params: dict, train=False):
     '''
     Creates client chunks by splitting the original dataset into 
     len(client_weights) chunks, based on the diritchlet distribution.

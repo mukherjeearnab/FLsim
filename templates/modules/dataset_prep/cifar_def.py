@@ -8,7 +8,7 @@ import torchvision
 import torchvision.transforms as transforms
 
 
-def prepare_dataset():
+def prepare_torch_dataset():
     '''
     Prepare the CIFAR10 Dataset here for Distribution to Clients
     NOTE: Returns the Train Set as the complete dataset.

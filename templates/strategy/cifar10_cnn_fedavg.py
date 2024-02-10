@@ -7,6 +7,7 @@ from copy import deepcopy
 import torch
 from sklearn import metrics
 from templates.strategy.base.torch_strategy import TorchStrategyBase
+from templates.dataset.cifar10_torch import CIFAR10Dataset
 from templates.modules.models.tiny_cnn_cifar import CIFAR10SimpleCNN
 
 
@@ -15,8 +16,10 @@ class CIFAR10Strategy(TorchStrategyBase):
     Class for CIFAR-10 using CNN and FedAvg
     '''
 
-    def __init__(self, hyperparams: dict, is_local: bool, device='cpu', base64_state=None):
+    def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
         super().__init__(hyperparams, is_local, device, base64_state)
+
+        self.dataset = CIFAR10Dataset(dataset_params)
 
         if base64_state is None:
             # init the global model
@@ -36,7 +39,7 @@ class CIFAR10Strategy(TorchStrategyBase):
         # set the parameters for local as global model
         self.local_model.load_state_dict(self.global_model.state_dict())
 
-    def train(self, train_loader: torch.utils.data.DataLoader) -> None:
+    def train(self) -> None:
         '''
         Executes CrossEntropyLoss and Adam based Loop
         '''
@@ -53,7 +56,7 @@ class CIFAR10Strategy(TorchStrategyBase):
             self.local_model.train()
             total_loss = 0.0
 
-            for i, (inputs, labels) in enumerate(train_loader, 1):
+            for i, (inputs, labels) in enumerate(self._train_set, 1):
 
                 # move tensors to the device, cpu or gpu
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
@@ -65,13 +68,14 @@ class CIFAR10Strategy(TorchStrategyBase):
                 optimizer.step()
                 total_loss += loss.item()
 
-                print(f'Processing Batch {i}/{len(train_loader)}.', end='\r')
+                print(
+                    f'Processing Batch {i}/{len(self._train_set)}.', end='\r')
 
-            average_loss = total_loss / len(train_loader)
+            average_loss = total_loss / len(self._train_set)
             print(
                 f"Epoch [{epoch + 1}/{self.train_epochs}] - Loss: {average_loss:.4f}")
 
-    def test(self, test_loader: torch.utils.data.DataLoader) -> dict:
+    def test(self) -> dict:
         '''
         Tests the model using the test loader, and returns the metrics as a dict
         '''
@@ -94,7 +98,7 @@ class CIFAR10Strategy(TorchStrategyBase):
 
             val_loss = 0.0
 
-            for i, (inputs, labels) in enumerate(test_loader, 1):
+            for i, (inputs, labels) in enumerate(self._test_set, 1):
                 # move tensors to the device, cpu or gpu
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
 
@@ -111,9 +115,9 @@ class CIFAR10Strategy(TorchStrategyBase):
                 preds += predicted.tolist()
 
                 print(
-                    f'Processing batch {i} out of {len(test_loader)}', end='\r')
+                    f'Processing batch {i} out of {len(self._test_set)}', end='\r')
 
-            average_loss = val_loss / len(test_loader)
+            average_loss = val_loss / len(self._test_set)
 
         results = self.__get_metrics(actuals, preds)
 

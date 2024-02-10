@@ -5,7 +5,7 @@ import numpy
 from templates.dataset.base.dataset_base import DatasetBase
 
 
-class TorchDatasetBase(DatasetBase):
+class SKLearnDatasetBase(DatasetBase):
     '''
     Base Class for Dataset Definition
     '''
@@ -67,6 +67,16 @@ class TorchDatasetBase(DatasetBase):
 
         # returns (train_set, test_set)
         return (train_test_chunks[0], train_test_chunks[1])
+
+    def load_dataset(self, dataset):
+        '''
+        Load Dataset after reading it's pickle from file
+
+        for SKLearn, it does nothing (since the dataset is already a numpy ndarray)
+        (for torch, it converted it to data loaders)
+        '''
+
+        return dataset
 
     @staticmethod
     def concatenate_method(tensors: list):

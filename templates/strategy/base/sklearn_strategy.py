@@ -1,33 +1,20 @@
 '''
-DistLearn Strategy for PyTorch Workflow
+DistLearn Strategy for SKLearn Workflow
 '''
 import torch
 from templates.strategy.base.learn_strategy import LearnStrategyBase
-from templates.dataset.base.torch_dataset_base import TorchDatasetBase
+from templates.dataset.base.sklearn_dataset_base import SKLearnDatasetBase
 
 
-class TorchStrategyBase(LearnStrategyBase):
+class SKLearnStrategyBase(LearnStrategyBase):
     '''
-    Class for Strategy Base for PyTorch-based training
+    Class for Strategy Base for SKLearn-based training
     '''
 
     def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
-        super().__init__(hyperparams, is_local, device, base64_state)
+        super().__init__(hyperparams, dataset_params, is_local, device, base64_state)
 
-        self.dataset = TorchDatasetBase(dataset_params)
-
-    def load_dataset(self, train_set, test_set):
-        '''
-        Load the training and testing datasets
-        '''
-
-        if self.is_local:
-            # create the dataset loaders
-            self._train_set = self.dataset.load_dataset(
-                train_set, self.train_batch_size)
-
-        self._test_set = self.dataset.load_dataset(
-            test_set, self.test_batch_size)
+        self.dataset = SKLearnDatasetBase(dataset_params)
 
     def parameter_mixing(self) -> None:
         '''

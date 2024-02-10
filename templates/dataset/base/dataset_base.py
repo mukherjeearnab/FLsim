@@ -12,10 +12,10 @@ class DatasetBase(object):
 
         self.dataset_download_dir = './datasets'
 
-        self.chunk_ratio = dataset_params['chunks'] if 'chunks' in dataset_params else None
+        self.client_weights = dataset_params['chunks'] if 'chunks' in dataset_params else None
 
         # if the distribution weights cannot be predetermined
-        self.dynamic_weights = True if self.chunk_ratio is None else False
+        self.dynamic_weights = True if self.client_weights is None else False
 
         self.extra_params = dataset_params['extra_params'] if 'extra_params' in dataset_params else None
 
@@ -52,6 +52,14 @@ class DatasetBase(object):
         Input: dataset (type: tuple) as (data, labels)
 
         Output: train_test_sets (type: list) as [((train_data, train_labels), (test_data, test_labels))]
+        '''
+
+        raise NotImplementedError
+
+    @staticmethod
+    def load_dataset():
+        '''
+        Load Dataset after reading it's pickle from file
         '''
 
         raise NotImplementedError
