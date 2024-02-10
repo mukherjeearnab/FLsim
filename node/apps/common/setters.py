@@ -30,17 +30,14 @@ def update_node_status(job_name: str, cluster_id: str, node_type: str, status: i
             res = post(url, {'job_name': job_name, 'cluster_id': cluster_id, f'{node_type}_id': node_id,
                              'status': status, 'extra_data': extra_data})
 
-            logger.info(
-                f'[{node_type}] {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
-
             if not res['status']:
                 logger.error(
-                    f'[{node_type}] {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
+                    f'[{node_type}]({status}) {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
                 raise AssertionError(
-                    f'[{node_type}] Failed to Update Node Status for job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
+                    f'[{node_type}]({status}) Failed to Update Node Status for job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
             else:
                 logger.success(
-                    f'[{node_type}] {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
+                    f'[{node_type}]({status}) {res["message"]} job [{job_name}] cluster [{cluster_id}] node [{node_id}]')
 
             break
         except Exception:
