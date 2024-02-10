@@ -2,13 +2,11 @@
 Key Value Store Class
 '''
 import traceback
-import threading
 import hashlib
 from typing import Tuple, Any, Union
 from logic.job_object import Job
-from logic.data_ops import create_central_testset, train_test_split
+from logic.data_ops import init_dataset_object, create_central_testset, train_test_split
 from helpers.logging import logger
-from helpers.dynamod import load_module
 from helpers.file import torch_write, torch_read, set_OK_file, check_OK_file
 from helpers.file import create_dir_struct, file_exists
 
@@ -56,12 +54,22 @@ class DatasetDistributor(object):
 
         return self.jobs[job_name].cluster2chunk_mapping[cluster_id][metadata]
 
-    def register_n_prepare(self, job_name: str, manifest: dict) -> Tuple[bool, str]:
+    def register_n_prepare(self, job_name: str, manifest: dict, templates: list) -> Tuple[bool, str]:
         '''
         Register a Job and prepare the dataset based on the given manifest
         '''
         if job_name in self.jobs:
             return False, "Job already registered."
+
+        # write out the template files
+        for template in templates:
+            filename = template['path'].split('/')[-1]
+            directory = template['path'].replace(filename, '')
+
+            create_dir_struct(directory)
+
+            with open(template['path'], 'w', encoding='utf8') as f:
+                f.write(template['content'])
 
         self.jobs[job_name] = Job(job_name, manifest)
 
@@ -92,8 +100,11 @@ class DatasetDistributor(object):
         '''
         Function to prepare the root dataset
         '''
-        dataset_prep_file = job.manifest['0']['params']['prep']['content']
-        job.dataset_prep_mod = job.manifest['0']['params']['prep']['file']
+        dataset_obj = init_dataset_object(
+            job.manifest['0']['params']['dataset']['definition'],
+            job.manifest['0']['params']['distribution'])
+
+        job.dataset_prep_mod = dataset_obj.dataset_name
         job.dataset_root_path = f"./datasets/deploy/{job.dataset_prep_mod}/root"
 
         # create the directory structures
@@ -103,11 +114,8 @@ class DatasetDistributor(object):
         if not check_OK_file(job.dataset_root_path):
             # load the dataset prep module
             try:
-                dataset_prep_module = load_module(
-                    'dataset_prep', dataset_prep_file)
-
                 # obtain the dataset as data and labels
-                (train_set, test_set) = dataset_prep_module.prepare_dataset()
+                (train_set, test_set) = dataset_obj.prepare_root_dataset()
             except Exception:
                 logger.info(
                     f'Error Executing Dataset Prep Module.\n{traceback.format_exc()}')
@@ -163,48 +171,36 @@ class DatasetDistributor(object):
         logger.info(f"Working on cluster [{cluster['id']}]")
         return_status = 0
 
-        dynamic_dist = 'chunks' not in cluster['params']['distribution']
-        chunk_save_path = None
+        dataset_obj = init_dataset_object(
+            cluster['params']['dataset']['definition'],
+            cluster['params']['distribution'])
 
-        # create chunk dir name (if client weights are specified)
-        if not dynamic_dist:
-            chunk_dir_name = f"{cluster['params']['distribution']['distributor']['file']}/dist"
-            dist = "".join(
-                [f"-{chunk}" for chunk in cluster['params']['distribution']['chunks']])
-            chunk_dir_name = chunk_dir_name + \
-                hashlib.md5(dist.encode()).hexdigest()
-            chunk_save_path = f"{chunk_path}/{chunk_dir_name}"
+        dynamic_dist = dataset_obj.dynamic_weights
+        chunk_save_path = None
 
         extra_params = cluster['params']['distribution']['extra_params']
         num_clients = cluster['num_clients']
-        chunks_ratio = [
-            0.1 for _ in range(num_clients)] if dynamic_dist else cluster['params']['distribution']['chunks']
+        dataset_obj.client_weights = [0.1 for _ in range(
+            num_clients)] if dynamic_dist else dataset_obj.client_weights
 
         # if chunk datasets are already not prepared, then prepare them
         if dynamic_dist or (not check_OK_file(chunk_save_path)):
             # load the dataset prep module
             try:
-                distributor_module = load_module(
-                    'distributor', cluster['params']['distribution']['distributor']['content'])
-
                 # obtain the dataset as data and labels
-                train_chunks, new_client_weights = distributor_module.distribute_into_client_chunks(train_set,
-                                                                                                    chunks_ratio,
-                                                                                                    extra_params, train=True)
-                cluster['params']['distribution']['chunks'] = new_client_weights
+                train_chunks, _ = dataset_obj.distribute_into_chunks(train_set)
             except:
                 logger.info(
                     f'Error Executing Dataset Distributor. Terminating...\n{traceback.format_exc()}')
                 return 1
 
-            # if dynamic distribution, update the dist chunk dir name with updated weights
-            if dynamic_dist:
-                chunk_dir_name = f"{cluster['params']['distribution']['distributor']['file']}/dist-"
-                dist = "".join(
-                    [f"-{chunk}" for chunk in cluster['params']['distribution']['chunks']])
-                chunk_dir_name = chunk_dir_name + \
-                    hashlib.md5(dist.encode()).hexdigest()
-                chunk_save_path = f"{chunk_path}/{chunk_dir_name}"
+            # create the chunk dir name
+            chunk_dir_name = f"{dataset_obj.distribution_method}/dist-"
+            dist = "".join(
+                [f"-{chunk}" for chunk in dataset_obj.client_weights])
+            chunk_dir_name = chunk_dir_name + \
+                hashlib.md5(dist.encode()).hexdigest()
+            chunk_save_path = f"{chunk_path}/{chunk_dir_name}"
 
             # check if already done with distribution
             if check_OK_file(chunk_save_path):
@@ -213,22 +209,25 @@ class DatasetDistributor(object):
                 create_dir_struct(chunk_save_path)
 
                 if test_set is not None:
-                    test_chunks, _ = distributor_module.distribute_into_client_chunks(test_set,
-                                                                                      chunks_ratio,
-                                                                                      extra_params)
+                    try:
+                        # obtain the dataset as data and labels
+                        test_chunks, _ = dataset_obj.distribute_into_chunks(
+                            test_set)
+                    except:
+                        logger.info(
+                            f'Error Executing Dataset Distributor. Terminating...\n{traceback.format_exc()}')
+                        return 1
 
                 # if test set is not available, split the chunks into train and test sets
                 if test_set is None:
-                    split_ratio = list(
-                        cluster['params']['train_test_split'].values())
-                    chunks = [train_test_split(chunk, split_ratio)
+                    chunks = [train_test_split(dataset_obj, chunk)
                               for chunk in train_chunks]
                 else:  # if test set is available, merge the train-test chunks into one
                     chunks = list(zip(train_chunks, test_chunks))
 
                 # create the global test set
-                global_test_set = create_central_testset(
-                    [chunk[1] for chunk in chunks])
+                global_test_set = create_central_testset(dataset_obj,
+                                                         [chunk[1] for chunk in chunks])
 
                 # saving chunks and global test dataset to disk
                 try:
@@ -255,7 +254,7 @@ class DatasetDistributor(object):
                     # write the distribution ratio file
                     with open(f'{chunk_save_path}/distribution_ratio.txt', 'w', encoding='utf8') as f:
                         f.writelines(
-                            [f'{chunk}\n' for chunk in cluster['params']['distribution']['chunks']])
+                            [f'{chunk}\n' for chunk in dataset_obj.client_weights])
 
                     # set the OK file
                     set_OK_file(chunk_save_path)
@@ -272,7 +271,7 @@ class DatasetDistributor(object):
         ############################
         # define cluster to chunk mapping for the cluster
         client_weights = {node_id: weight for node_id,
-                          weight in zip(cluster['clients'], cluster['params']['distribution']['chunks'])}
+                          weight in zip(cluster['clients'], dataset_obj.client_weights)}
 
         job.cluster2chunk_mapping[cluster['id']] = {
             'global_test': f"{chunk_save_path}/global_test.tuple",

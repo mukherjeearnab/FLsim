@@ -3,19 +3,22 @@ DistLearn Strategy for training CIFAR-10 on a simple CNN,
 using FedAvg Aggregation
 '''
 from time import sleep
-from sklearn import metrics
-from templates.strategy.base.learn_strategy import LearnStrategyBase
 import numpy as np
+from sklearn import metrics
+from templates.strategy.base.sklearn_strategy import SKLearnStrategyBase
+from templates.dataset.mnist_sklearn import MNISTDataset
 from sklearn.linear_model import LogisticRegression
 
 
-class SKLearnMNIST(LearnStrategyBase):
+class SKLearnMNIST(SKLearnStrategyBase):
     '''
     Class for CIFAR-10 using CNN and FedAvg
     '''
 
-    def __init__(self, hyperparams: dict, is_local: bool, device='cpu', base64_state=None):
-        super().__init__(hyperparams, is_local, device, base64_state)
+    def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
+        super().__init__(hyperparams, dataset_params, is_local, device, base64_state)
+
+        self.dataset = MNISTDataset(dataset_params)
 
         self._n_classes = 10  # MNIST has 10 classes
         self._n_features = 784  # Number of features in dataset
@@ -47,18 +50,16 @@ class SKLearnMNIST(LearnStrategyBase):
         # move local model to previous local model
         # self.prev_local_model = self.local_model
 
-        print(self.global_model.coef_)
-
         # set the parameters for local as global model
         self.local_model.coef_ = self.global_model.coef_
         self.local_model.intercept_ = self.global_model.intercept_
 
-    def train(self, train_loader: np.ndarray) -> None:
+    def train(self) -> None:
         '''
-        Executes CrossEntropyLoss and Adam based Loop
+        Executes Fit for the model
         '''
 
-        data, labels = train_loader
+        data, labels = self._train_set
 
         nsamples, nx, ny = data.shape
         data = data.reshape((nsamples, nx*ny))
@@ -70,12 +71,12 @@ class SKLearnMNIST(LearnStrategyBase):
 
             print(f"Epoch [{epoch + 1}/{self.train_epochs}]")
 
-    def test(self, test_loader: np.ndarray) -> dict:
+    def test(self) -> dict:
         '''
         Tests the model using the test loader, and returns the metrics as a dict
         '''
 
-        data, labels = test_loader
+        data, labels = self._test_set
 
         nsamples, nx, ny = data.shape
         data = data.reshape((nsamples, nx*ny))
@@ -125,7 +126,7 @@ class SKLearnMNIST(LearnStrategyBase):
         '''
 
         self.client_objects.append(SKLearnMNIST(
-            {}, True, self.device, bash64_state))
+            {}, {}, True, self.device, bash64_state))
 
         self.client_weights.append(client_weight)
 

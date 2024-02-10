@@ -1,20 +1,18 @@
 dataset:
   cluster_configs:
-    - &def_random_dist
-      prep: cifar_def
-      preprocessor: default
+    - &dataset_default
+      dataset: cifar10_torch
       distribution:
-        distributor: diritchlet_dist
-        # chunks:
-        #   - 0.1
-        #   - 0.9
+        # client_weights:
+        #   - 0.5
+        #   - 0.5
         extra_params:
           diritchlet:
             alpha: 1.0
             seed: 10
-      train_test_split:
-        train: 0.8
-        test: 0.2
+        train_test_split:
+          train: 0.8
+          test: 0.2
 
 consensus:
   - &default_2_3
@@ -48,7 +46,7 @@ client_configs:
     train_params:
       <<: *cifar_train_def
     dataset_params:
-      <<: *def_random_dist
+      <<: *dataset_default
 
 worker_configs:
   - &def_worker
@@ -57,7 +55,7 @@ worker_configs:
     aggregator_params:
       <<: *fed_avg_def
     dataset_params:
-      <<: *def_random_dist
+      <<: *dataset_default
 
 clients:
   node_0:
@@ -85,7 +83,7 @@ clusters:
     train_params:
       cluster_epochs: 1
     dataset_params:
-      <<: *def_random_dist
+      <<: *dataset_default
 
 job_params:
-  rounds: 3
+  rounds: 20

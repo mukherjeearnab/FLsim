@@ -6,6 +6,7 @@ import base64
 from typing import Any
 from copy import deepcopy
 import torch
+from base.dataset_base import DatasetBase
 
 
 class LearnStrategyBase(object):
@@ -13,7 +14,7 @@ class LearnStrategyBase(object):
     Base class for learning strategies for DistLearn Framework
     '''
 
-    def __init__(self, hyperparams: dict, is_local: bool, device='cpu', base64_state=None):
+    def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
         # model attributes
         self.global_model = None
         self.local_model = None
@@ -31,12 +32,27 @@ class LearnStrategyBase(object):
         self.client_extra_params = hyperparams['client_extra_params'] if 'client_extra_params' in hyperparams else None
         self.worker_extra_params = hyperparams['worker_extra_params'] if 'worker_extra_params' in hyperparams else None
 
+        # dataset_object =
+        self.dataset = DatasetBase(dataset_params)
+        self._train_set = None
+        self._test_set = None
+
         # extra states
         self.is_local = is_local
         self.device = device
 
         if base64_state is not None:
             self.load_base64_state(base64_state)
+
+    def load_dataset(self, train_set, test_set):
+        '''
+        Load the training and testing datasets
+        '''
+
+        if self.is_local:
+            self._train_set = train_set
+
+        self._test_set = test_set
 
     def parameter_mixing(self):
         '''
@@ -46,21 +62,17 @@ class LearnStrategyBase(object):
 
         raise NotImplementedError
 
-    def train(self, train_loader: torch.utils.data.DataLoader):
+    def train(self):
         '''
         Method to train the model for e epochs
         '''
 
-        _ = train_loader
-
         raise NotImplementedError
 
-    def test(self, test_loader: torch.utils.data.DataLoader):
+    def test(self):
         '''
         Method to test the model
         '''
-
-        _ = test_loader
 
         raise NotImplementedError
 
@@ -104,8 +116,8 @@ class LearnStrategyBase(object):
         del payload['device']
 
         # remove private and protected fields
-        for key in payload.keys():
-            if key.startswith('_'):
+        for key in self.__dict__.keys():
+            if key.startswith('_') and key in payload:
                 del payload[key]
 
         return payload
@@ -136,8 +148,8 @@ class LearnStrategyBase(object):
         del payload['device']
 
         # remove private and protected fields
-        for key in payload.keys():
-            if key.startswith('_'):
+        for key in self.__dict__.keys():
+            if key.startswith('_') and key in payload:
                 del payload[key]
 
         return payload
@@ -173,6 +185,24 @@ class LearnStrategyBase(object):
 
         for key, value in state_dict.items():
             self.__dict__[key] = value
+
+    def _pre_aggregation(self):
+        '''
+        Pre-aggregation Checks and Actions
+        '''
+
+        for client_obj in self.client_objects:
+            if client_obj.local_model is None:
+                client_obj.local_model = client_obj.global_model
+
+    def _post_aggregation(self):
+        '''
+        Post-aggregation Checks and Actions
+        '''
+
+        # empty out client_objects
+        self.client_objects = list()
+        self.client_weights = list()
 
     @staticmethod
     def __base64_encode(obj: Any) -> str:

@@ -7,7 +7,7 @@ import numpy as np
 from collections import Counter
 
 
-def distribute_into_client_chunks(dataset: tuple, client_weights: list, extra_params: dict, train=False) -> list:
+def torch_distribute(dataset: tuple, client_weights: list, extra_params: dict):
     '''
     Creates client chunks by splitting the original dataset into 
     len(client_weights) chunks, based on the diritchlet distribution.

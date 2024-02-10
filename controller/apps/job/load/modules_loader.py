@@ -117,29 +117,14 @@ def load_dataset_params(config: dict, template_set: set):
     FL Dataset Modules Loader
     '''
     # load the dataset prep file
-    file = f"./templates/dataset_prep/{config['prep']}"
-    config['prep'] = {
-        'file': config['prep'],
-        'content': read_py_module(file)
+    config['dataset'] = {
+        'file': config['dataset'],
+        'definition': dump_dataset_definition(config['dataset']),
+        'deps': get_dependencies(f"./templates/dataset/{config['dataset']}.py")
     }
-    template_set.add(file)
 
-    # load the dataset preprocessor file
-    file = f"./templates/preprocessor/{config['preprocessor']}"
-    config['preprocessor'] = {
-        'file': config['prep'],
-        'content': read_py_module(file)
-    }
-    template_set.add(file)
-
-    # load the dataset distributor file
-    file = f"./templates/distribution/{config['distribution']['distributor']}"
-
-    config['distribution']['distributor'] = {
-        'file': config['distribution']['distributor'],
-        'content': read_py_module(file)
-    }
-    template_set.add(file)
+    for template in config['dataset']['deps']:
+        template_set.add(template)
 
 
 def load_consensus_params(config: dict, template_set: set):
@@ -148,7 +133,7 @@ def load_consensus_params(config: dict, template_set: set):
     '''
 
     # load the dataset distributor file
-    file = f"./templates/consensus/{config['runnable']}"
+    file = f"./templates/modules/consensus/{config['runnable']}"
     config['runnable'] = {
         'file': config['runnable'],
         'content': read_py_module(file)
@@ -166,6 +151,24 @@ def dump_strategy_definition(strategy_name: str):
     strategy_module = importlib.import_module(module_name)
 
     class_def = strategy_module.StrategyDefinition
+
+    def_bytes = dill.dumps(class_def)
+
+    def_b64str = base64.b64encode(def_bytes).decode('utf8')
+
+    return def_b64str
+
+
+def dump_dataset_definition(strategy_name: str):
+    '''
+    Load the Dataset Strategy Definition as a module and extract the class definition
+    and pickle using dill and return the base64 representation
+    '''
+    module_name = f'templates.dataset.{strategy_name}'
+
+    strategy_module = importlib.import_module(module_name)
+
+    class_def = strategy_module.DatasetDefinition
 
     def_bytes = dill.dumps(class_def)
 

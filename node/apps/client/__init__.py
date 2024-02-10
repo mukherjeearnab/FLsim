@@ -84,11 +84,10 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
     # 4.1. Preprocess Dataset and Load it
     train_set, test_set = handlers.load_dataset(job_name, cluster_id, node_type,
-                                                file_name, dataset_path, manifest)
+                                                file_name, dataset_path, strategy)
 
-    # also create the data loaders for the train set and test set
-    train_loader, test_loader = handlers.create_data_loaders(
-        train_set, test_set, manifest)
+    # also load the dataset into the strategy object
+    strategy.load_dataset(train_set, test_set)
 
     # 5. ACK of Dataset Download (Client Status to 2) & Send Back Initial Model (Global) Parameters
     # 5.1 Upload Initial Model (Global) Parameters to P2P Store
@@ -121,11 +120,11 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 9. Load Model and Start Local Training
         handlers.train_model(job_name, cluster_id, node_type,
-                             strategy, train_loader)
+                             strategy)
 
         # 9.1. Test Trained Model
         metrics = handlers.test_model(job_name, cluster_id, node_type,
-                                      strategy, test_loader)
+                                      strategy)
 
         # calculate round time
         end_time = time()

@@ -28,10 +28,14 @@ def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict
 
     try:
         hyperparams = {
+            'train_batch_size': manifest['train_params']['batch_size'],
+            'test_batch_size': manifest['train_params']['batch_size'],
             'learning_rate': manifest['train_params']['learning_rate'],
             'train_epochs': manifest['train_params']['local_epochs'],
             'client_extra_params': manifest['train_params']['extra_params']
         }
+
+        dataset_params = manifest['dataset_params']['distribution']
 
         StrategyClass = dill.loads(base64.b64decode(
             manifest['model_params']['strategy']['definition'].encode()))
@@ -39,7 +43,7 @@ def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict
         device = get_device() if env['CLIENT_USE_CUDA'] == 1 else 'cpu'
 
         strategy = StrategyClass(
-            hyperparams, is_local=True, device=device)
+            hyperparams, dataset_params, is_local=True, device=device)
 
         return strategy
     except Exception:
@@ -48,14 +52,14 @@ def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict
         _fail_exit(job_name, cluster_id, node_type)
 
 
-def load_dataset(job_name: str, cluster_id: str, node_type: str, file_name: str, dataset_path: str, manifest: dict):
+def load_dataset(job_name: str, cluster_id: str, node_type: str, file_name: str, dataset_path: str, strategy: LearnStrategyBase):
     '''
     Load the downloaded dataset on memory and execute the preprocessing scripts on it.
     '''
 
     try:
         (train_set, test_set) = training.data_preprocessing(file_name, dataset_path,
-                                                            manifest['dataset_params']['preprocessor']['content'])
+                                                            strategy)
 
         return train_set, test_set
     except Exception:
@@ -80,14 +84,14 @@ def parameter_mixing(job_name: str, cluster_id: str, manifest: dict, node_type: 
 
 
 def train_model(job_name: str, cluster_id: str, node_type: str,
-                strategy: LearnStrategyBase, train_loader):
+                strategy: LearnStrategyBase):
     '''
     Train the Local Model
     '''
     try:
         logger.info(
             f'Starting Local Training with {strategy.train_epochs} EPOCHS')
-        strategy.train(train_loader)
+        strategy.train()
         logger.info(
             f'Completed Local Training with {strategy.train_epochs} EPOCHS')
     except Exception:
@@ -97,12 +101,12 @@ def train_model(job_name: str, cluster_id: str, node_type: str,
 
 
 def test_model(job_name: str, cluster_id: str, node_type: str,
-               strategy: LearnStrategyBase, test_loader):
+               strategy: LearnStrategyBase):
     '''
     Test the Local Model
     '''
     try:
-        metrics = strategy.test(test_loader)
+        metrics = strategy.test()
 
         return metrics
     except Exception:

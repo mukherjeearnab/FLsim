@@ -105,8 +105,11 @@ def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict
 
     try:
         hyperparams = {
+            'test_batch_size': manifest['aggregator_params']['batch_size'],
             'worker_extra_params': manifest['aggregator_params']['extra_params']
         }
+
+        dataset_params = manifest['dataset_params']['distribution']
 
         StrategyClass = dill.loads(base64.b64decode(
             manifest['model_params']['strategy']['definition'].encode()))
@@ -114,7 +117,7 @@ def init_strategy(job_name: str, cluster_id: str, node_type: str, manifest: dict
         device = get_device() if env['WORKER_USE_CUDA'] == 1 else 'cpu'
 
         strategy = StrategyClass(
-            hyperparams, is_local=False, device=device)
+            hyperparams, dataset_params, is_local=False, device=device)
 
         return strategy
     except Exception:
@@ -162,12 +165,12 @@ def run_aggregator(job_name: str, cluster_id: str, node_type: str,
 
 
 def test_model(job_name: str, cluster_id: str, node_type: str,
-               strategy: LearnStrategyBase, test_loader):
+               strategy: LearnStrategyBase):
     '''
     Test the Aggregated Global Model
     '''
     try:
-        metrics = strategy.test(test_loader)
+        metrics = strategy.test()
 
         return metrics
     except Exception:
