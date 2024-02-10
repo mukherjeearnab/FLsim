@@ -6,6 +6,7 @@ from time import sleep
 import numpy as np
 from sklearn import metrics
 from templates.strategy.base.sklearn_strategy import SKLearnStrategyBase
+from templates.dataset.mnist_sklearn import MNISTDataset
 from sklearn.linear_model import LogisticRegression
 
 
@@ -16,6 +17,8 @@ class SKLearnMNIST(SKLearnStrategyBase):
 
     def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
         super().__init__(hyperparams, dataset_params, is_local, device, base64_state)
+
+        self.dataset = MNISTDataset(dataset_params)
 
         self._n_classes = 10  # MNIST has 10 classes
         self._n_features = 784  # Number of features in dataset
