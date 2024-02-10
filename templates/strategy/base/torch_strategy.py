@@ -12,7 +12,7 @@ class TorchStrategyBase(LearnStrategyBase):
     '''
 
     def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
-        super().__init__(hyperparams, is_local, device, base64_state)
+        super().__init__(hyperparams, dataset_params, is_local, device, base64_state)
 
         self.dataset = TorchDatasetBase(dataset_params)
 
@@ -21,7 +21,7 @@ class TorchStrategyBase(LearnStrategyBase):
         Load the training and testing datasets
         '''
 
-        if self.is_local:
+        if train_set is not None:
             # create the dataset loaders
             self._train_set = self.dataset.load_dataset(
                 train_set, self.train_batch_size)

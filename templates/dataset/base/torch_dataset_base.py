@@ -93,7 +93,7 @@ class TorchDatasetBase(DatasetBase):
 
         return torch.cat(tensors, 0)
 
-    def preprocess_data(self):
+    def preprocess_data(self, train_tuple, test_tuple):
         '''
         Preprocess dataset at client / server side
         '''
@@ -108,8 +108,8 @@ class TorchDatasetBase(DatasetBase):
 
         data, labels = dataset
 
-        train = data_utils.TensorDataset(data, labels)
-        train_loader = data_utils.DataLoader(
-            train, batch_size, shuffle=True, num_workers=2)
+        dataset = data_utils.TensorDataset(data, labels)
+        dataset_loader = data_utils.DataLoader(
+            dataset, batch_size, shuffle=True, num_workers=2)
 
-        return train_loader
+        return dataset_loader

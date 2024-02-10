@@ -17,7 +17,7 @@ class CIFAR10Strategy(TorchStrategyBase):
     '''
 
     def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
-        super().__init__(hyperparams, is_local, device, base64_state)
+        super().__init__(hyperparams, dataset_params, is_local, device, base64_state)
 
         self.dataset = CIFAR10Dataset(dataset_params)
 
@@ -164,7 +164,7 @@ class CIFAR10Strategy(TorchStrategyBase):
         '''
 
         self.client_objects.append(CIFAR10Strategy(
-            {}, True, self.device, bash64_state))
+            {}, {}, True, self.device, bash64_state))
 
         self.client_weights.append(client_weight)
 

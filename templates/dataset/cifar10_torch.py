@@ -28,11 +28,9 @@ class CIFAR10Dataset(TorchDatasetBase):
         ((train_data, train_labels), (test_data, test_labels))
         '''
 
-        self.root_dataset = prepare_torch_dataset()
+        return prepare_torch_dataset()
 
-        return self.root_dataset
-
-    def distribute_into_chunks(self):
+    def distribute_into_chunks(self, root_dataset):
         '''
         Distribute the Root Dataset into client chunks using a distribution algorithm
 
@@ -40,7 +38,7 @@ class CIFAR10Dataset(TorchDatasetBase):
         '''
 
         client_chunks, self.client_weights = torch_distribute(
-            self.root_dataset, self.client_weights, self.extra_params)
+            root_dataset, self.client_weights, self.extra_params)
 
         return client_chunks, self.client_weights
 

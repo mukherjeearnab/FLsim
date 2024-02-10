@@ -62,21 +62,17 @@ class LearnStrategyBase(object):
 
         raise NotImplementedError
 
-    def train(self, train_loader: torch.utils.data.DataLoader):
+    def train(self):
         '''
         Method to train the model for e epochs
         '''
 
-        _ = train_loader
-
         raise NotImplementedError
 
-    def test(self, test_loader: torch.utils.data.DataLoader):
+    def test(self):
         '''
         Method to test the model
         '''
-
-        _ = test_loader
 
         raise NotImplementedError
 

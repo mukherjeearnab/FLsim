@@ -15,7 +15,7 @@ class DatasetBase(object):
 
         self.dataset_download_dir = './datasets'
 
-        self.client_weights = dataset_params['chunks'] if 'chunks' in dataset_params else None
+        self.client_weights = dataset_params['client_weights'] if 'client_weights' in dataset_params else None
 
         # if the distribution weights cannot be predetermined
         self.dynamic_weights = True if self.client_weights is None else False
@@ -73,7 +73,7 @@ class DatasetBase(object):
 
         raise NotImplementedError
 
-    def preprocess_data(self):
+    def preprocess_data(self, train_tuple, test_tuple):
         '''
         Preprocess dataset at client / server side
         '''

@@ -50,8 +50,6 @@ class SKLearnMNIST(SKLearnStrategyBase):
         # move local model to previous local model
         # self.prev_local_model = self.local_model
 
-        print(self.global_model.coef_)
-
         # set the parameters for local as global model
         self.local_model.coef_ = self.global_model.coef_
         self.local_model.intercept_ = self.global_model.intercept_
@@ -128,7 +126,7 @@ class SKLearnMNIST(SKLearnStrategyBase):
         '''
 
         self.client_objects.append(SKLearnMNIST(
-            {}, True, self.device, bash64_state))
+            {}, {}, True, self.device, bash64_state))
 
         self.client_weights.append(client_weight)
 

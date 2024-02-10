@@ -88,7 +88,7 @@ class SKLearnDatasetBase(DatasetBase):
 
         return numpy.concatenate(tensors, 0)
 
-    def preprocess_data(self):
+    def preprocess_data(self, train_tuple, test_tuple):
         '''
         Preprocess dataset at client / server side
         '''

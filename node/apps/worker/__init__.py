@@ -88,9 +88,8 @@ def worker_process(job_name: str, cluster_id: str) -> None:
     global_test_set = handlers.load_dataset(job_name, cluster_id, node_type,
                                             file_name, dataset_path)
 
-    # also create the data loaders for the train set and test set
-    global_test_loader = handlers.create_data_loaders(
-        global_test_set, manifest)
+    # also load the dataset into the strategy object
+    strategy.load_dataset(None, global_test_set)
 
     # 5. ACK of Dataset Download (Client Status to 2) & Send Back Initial Model (Global) Parameters
     # 5.1 Upload Initial Model (Global) Parameters to P2P Store
@@ -122,7 +121,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
 
         # 9.1. Test Aggregated Model
         metrics = handlers.test_model(job_name, cluster_id, node_type,
-                                      strategy, global_test_loader)
+                                      strategy)
 
         # calculate round time
         end_time = time()
