@@ -27,6 +27,9 @@ training:
       extra_params:
         fed_prox:
           mu: 0.01
+        moon:
+          temp: 0.5
+          mu: 5
         lr_decay: 1
 
   worker_configs:
