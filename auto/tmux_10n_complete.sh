@@ -44,6 +44,7 @@ tmux split-window -v
 
 for n in {0..14}; do
     tmux select-pane -t $n
+    tmux send-keys "HISTFILE=\"$PWD/.auto_history\"" C-m
     tmux send-keys "export CUDA_VISIBLE_DEVICES=$CUDA_DEV" C-m
     tmux send-keys "conda activate $CONDA_ENV" C-m
 done

@@ -60,6 +60,7 @@ tmux split-window -v
 
 for n in $(eval echo {0..$MAX_NODES}); do
     tmux select-pane -t $n
+    tmux send-keys "HISTFILE=\"$PWD/.auto_history\"" C-m
     tmux send-keys "export CUDA_VISIBLE_DEVICES=$CUDA_DEV" C-m
     tmux send-keys "conda activate $CONDA_ENV" C-m
     tmux send-keys 'cd ./node' C-m
