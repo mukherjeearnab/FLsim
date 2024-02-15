@@ -118,6 +118,14 @@ def client_process(job_name: str, cluster_id: str) -> None:
         setters.update_node_status(job_name, cluster_id, node_type, 3)
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
 
+        # 8.1. Test Trained Model On Global Params
+        metrics = handlers.test_model(job_name, cluster_id, node_type,
+                                      strategy)
+
+        # 8.2. Add Test Performance Metrics to PerfLog
+        perflog.add_record(job_name, cluster_id, node_id, node_type,
+                           global_round, cluster_epoch, metrics, -1)
+
         # 9. Load Model and Start Local Training
         handlers.train_model(job_name, cluster_id, node_type,
                              strategy)
