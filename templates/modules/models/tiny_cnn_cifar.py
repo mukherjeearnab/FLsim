@@ -8,7 +8,7 @@ import torch.nn as nn
 class CIFAR10SimpleCNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.network = nn.Sequential(
+        self.feature_extractor = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2),
@@ -31,11 +31,11 @@ class CIFAR10SimpleCNN(nn.Module):
         )
 
     def forward(self, x):
-        x = self.network(x)
+        x = self.feature_extractor(x)
         return self.classification_head(x)
 
     def forward_with_projection(self, x):
-        x = self.network(x)
+        x = self.feature_extractor(x)
         proj = self.projection_head(x)
         pred = self.classification_head(x)
 
