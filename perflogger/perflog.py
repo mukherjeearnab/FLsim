@@ -1,11 +1,11 @@
 '''
 The Performance Logging Module
 '''
-import os
+import threading
 import datetime
 import json
-import yaml
-from helpers.file import write_file, create_dir_struct
+from helpers.file import write_file
+from helpers.sysmon import monitor_process
 
 
 class PerformanceLog(object):
@@ -26,6 +26,19 @@ class PerformanceLog(object):
         self.project_path = f"./projects/{self.project_name}-{self.project_time}/"
 
         self._save_config()
+        self.start_resource_logger()
+
+    def start_resource_logger(self):
+        '''
+        Start the resource logger for system
+        '''
+
+        resource_file_name = f'{self.project_path}resource.csv'
+
+        t1 = threading.Thread(target=monitor_process, args=(
+            resource_file_name,), daemon=True)
+
+        t1.start()
 
     def add_perflog(self, cluster_id: str, node_id: str, node_type: str, round_num: str, epoch_num: str, metrics: dict, time_delta: float) -> None:
         '''

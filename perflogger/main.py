@@ -1,13 +1,19 @@
 '''
 Key Value Store Management Router
 '''
+import os
 import threading
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from perflog import PerformanceLog
+
+# import environment variables
+load_dotenv()
 
 app = Flask(__name__)
 
 WRITE_LOCK = threading.Lock()
+LISTEN_PORT = int(os.getenv('LISTEN_PORT'))
 
 PROJECTS = {}
 
@@ -102,4 +108,4 @@ def save_logs():
 
 
 if __name__ == '__main__':
-    app.run(port=7777, debug=False, host='0.0.0.0')
+    app.run(port=LISTEN_PORT, debug=False, host='0.0.0.0')
