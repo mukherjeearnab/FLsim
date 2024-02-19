@@ -9,6 +9,7 @@ from sklearn import metrics
 from templates.strategy.base.torch_strategy import TorchStrategyBase
 from templates.dataset.cifar10_torch import CIFAR10Dataset
 from templates.modules.models.tiny_cnn_cifar import CIFAR10SimpleCNN
+from templates.modules.optimizer.scaffold_optimizer import ScaffoldOptimizer
 
 
 class CIFAR10Strategy(TorchStrategyBase):
@@ -17,9 +18,6 @@ class CIFAR10Strategy(TorchStrategyBase):
     '''
 
     def __init__(self, hyperparams: dict, dataset_params: dict, is_local: bool, device='cpu', base64_state=None):
-        self.local_cv = None
-        self.global_cv = None
-
         super().__init__(hyperparams, dataset_params, is_local, device, base64_state)
 
         self.dataset = CIFAR10Dataset(dataset_params)
@@ -28,15 +26,16 @@ class CIFAR10Strategy(TorchStrategyBase):
             # init the global model
             self.global_model = CIFAR10SimpleCNN()
 
-            cv = [
-                torch.zeros_like(param).to(self.device)
-                for param in self.global_model.parameters()
-            ]
-
-            self.global_cv = deepcopy(cv)
-            self.local_cv = deepcopy(cv)
-
             self.local_model = CIFAR10SimpleCNN()
+
+            self.delta_control = {}
+            self.local_control = {}
+            self.server_control = {}
+
+            for k, v in self.global_model.named_parameters():
+                self.server_control[k] = torch.zeros_like(v.data)
+                self.local_control[k] = torch.zeros_like(v.data)
+
             # self.prev_local_model = CIFAR10SimpleCNN()
 
     def parameter_mixing(self) -> None:
@@ -48,7 +47,8 @@ class CIFAR10Strategy(TorchStrategyBase):
         # self.prev_local_model = self.local_model
 
         # set the parameters for local as global model
-        self.local_model.load_state_dict(self.global_model.state_dict())
+        self.local_model.load_state_dict(
+            self.global_model.state_dict())
 
     def train(self) -> None:
         '''
@@ -59,8 +59,13 @@ class CIFAR10Strategy(TorchStrategyBase):
         self.local_model = self.local_model.to(self.device)
 
         criterion = torch.nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(
-            self.local_model.parameters(), lr=self.learning_rate)
+        optimizer = ScaffoldOptimizer(
+            self.local_model.parameters(), lr=self.learning_rate, weight_decay=0.9)
+
+        # move the control variates and delta to the designated device
+        for k, _ in self.global_model.named_parameters():
+            self.server_control[k] = self.server_control[k].to(self.device)
+            self.local_control[k] = self.local_control[k].to(self.device)
 
         # Epoch loop
         for epoch in range(self.train_epochs):
@@ -72,23 +77,12 @@ class CIFAR10Strategy(TorchStrategyBase):
                 # move tensors to the device, cpu or gpu
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
 
-                c_diff = []
-                for c_l, c_g in zip(self.local_cv, self.global_cv):
-                    c_g = c_g.to(self.device)
-                    c_l = c_l.to(self.device)
-
-                    c_diff.append(-c_l + c_g)
-
                 optimizer.zero_grad()
                 outputs = self.local_model(inputs)
                 loss = criterion(outputs, labels)
                 loss.backward()
 
-                for param, c_d in zip(self.local_model.parameters(), c_diff):
-                    if param.grad is not None:
-                        param.grad += c_d.data
-
-                optimizer.step()
+                optimizer.step(self.server_control, self.local_control)
                 total_loss += loss.item()
 
                 print(
@@ -99,23 +93,17 @@ class CIFAR10Strategy(TorchStrategyBase):
                 f"Epoch [{epoch + 1}/{self.train_epochs}] - Loss: {average_loss:.4f}")
 
         with torch.no_grad():
-            y_delta = []
-            c_plus = []
+            temp = {}
+            for k, v in self.local_model.named_parameters():
+                temp[k] = v.data.clone()
 
-            # compute y_delta (difference of model before and after training)
-            for param_l, param_g in zip(self.local_model.parameters(), self.global_model.parameters()):
-                param_l = param_l.to(self.device)
-                param_g = param_g.to(self.device)
-                y_delta.append(param_l - param_g)
-
-            # compute c_plus
-            coef = 1 / (self.train_epochs * self.learning_rate)
-            for c_l, c_g, diff in zip(self.local_cv, self.global_cv, y_delta):
-                c_l, c_g, diff = c_l.to(self.device), c_g.to(
-                    self.device), diff.to(self.device)
-                c_plus.append(c_l - c_g - coef * diff)
-
-            self.local_cv = c_plus
+            self.global_model = self.global_model.to(self.device)
+            for k, v in self.global_model.named_parameters():
+                local_steps = self.train_epochs * len(self._train_set)
+                temp_control = self.local_control[k] - self.server_control[k] + \
+                    (v.data - temp[k]) / (local_steps * self.learning_rate)
+                self.delta_control[k] = temp_control - self.local_control[k]
+                self.local_control[k] = temp_control
 
     def test(self) -> dict:
         '''
@@ -196,13 +184,10 @@ class CIFAR10Strategy(TorchStrategyBase):
                     global_params[param_name] += (weight * param).type(
                         global_params[param_name].dtype)
 
-                for c_l, c_g in zip(client_obj.local_cv, self.global_cv):
-                    c_g = c_g.to(self.device)
-                    c_l = c_l.to(self.device)
-
-                    c_g.zero_()
-
-                    c_g += weight * c_l
+                    client_obj.delta_control[param_name] = client_obj.delta_control[param_name].to(
+                        self.device)
+                    self.server_control[param_name] += (
+                        weight * client_obj.delta_control[param_name])
 
             self.global_model.load_state_dict(global_params)
 
@@ -256,27 +241,25 @@ class CIFAR10Strategy(TorchStrategyBase):
 
     def get_local_payload(self):
         '''
-        Update the local payload, and remove the global_cv
+        Update the local payload, and remove the server_control and local_control
         '''
 
         payload = super().get_local_payload()
 
-        print(payload.keys())
-
-        del payload['global_cv']
+        del payload['server_control']
+        del payload['local_control']
 
         return payload
 
     def get_global_payload(self):
         '''
-        Update the global payload, and remove the local_cv
+        Update the global payload, and remove the delta_control and local_control
         '''
 
-        payload = super().get_local_payload()
+        payload = super().get_global_payload()
 
-        print(payload.keys())
-
-        del payload['local_cv']
+        del payload['local_control']
+        del payload['delta_control']
 
         return payload
 

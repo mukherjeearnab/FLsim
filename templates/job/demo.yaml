@@ -21,7 +21,7 @@ consensus:
 training:
   client_configs:
     - &cifar_train_def
-      learning_rate: 0.001
+      learning_rate: 0.1
       batch_size: 256
       local_epochs: 2
       extra_params:
@@ -77,7 +77,7 @@ clusters:
       - node_1
     workers:
       - node_0
-      - node_1
+
     consensus_params:
       <<: *default_2_3
     train_params:
