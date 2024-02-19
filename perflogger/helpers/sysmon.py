@@ -1,6 +1,8 @@
 import psutil
 from time import sleep, time
 import os
+import getpass
+import numpy
 from dotenv import load_dotenv
 from helpers.http import get
 
@@ -8,7 +10,7 @@ from helpers.http import get
 load_dotenv()
 
 WRITE_BUFFER_SIZE = 50
-LOG_INTERVAL = 0.25
+LOG_INTERVAL = 0.1
 P2PSTORE_URL = os.getenv('P2PSTORE_URL')
 
 
@@ -24,7 +26,7 @@ def monitor_process(outfile: str, event):
     csv_line_buffer = []
 
     while True:
-        cpu_percent = psutil.cpu_percent()
+        cpu_percent = get_cpu_usage()
         memory_used = psutil.virtual_memory().used
 
         # get network usage from kvstore api
@@ -64,3 +66,22 @@ def get_network_usage():
         size = -1
 
     return size
+
+
+def get_cpu_usage():
+    '''
+    Get the CPU usage of current user
+    '''
+    username = getpass.getuser()
+    cpu_pers = []
+
+    for p in psutil.process_iter():
+        try:
+            if p.username() == username:
+                percent = p.cpu_percent()
+                if percent > 0.05:
+                    cpu_pers.append(percent)
+        except:
+            pass
+
+    return numpy.mean(cpu_pers)
