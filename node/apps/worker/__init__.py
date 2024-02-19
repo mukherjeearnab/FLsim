@@ -164,4 +164,5 @@ def worker_process(job_name: str, cluster_id: str) -> None:
             logger.info(
                 f"[{node_type}] Job [{job_name}] terminated. Exiting Process.")
             setters.update_node_status(job_name, cluster_id, node_type, 5)
+            perflog.terminate(job_name)
             break

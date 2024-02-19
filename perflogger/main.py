@@ -1,13 +1,19 @@
 '''
 Key Value Store Management Router
 '''
+import os
 import threading
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from perflog import PerformanceLog
+
+# import environment variables
+load_dotenv()
 
 app = Flask(__name__)
 
 WRITE_LOCK = threading.Lock()
+LISTEN_PORT = int(os.getenv('LISTEN_PORT'))
 
 PROJECTS = {}
 
@@ -101,5 +107,22 @@ def save_logs():
     return jsonify({'res': 200})
 
 
+@app.route('/terminate', methods=['POST'])
+def terminate():
+    '''
+    Job Logging Termination.
+    '''
+    payload = request.get_json()
+
+    job_name = payload['job_name']
+
+    WRITE_LOCK.acquire()
+
+    PROJECTS[job_name].terminate_resource_logger()
+
+    WRITE_LOCK.release()
+    return jsonify({'res': 200})
+
+
 if __name__ == '__main__':
-    app.run(port=7777, debug=False, host='0.0.0.0')
+    app.run(port=LISTEN_PORT, debug=False, host='0.0.0.0')
