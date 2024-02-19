@@ -49,3 +49,12 @@ def save_logs(job_name: str):
     post(f'{PERFLOG_URL}/save_logs', {'job_name': job_name})
     logger.info(
         f'Saved PerfLog Metrics for Job [{job_name}]')
+
+
+def terminate(job_name: str):
+    '''
+    Terminate the logging process
+    '''
+    post(f'{PERFLOG_URL}/terminate', {'job_name': job_name})
+    logger.info(
+        f'Terminating PerfLog Metrics for Job [{job_name}]')

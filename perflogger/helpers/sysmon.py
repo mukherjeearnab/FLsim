@@ -12,7 +12,7 @@ LOG_INTERVAL = 0.25
 P2PSTORE_URL = os.getenv('P2PSTORE_URL')
 
 
-def monitor_process(outfile: str):
+def monitor_process(outfile: str, event):
     '''
     Peridically monitor the system stats and write then to csv file
     '''
@@ -37,13 +37,18 @@ def monitor_process(outfile: str):
 
         csv_line_buffer.append(line)
 
-        if len(csv_line_buffer) >= WRITE_BUFFER_SIZE:
+        if len(csv_line_buffer) >= WRITE_BUFFER_SIZE or event.is_set():
             with open(outfile, 'a', encoding='utf8') as f:
                 f.writelines(csv_line_buffer)
 
             csv_line_buffer = []
 
+            if event.is_set():
+                break
+
         sleep(LOG_INTERVAL)
+
+    print("Exiting Res Logger Thread")
 
 
 def get_network_usage():

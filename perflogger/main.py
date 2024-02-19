@@ -107,5 +107,22 @@ def save_logs():
     return jsonify({'res': 200})
 
 
+@app.route('/terminate', methods=['POST'])
+def terminate():
+    '''
+    Job Logging Termination.
+    '''
+    payload = request.get_json()
+
+    job_name = payload['job_name']
+
+    WRITE_LOCK.acquire()
+
+    PROJECTS[job_name].terminate_resource_logger()
+
+    WRITE_LOCK.release()
+    return jsonify({'res': 200})
+
+
 if __name__ == '__main__':
     app.run(port=LISTEN_PORT, debug=False, host='0.0.0.0')

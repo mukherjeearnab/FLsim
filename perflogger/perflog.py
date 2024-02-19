@@ -4,6 +4,7 @@ The Performance Logging Module
 import threading
 import datetime
 import json
+from time import sleep
 from helpers.file import write_file
 from helpers.sysmon import monitor_process
 
@@ -35,10 +36,22 @@ class PerformanceLog(object):
 
         resource_file_name = f'{self.project_path}resource.csv'
 
-        t1 = threading.Thread(target=monitor_process, args=(
-            resource_file_name,), daemon=True)
+        self.res_thread_event = threading.Event()
+        self.res_thread = threading.Thread(target=monitor_process, args=(
+            resource_file_name, self.res_thread_event), daemon=True)
 
-        t1.start()
+        self.res_thread.start()
+
+    def terminate_resource_logger(self):
+        '''
+        Terminates the resource logger for the project
+        '''
+
+        sleep(10)
+
+        if not self.res_thread_event.is_set():
+            self.res_thread_event.set()
+            self.res_thread.join()
 
     def add_perflog(self, cluster_id: str, node_id: str, node_type: str, round_num: str, epoch_num: str, metrics: dict, time_delta: float) -> None:
         '''
