@@ -71,3 +71,5 @@ fh = logging.FileHandler(
     r'./logs/{date:%Y-%m-%d_%H:%M:%S}.log'.format(date=datetime.datetime.now()), mode='w')
 fh.setFormatter(logging.Formatter())
 logger.addHandler(fh)
+
+logger.propagate = False

@@ -1,7 +1,7 @@
 dataset:
   cluster_configs:
     - &dataset_default
-      dataset: cifar10_torch
+      dataset: cifar10_tensorflow
       distribution:
         # client_weights:
         #   - 0.5
@@ -21,7 +21,7 @@ consensus:
 training:
   client_configs:
     - &cifar_train_def
-      learning_rate: 0.1
+      learning_rate: 0.001
       batch_size: 256
       local_epochs: 2
       extra_params:
@@ -37,7 +37,7 @@ training:
 
 model_params:
   - &cifar_simple_cnn
-    strategy: cifar10_cnn_scaffold
+    strategy: cifar10_cnn_fedavg_tf
 
 client_configs:
   - &def_client

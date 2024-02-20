@@ -2,12 +2,11 @@
 Creates a diritchlet distribution of dataset of k clients.
 returns as a list of tensors
 '''
-import torch
 import numpy as np
 from collections import Counter
 
 
-def torch_distribute(dataset: tuple, client_weights: list, extra_params: dict):
+def tf_distribute(dataset: tuple, client_weights: list, extra_params: dict):
     '''
     Creates client chunks by splitting the original dataset into 
     len(client_weights) chunks, based on the diritchlet distribution.
@@ -30,15 +29,14 @@ def torch_distribute(dataset: tuple, client_weights: list, extra_params: dict):
         indices, labels, alpha=alpha, n_clients=len(client_weights))
 
     # create the client data and label chunks
-    data_chunks = [torch.index_select(data, 0, torch.LongTensor(
-        idcs)) for idcs in client_idcs]
-    label_chunks = [torch.index_select(labels, 0, torch.LongTensor(
-        idcs)) for idcs in client_idcs]
+    data_chunks = [np.take(data, idcs, axis=0) for idcs in client_idcs]
+    label_chunks = [np.take(
+        labels, idcs, axis=0) for idcs in client_idcs]
 
     total_labels = 0
     for i, labels in enumerate(label_chunks):
         total_labels += len(labels)
-        print(i, dict(Counter(labels.numpy())))
+        print(i, dict(Counter(labels)))
     print(total_labels)
 
     # create dataset tuples for client chunks
