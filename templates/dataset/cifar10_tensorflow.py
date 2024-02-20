@@ -2,8 +2,8 @@
 DistLearn Dataset Definition Class for PyTorch
 '''
 from templates.dataset.base.tensorflow_dataset_base import TensorflowDatasetBase
-from templates.modules.dataset_prep.cifar10_tf import prepare_tf_dataset
-from templates.modules.distribution.diritchlet_dist import tf_distribute
+from templates.modules.dataset_prep.tensorflow.cifar10 import prepare_tf_dataset
+from templates.modules.distribution.tensorflow.dirichlet_dist import tf_distribute
 
 
 class CIFAR10Dataset(TensorflowDatasetBase):
@@ -38,7 +38,7 @@ class CIFAR10Dataset(TensorflowDatasetBase):
         '''
 
         client_chunks, self.client_weights = tf_distribute(
-            root_dataset, self.client_weights, self.extra_params, True)
+            root_dataset, self.client_weights, self.extra_params)
 
         return client_chunks, self.client_weights
 

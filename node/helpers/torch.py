@@ -5,9 +5,14 @@ import os
 import random
 import torch
 import numpy as np
+import tensorflow as tf
 from dotenv import load_dotenv
 
+# set tensorflow logger
+tf.get_logger().setLevel('ERROR')
+
 # set seed on startup
+tf.random.set_seed(0)
 torch.manual_seed(0)
 random.seed(0)
 np.random.seed(0)
@@ -34,6 +39,7 @@ def reset_seed():
     '''
     Reset the Manual Seed for Deterministic Execution
     '''
+    tf.random.set_seed(0)
     torch.manual_seed(0)
     random.seed(0)
     np.random.seed(0)

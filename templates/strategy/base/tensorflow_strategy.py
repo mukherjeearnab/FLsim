@@ -24,10 +24,10 @@ class TensorflowStrategyBase(LearnStrategyBase):
         if train_set is not None:
             # create the dataset loaders
             self._train_set = self.dataset.load_dataset(
-                train_set, self.train_batch_size)
+                train_set)
 
         self._test_set = self.dataset.load_dataset(
-            test_set, self.test_batch_size)
+            test_set)
 
     def parameter_mixing(self) -> None:
         '''

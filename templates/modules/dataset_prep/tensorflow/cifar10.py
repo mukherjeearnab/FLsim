@@ -21,7 +21,11 @@ def prepare_tf_dataset():
     print(train_data.shape, train_labels.shape,
           test_data.shape, test_labels.shape)
 
-    train_data, test_data = train_data / 255.0, test_data / 255.0
+    train_data = train_data / 255.0
+    test_data = test_data / 255.0
+
+    train_labels = train_labels.reshape(-1)
+    test_labels = test_labels.reshape(-1)
 
     # return the tuple as ((train_data, train_labels), (test_data, test_labels)),
     # else if not test set, then ((train_data, train_labels), None)

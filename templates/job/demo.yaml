@@ -21,9 +21,9 @@ consensus:
 training:
   client_configs:
     - &cifar_train_def
-      learning_rate: 0.1
+      learning_rate: 0.001
       batch_size: 256
-      local_epochs: 5
+      local_epochs: 2
       extra_params:
         fed_prox:
           mu: 0.01
