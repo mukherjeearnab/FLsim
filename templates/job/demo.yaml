@@ -8,7 +8,7 @@ dataset:
         #   - 0.5
         extra_params:
           diritchlet:
-            alpha: 0.1
+            alpha: 1.0
             seed: 10
         train_test_split:
           train: 0.8
@@ -23,7 +23,7 @@ training:
     - &cifar_train_def
       learning_rate: 0.001
       batch_size: 256
-      local_epochs: 2
+      local_epochs: 10
       extra_params:
         fed_prox:
           mu: 0.01
@@ -37,7 +37,7 @@ training:
 
 model_params:
   - &cifar_simple_cnn
-    strategy: cifar10_cnn_fedavg_tf
+    strategy: cifar10_fedavg_sklearn
 
 client_configs:
   - &def_client
