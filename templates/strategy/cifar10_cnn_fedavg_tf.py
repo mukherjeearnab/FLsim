@@ -19,9 +19,11 @@ class CIFAR10StrategyTF(TensorflowStrategyBase):
 
         self.dataset = CIFAR10Dataset(dataset_params)
 
-        tf.config.set_visible_devices([], 'GPU')
-        # physical_devices = tf.config.list_physical_devices('GPU')
-        # tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        if device == 'cpu':
+            tf.config.set_visible_devices([], 'GPU')
+        else:
+            physical_devices = tf.config.list_physical_devices('GPU')
+            tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
         # needed this, since learning rate for global model is not provided
         if self.learning_rate is None:
