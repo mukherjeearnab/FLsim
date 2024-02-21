@@ -45,7 +45,8 @@ def update_node_status(job_name: str, cluster_id: str, node_type: str, status: i
                 f'[{node_type}] Failed to update {node_type} status.\n{traceback.format_exc()}')
             # _fail_exit(job_name, cluster_id, node_type)
 
-        sleep(DELAY*2)
+        # if everything fails, exit
+        exit()
 
 
 def append_node_params(job_name: str, cluster_id: str, node_type: str, param: int, extra_data=None) -> None:
