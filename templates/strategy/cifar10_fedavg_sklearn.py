@@ -5,13 +5,12 @@ using FedAvg Aggregation
 from time import sleep
 import numpy as np
 from sklearn import metrics
-from sklearn.preprocessing import LabelBinarizer
 from templates.strategy.base.sklearn_strategy import SKLearnStrategyBase
 from templates.dataset.cifar10_tensorflow import CIFAR10Dataset
 from sklearn.neural_network import MLPClassifier
 
 
-class SKLearnMNIST(SKLearnStrategyBase):
+class SKLearnCIFAR10(SKLearnStrategyBase):
     '''
     Class for CIFAR-10 using CNN and FedAvg
     '''
@@ -21,61 +20,30 @@ class SKLearnMNIST(SKLearnStrategyBase):
 
         self.dataset = CIFAR10Dataset(dataset_params)
 
-        self._n_classes = 10  # MNIST has 10 classes
-        self._n_features = 784  # Number of features in dataset
+        self._n_classes = 10  # CIFAR10 has 10 classes
+
+        # required for global / worker strategies
+        if self.learning_rate is None:
+            self.learning_rate = 0.0001
 
         if base64_state is None:
             # init the global model
-            self.global_model = MLPClassifier(hidden_layer_sizes=(100,), alpha=1e-4,
-                                              solver='adam', verbose=10, tol=1e-4, random_state=1,
-                                              learning_rate_init=.001,
+            self.global_model = MLPClassifier(hidden_layer_sizes=(128, 64,), alpha=1e-4,
+                                              solver='adam', verbose=10, random_state=1,
+                                              learning_rate_init=self.learning_rate,
                                               early_stopping=False,
                                               max_iter=1,  # ,  # local epoch
                                               warm_start=True  # prevent refreshing weights when fitting
                                               )
 
-            self.local_model = MLPClassifier(hidden_layer_sizes=(100,), alpha=1e-4,
-                                             solver='adam', verbose=10, tol=1e-4, random_state=1,
-                                             learning_rate_init=.001,
+            self.local_model = MLPClassifier(hidden_layer_sizes=(128, 64,), alpha=1e-4,
+                                             solver='adam', verbose=10, random_state=1,
+                                             learning_rate_init=self.learning_rate,
                                              early_stopping=False,
                                              max_iter=1,  # ,  # local epoch
                                              warm_start=True  # prevent refreshing weights when fitting
                                              )
 
-            # self.global_model.n_layers_ = 3
-            # self.local_model.n_layers_ = 3
-
-            # self.global_model.out_activation_ = 'softmax'
-            # self.local_model.out_activation_ = 'softmax'
-
-            # self.global_model.n_outputs_ = self._n_classes
-            # self.local_model.n_outputs_ = self._n_classes
-
-            # self.global_model.coefs_ = [
-            #     np.zeros((3072, 100)),
-            #     np.zeros((100, self._n_classes))
-            # ]
-            # self.local_model.coefs_ = [
-            #     np.zeros((3072, 100)),
-            #     np.zeros((100, self._n_classes))
-            # ]
-
-            # self.global_model.intercepts_ = [
-            #     np.zeros((100,)),
-            #     np.zeros((self._n_classes,))
-            # ]
-            # self.local_model.intercepts_ = [
-            #     np.zeros((100,)),
-            #     np.zeros((self._n_classes,))
-            # ]
-
-            # self.global_model.classes_ = np.array(
-            #     [i for i in range(self._n_classes)])
-            # self.local_model.classes_ = np.array(
-            #     [i for i in range(self._n_classes)])
-
-            lb = LabelBinarizer()
-            lb.fit([i for i in range(self._n_classes)])
             fake_data, fake_labels = np.zeros(
                 (self._n_classes, 3072)), np.array([i for i in range(self._n_classes)])
 
@@ -87,20 +55,15 @@ class SKLearnMNIST(SKLearnStrategyBase):
     def load_dataset(self, train_set, test_set):
         super().load_dataset(train_set, test_set)
 
-        # lb = LabelBinarizer()
-        # lb.fit([i for i in range(self._n_classes)])
-
         if self.is_local:
             self._train_set = list(train_set)
             self._train_set[0] = self._train_set[0].reshape(
                 self._train_set[0].shape[0], -1)
-            # self._train_set[1] = lb.transform(self._train_set[1])
             self._train_set = tuple(self._train_set)
 
         self._test_set = list(test_set)
         self._test_set[0] = self._test_set[0].reshape(
             self._test_set[0].shape[0], -1)
-        # self._test_set[1] = lb.transform(self._test_set[1])
         self._test_set = tuple(self._test_set)
 
     def parameter_mixing(self) -> None:
@@ -108,12 +71,10 @@ class SKLearnMNIST(SKLearnStrategyBase):
         An empty parameter mixing,
         Basically load the global parameters to the local model
         '''
-        # move local model to previous local model
-        # self.prev_local_model = self.local_model
 
         # set the parameters for local as global model
         self.local_model.coefs_ = self.global_model.coefs_
-        # self.local_model.intercepts_ = self.global_model.intercepts_
+        self.local_model.intercepts_ = self.global_model.intercepts_
 
     def train(self) -> None:
         '''
@@ -124,15 +85,10 @@ class SKLearnMNIST(SKLearnStrategyBase):
 
         # Epoch loop
         for epoch in range(self.train_epochs):
-            self.local_model.partial_fit(
-                data, labels, classes=self.local_model.classes_)
-
             print(f"Epoch [{epoch + 1}/{self.train_epochs}]")
 
-        print(self.local_model.n_layers_)
-        for coef in self.local_model.intercepts_:
-            print(coef.shape)
-        print(self.local_model)
+            self.local_model.partial_fit(
+                data, labels, classes=self.local_model.classes_)
 
     def test(self) -> dict:
         '''
@@ -147,19 +103,16 @@ class SKLearnMNIST(SKLearnStrategyBase):
         else:
             model = self.global_model
 
-        preds = model.predict(data)
+        preds_proba = model.predict_proba(data)
+        preds = np.argmax(preds_proba, axis=1)
 
-        # preds = np.argmax(preds, axis=1)
-        # labels = np.argmax(labels, axis=1)
-
-        # loss = metrics.log_loss(labels, model.predict_proba(data))
-
+        loss = metrics.log_loss(labels, preds_proba)
         results = self.__get_metrics(labels, preds)
 
-        # results['loss'] = loss
+        results['loss'] = loss
 
         print(
-            f"Model Test Report:\n{results['classification_report']}")
+            f"Model Test Report:\n{results['classification_report']}\nLoss: {results['loss']}")
 
         return results
 
@@ -176,18 +129,18 @@ class SKLearnMNIST(SKLearnStrategyBase):
             self.global_model.coefs_[i] = self.client_weights[0] * \
                 self.client_objects[0].local_model.coefs_[i]
 
-        # for i, _ in enumerate(self.global_model.intercepts_):
-        #     self.global_model.intercepts_[i] = self.client_weights[0] * \
-        #         self.client_objects[0].local_model.intercepts_[i]
+        for i, _ in enumerate(self.global_model.intercepts_):
+            self.global_model.intercepts_[i] = self.client_weights[0] * \
+                self.client_objects[0].local_model.intercepts_[i]
 
         for client_obj, weight in zip(self.client_objects[1:], self.client_weights[1:]):
             for i, _ in enumerate(self.global_model.coefs_):
                 self.global_model.coefs_[i] += weight * \
                     client_obj.local_model.coefs_[i]
 
-            # for i, _ in enumerate(self.global_model.intercepts_):
-            #     self.global_model.intercepts_[i] += weight * \
-            #         client_obj.local_model.intercepts_[i]
+            for i, _ in enumerate(self.global_model.intercepts_):
+                self.global_model.intercepts_[i] += weight * \
+                    client_obj.local_model.intercepts_[i]
 
         super()._post_aggregation()
 
@@ -196,7 +149,7 @@ class SKLearnMNIST(SKLearnStrategyBase):
         Append client objects from their base64 state strings
         '''
 
-        self.client_objects.append(SKLearnMNIST(
+        self.client_objects.append(SKLearnCIFAR10(
             {}, {}, True, self.device, bash64_state))
 
         self.client_weights.append(client_weight)
@@ -207,8 +160,6 @@ class SKLearnMNIST(SKLearnStrategyBase):
         Returns a dictionary of evaluation metrics.
         accuracy, precision, recall, f-1 score, f-1 macro, f-1 micro, confusion matrix
         '''
-
-        # print(actuals, preds)
 
         accuracy = metrics.accuracy_score(actuals, preds)
         precision_weighted = metrics.precision_score(actuals, preds,
@@ -239,4 +190,4 @@ class SKLearnMNIST(SKLearnStrategyBase):
 
 
 # Dont forget to set this the alias as 'StrategyDefinition'
-StrategyDefinition = SKLearnMNIST
+StrategyDefinition = SKLearnCIFAR10
