@@ -47,7 +47,7 @@ To get started, first install a Python environment, with `python>=3.8`.
    1. Open the `node/.env` file and edit the following variables as per the requirements:
 
       ```bash
-      GOSSIP_PORT=5000                      # the gossip port for the bootnode instance
+      GOSSIP_PORT=5011                      # the gossip port for the bootnode instance
       LOGICON_URL="http://localhost:5555"   # url for the logicon instance
       P2PSTORE_URL="http://localhost:6666"  # url for the kvstore instance
       PERFLOG_URL="http://localhost:7777"   # url for the perflogger instance
