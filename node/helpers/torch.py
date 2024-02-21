@@ -11,6 +11,10 @@ from dotenv import load_dotenv
 # set tensorflow logger
 tf.get_logger().setLevel('ERROR')
 
+# set torch deterministic properties
+torch.backends.cudnn.benchmark = False
+torch.use_deterministic_algorithms(True)
+
 # set seed on startup
 tf.random.set_seed(0)
 torch.manual_seed(0)
