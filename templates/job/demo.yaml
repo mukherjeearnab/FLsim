@@ -1,7 +1,7 @@
 dataset:
   cluster_configs:
     - &dataset_default
-      dataset: cifar10_tensorflow
+      dataset: cifar10_torch
       distribution:
         # client_weights:
         #   - 0.5
@@ -21,7 +21,7 @@ consensus:
 training:
   client_configs:
     - &cifar_train_def
-      learning_rate: 0.00001 # 0.0001
+      learning_rate: 0.001 # 0.0001
       batch_size: 256
       local_epochs: 5
       extra_params:
@@ -34,10 +34,16 @@ training:
       batch_size: 256
       extra_params:
         fed_avg_momentum: 0.9
+        bad_params: false
+    - &fed_avg_mal
+      batch_size: 256
+      extra_params:
+        fed_avg_momentum: 0.9
+        bad_params: true
 
 model_params:
   - &cifar_simple_cnn
-    strategy: cifar10_fedavg_sklearn
+    strategy: cifar10_cnn_fedavg
 
 client_configs:
   - &def_client
@@ -53,7 +59,7 @@ worker_configs:
     model_params:
       <<: *cifar_simple_cnn
     aggregator_params:
-      <<: *fed_avg_def
+      <<: *fed_avg_mal
     dataset_params:
       <<: *dataset_default
 
@@ -77,6 +83,7 @@ clusters:
       - node_1
     workers:
       - node_0
+      # - node_1
 
     consensus_params:
       <<: *default_2_3

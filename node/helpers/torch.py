@@ -18,6 +18,7 @@ torch.use_deterministic_algorithms(True)
 # set seed on startup
 tf.random.set_seed(0)
 torch.manual_seed(0)
+# torch.cuda.manual_seed_all(0)
 random.seed(0)
 np.random.seed(0)
 
@@ -45,5 +46,6 @@ def reset_seed():
     '''
     tf.random.set_seed(0)
     torch.manual_seed(0)
+    # torch.cuda.manual_seed_all(0)
     random.seed(0)
     np.random.seed(0)

@@ -3,12 +3,9 @@ dataset:
     - &dataset_default
       dataset: cifar10_torch
       distribution:
-        # client_weights:
-        #   - 0.5
-        #   - 0.5
         extra_params:
           diritchlet:
-            alpha: 0.1
+            alpha: 10000.0
             seed: 10
         train_test_split:
           train: 0.8
@@ -22,7 +19,7 @@ training:
   client_configs:
     - &cifar_train_def
       learning_rate: 0.001
-      batch_size: 64
+      batch_size: 256
       local_epochs: 5
       extra_params:
         fed_prox:
@@ -34,13 +31,13 @@ training:
 
   worker_configs:
     - &fed_avg_def
-      batch_size: 64
+      batch_size: 256
       extra_params:
         fed_avg_momentum: 0.9
 
 model_params:
   - &cifar_simple_cnn
-    strategy: cifar10_cnn_fedavgm
+    strategy: cifar10_cnn_fedavg
 
 client_configs:
   - &def_client
@@ -61,106 +58,32 @@ worker_configs:
       <<: *dataset_default
 
 clients:
-  node_0:
+  node_10:
     <<: *def_client
-  node_1:
+  node_11:
     <<: *def_client
-  node_2:
+  node_12:
     <<: *def_client
-  node_3:
+  node_13:
     <<: *def_client
-  node_4:
+  node_14:
     <<: *def_client
-  node_5:
-    <<: *def_client
-  node_6:
-    <<: *def_client
-  node_7:
-    <<: *def_client
-  node_8:
-    <<: *def_client
-  node_9:
-    <<: *def_client
-#   node_10:
-#     <<: *def_client
-#   node_11:
-#     <<: *def_client
-#   node_12:
-#     <<: *def_client
-#   node_13:
-#     <<: *def_client
-#   node_14:
-#     <<: *def_client
-#   node_15:
-#     <<: *def_client
-#   node_16:
-#     <<: *def_client
-#   node_17:
-#     <<: *def_client
-#   node_18:
-#     <<: *def_client
-#   node_19:
-#     <<: *def_client
-#   node_20:
-#     <<: *def_client
-#   node_21:
-#     <<: *def_client
-#   node_22:
-#     <<: *def_client
-#   node_23:
-#     <<: *def_client
-#   node_24:
-#     <<: *def_client
-#   node_25:
-#     <<: *def_client
-#   node_26:
-#     <<: *def_client
-#   node_27:
-#     <<: *def_client
-#   node_28:
-#     <<: *def_client
-#   node_29:
-#     <<: *def_client
+
 workers:
-  node_0:
+  node_10:
     <<: *def_worker
 
 clusters:
   cluster_0:
     upstream_cluster: null
     clients:
-      - node_0
-      - node_1
-      - node_2
-      - node_3
-      - node_4
-      - node_5
-      - node_6
-      - node_7
-      - node_8
-      - node_9
-      # - node_10
-      # - node_11
-      # - node_12
-      # - node_13
-      # - node_14
-      # - node_15
-      # - node_16
-      # - node_17
-      # - node_18
-      # - node_19
-      # - node_20
-      # - node_21
-      # - node_22
-      # - node_23
-      # - node_24
-      # - node_25
-      # - node_26
-      # - node_27
-      # - node_28
-      # - node_29
+      - node_10
+      - node_11
+      - node_12
+      - node_13
+      - node_14
     workers:
-      - node_0
+      - node_10
     consensus_params:
       <<: *default_2_3
     train_params:
@@ -169,4 +92,4 @@ clusters:
       <<: *dataset_default
 
 job_params:
-  rounds: 150
+  rounds: 10
