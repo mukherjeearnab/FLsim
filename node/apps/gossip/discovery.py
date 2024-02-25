@@ -50,14 +50,14 @@ def init_discovery_process():
 
     # (2) Ping all nodes from the boot node and register with them
     # (3) add the pinged nodes to peer discovery registry
-    for node_id, node_info in nodes.items():
-        if node_id != peer_manager.node_info()['node_id']:
-            register_discovered_nodes(node_id, node_info)
+    # for node_id, node_info in nodes.items():
+    #     if node_id != peer_manager.node_info()['node_id']:
+    #         register_discovered_nodes(node_id, node_info)
 
-    # (4) Start the background process
-    discovery_process = Process(
-        target=background_process, name="discovery_process", daemon=True)
-    discovery_process.start()
+    # # (4) Start the background process
+    # discovery_process = Process(
+    #     target=background_process, name="discovery_process", daemon=True)
+    # discovery_process.start()
 
 
 def background_process():
