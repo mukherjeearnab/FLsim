@@ -3,8 +3,6 @@ DistLearn Strategy for training CIFAR-10 on a simple CNN,
 using FedAvg Aggregation
 '''
 import math
-from copy import deepcopy
-from time import sleep
 import torch
 from sklearn import metrics
 from templates.strategy.base.torch_strategy import TorchStrategyBase
@@ -135,8 +133,6 @@ class CIFAR10Strategy(TorchStrategyBase):
         Implementaion of the FedAvg Aggregation Algorithm for this strategy.
         '''
         super()._pre_aggregation()
-
-        sleep(300)
 
         with torch.no_grad():
             self.global_model = self.global_model.to(self.device)

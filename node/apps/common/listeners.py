@@ -28,7 +28,7 @@ def wait_for_jobsheet_flag(job_name: str, cluster_id: str, node_type: str):
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id}, timeout=30)['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             jobsheet_flag = manifest['download_jobsheet']
             abort_flag = manifest['abort']
@@ -68,7 +68,7 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id}, timeout=30)['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             dataset_flag = manifest['download_dataset']
             abort_flag = manifest['abort']
@@ -108,7 +108,7 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id}, timeout=30)['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             process_stage = manifest['process_stage']
             abort_flag = manifest['abort']
@@ -150,7 +150,7 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id}, timeout=30)['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             process_stage = manifest['process_stage']
             abort_flag = manifest['abort']
@@ -190,7 +190,7 @@ def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: i
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id}, timeout=30)['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             node_stage = manifest[f'{node_type}_stage']
             abort_flag = manifest['abort']

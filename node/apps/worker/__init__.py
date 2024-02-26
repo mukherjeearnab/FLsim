@@ -132,6 +132,10 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         perflog.add_record(job_name, cluster_id, node_id, node_type,
                            global_round, cluster_epoch, metrics, time_delta)
 
+        # SLEEP FOR A WHILE FOR THE CLIENTS TO GET THEIR SIGNALLING UPDATED
+        logger.info('Sleeping for 60 seconds.')
+        sleep(60)
+
         # 10. Upload Aggregated Model Parameter
         aggregated_global_state = strategy.get_base64_global_payload()
         agg_global_state_key = p2p_store.setv(aggregated_global_state)
