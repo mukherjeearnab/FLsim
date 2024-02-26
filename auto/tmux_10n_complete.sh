@@ -1,12 +1,17 @@
 #!/bin/sh
 CUDA_DEV=$1
 CONDA_ENV=$2
-SERVER=$3
-REDIS=$4
+START_ID=$3
+MAX_NODES=$4
+ATTACH=$5
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 4 ]; then
     echo "Not enough Args Supplied. Aborting..."
     exit
+fi
+
+if [[ -z "$ATTACH" ]]; then
+    ATTACH="n"
 fi
 
 tmux new-session -d
@@ -69,20 +74,24 @@ tmux select-pane -t 4
 tmux send-keys 'cd ./kvstore' C-m
 tmux send-keys "python main.py" C-m
 
-# start the bootnode
-tmux select-pane -t 5
-tmux send-keys 'cd ./node' C-m
-tmux send-keys 'sleep 5' C-m
-tmux send-keys "python main.py -n node_0 -c -w -m" C-m
-
-# start the rest of the nodes
-for n in {6..14}; do
-    tmux select-pane -t $n
+if [ "$MAX_NODES" -gt 0 ]; then
+    # start the bootnode
+    tmux select-pane -t 5
     tmux send-keys 'cd ./node' C-m
-    tmux send-keys 'sleep 10' C-m
-    tmux send-keys "python main.py -n node_$((n - 5)) -b 5011 -c -w -m" C-m
-done
+    tmux send-keys "sleep 5 && python main.py -n node_$((START_ID + 0)) -c -w -m" C-m
+fi
+
+if [ "$MAX_NODES" -gt 1 ]; then
+    # start the rest of the nodes
+    for n in $(eval echo {6..$(($MAX_NODES + 4))}); do
+        tmux select-pane -t $n
+        tmux send-keys 'cd ./node' C-m
+        tmux send-keys "sleep 10 && python main.py -n node_$((START_ID + n - 5)) -b 5011 -c -w -m" C-m
+    done
+fi
 
 tmux select-pane -t 0
 
-tmux -2 attach-session
+if [[ "$ATTACH" == "y" ]]; then
+    tmux -2 attach-session
+fi
