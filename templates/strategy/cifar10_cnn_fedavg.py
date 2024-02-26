@@ -3,7 +3,6 @@ DistLearn Strategy for training CIFAR-10 on a simple CNN,
 using FedAvg Aggregation
 '''
 import math
-from copy import deepcopy
 import torch
 from sklearn import metrics
 from templates.strategy.base.torch_strategy import TorchStrategyBase

@@ -23,11 +23,12 @@ def wait_for_jobsheet_flag(job_name: str, cluster_id: str, node_type: str):
     # listen to check if dataset flag is true or false
     url = f'{logicon_url}/job/get_job_status'
 
+    try_count = 0
     while True:
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             jobsheet_flag = manifest['download_jobsheet']
             abort_flag = manifest['abort']
@@ -46,9 +47,12 @@ def wait_for_jobsheet_flag(job_name: str, cluster_id: str, node_type: str):
         except Exception:
             logger.error(
                 f'[{node_type}] Failed to fetch jobsheet download flag. Aborting.\n{traceback.format_exc()}')
+            try_count += 1
+
+        if try_count >= 10:
             _fail_exit(job_name, cluster_id, node_type)
 
-        sleep(DELAY)
+        sleep(DELAY*5)
 
 
 def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
@@ -59,11 +63,12 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
     # listen to check if dataset flag is true or false
     url = f'{logicon_url}/job/get_job_status'
 
+    try_count = 0
     while True:
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             dataset_flag = manifest['download_dataset']
             abort_flag = manifest['abort']
@@ -82,9 +87,12 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
         except Exception:
             logger.error(
                 f'[{node_type}] Failed to fetch dataset download flag. Aborting.\n{traceback.format_exc()}')
+            try_count += 1
+
+        if try_count >= 10:
             _fail_exit(job_name, cluster_id, node_type)
 
-        sleep(DELAY)
+        sleep(DELAY*5)
 
 
 def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) -> Tuple[int, int, int]:
@@ -95,11 +103,12 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
     # listen to check if dataset flag is true or false
     url = f'{logicon_url}/job/get_job_status'
 
+    try_count = 0
     while True:
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             process_stage = manifest['process_stage']
             abort_flag = manifest['abort']
@@ -120,9 +129,12 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
         except Exception:
             logger.error(
                 f'[{node_type}] Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
+            try_count += 1
+
+        if try_count >= 10:
             _fail_exit(job_name, cluster_id, node_type)
 
-        sleep(DELAY)
+        sleep(DELAY*5)
 
 
 def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -> int:
@@ -133,11 +145,12 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
     # listen to check if dataset flag is true or false
     url = f'{logicon_url}/job/get_job_status'
 
+    try_count = 0
     while True:
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             process_stage = manifest['process_stage']
             abort_flag = manifest['abort']
@@ -156,9 +169,12 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
         except Exception:
             logger.error(
                 f'[{node_type}] Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
+            try_count += 1
+
+        if try_count >= 10:
             _fail_exit(job_name, cluster_id, node_type)
 
-        sleep(DELAY)
+        sleep(DELAY*5)
 
 
 def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: int):
@@ -169,11 +185,12 @@ def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: i
     # listen to check if dataset flag is true or false
     url = f'{logicon_url}/job/get_job_status'
 
+    try_count = 0
     while True:
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id})['payload']
+                           'cluster_id': cluster_id}, timeout=15)['payload']
 
             node_stage = manifest[f'{node_type}_stage']
             abort_flag = manifest['abort']
@@ -192,9 +209,12 @@ def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: i
         except Exception:
             logger.error(
                 f'[{node_type}] Failed to fetch {node_type}_stage flag. Aborting.\n{traceback.format_exc()}')
+            try_count += 1
+
+        if try_count >= 10:
             _fail_exit(job_name, cluster_id, node_type)
 
-        sleep(DELAY)
+        sleep(DELAY*5)
 
 
 def listen_abort(job_name: str, cluster_id: str, node_type: str, abort_flag: bool):

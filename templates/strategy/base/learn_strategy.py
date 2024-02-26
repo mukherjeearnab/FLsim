@@ -96,7 +96,11 @@ class LearnStrategyBase(object):
         '''
 
         with torch.no_grad():
-            payload = deepcopy(self.__dict__)
+            payload = dict()
+            for key, value in self.__dict__.items():
+                # remove private and protected fields
+                if not key.startswith('_'):
+                    payload[key] = deepcopy(value)
 
         # delete the unnecessary fields
         del payload['global_model']
@@ -115,11 +119,6 @@ class LearnStrategyBase(object):
         del payload['is_local']
         del payload['device']
 
-        # remove private and protected fields
-        for key in self.__dict__.keys():
-            if key.startswith('_') and key in payload:
-                del payload[key]
-
         return payload
 
     def get_global_payload(self):
@@ -128,7 +127,11 @@ class LearnStrategyBase(object):
         '''
 
         with torch.no_grad():
-            payload = deepcopy(self.__dict__)
+            payload = dict()
+            for key, value in self.__dict__.items():
+                # remove private and protected fields
+                if not key.startswith('_'):
+                    payload[key] = deepcopy(value)
 
         # delete the unnecessary fields
         del payload['local_model']
@@ -146,11 +149,6 @@ class LearnStrategyBase(object):
 
         del payload['is_local']
         del payload['device']
-
-        # remove private and protected fields
-        for key in self.__dict__.keys():
-            if key.startswith('_') and key in payload:
-                del payload[key]
 
         return payload
 

@@ -1,6 +1,8 @@
 '''
 DistLearn Dataset Definition Class for PyTorch
 '''
+import numpy
+import random
 import torch
 import torch.utils.data as data_utils
 from templates.dataset.base.dataset_base import DatasetBase
@@ -108,8 +110,17 @@ class TorchDatasetBase(DatasetBase):
 
         data, labels = dataset
 
+        def seed_worker(worker_id):
+            numpy.random.seed(0)
+            random.seed(0)
+
+        _g = torch.Generator()
+        _g.manual_seed(0)
+
         dataset = data_utils.TensorDataset(data, labels)
         dataset_loader = data_utils.DataLoader(
-            dataset, batch_size, shuffle=True, num_workers=2)
+            dataset, batch_size, shuffle=True, num_workers=1,
+            worker_init_fn=seed_worker, generator=_g
+        )
 
         return dataset_loader
