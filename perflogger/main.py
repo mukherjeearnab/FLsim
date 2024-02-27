@@ -4,6 +4,7 @@ Key Value Store Management Router
 import os
 import threading
 from dotenv import load_dotenv
+from waitress import serve
 from flask import Flask, jsonify, request
 from perflog import PerformanceLog
 
@@ -126,3 +127,4 @@ def terminate():
 
 if __name__ == '__main__':
     app.run(port=LISTEN_PORT, debug=False, host='0.0.0.0')
+    # serve(app, host="0.0.0.0", port=LISTEN_PORT)

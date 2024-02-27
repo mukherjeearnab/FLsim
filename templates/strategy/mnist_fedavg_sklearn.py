@@ -50,7 +50,6 @@ class SKLearnMNIST(SKLearnStrategyBase):
             self.global_model.fit(
                 fake_data, fake_labels)
 
-
     def parameter_mixing(self) -> None:
         '''
         An empty parameter mixing,
@@ -98,13 +97,16 @@ class SKLearnMNIST(SKLearnStrategyBase):
         else:
             model = self.global_model
 
-        preds = model.predict(data)
+        preds_proba = model.predict_proba(data)
 
-        # loss = metrics.log_loss(labels, model.predict_proba(data))
+        print(preds_proba)
 
+        preds = np.argmax(preds_proba, axis=1)
+
+        loss = metrics.log_loss(labels, preds_proba, labels=model.classes_)
         results = self.__get_metrics(labels, preds)
 
-        # results['loss'] = loss
+        results['loss'] = loss
 
         print(
             f"Model Test Report:\n{results['classification_report']}")
