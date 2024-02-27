@@ -3,6 +3,7 @@ Main Module
 '''
 import os
 import logging
+from waitress import serve
 from flask import Flask
 from dotenv import load_dotenv
 from routes.job import blueprint as job_manager
@@ -22,3 +23,4 @@ app.register_blueprint(job_manager, url_prefix='/job')
 
 if __name__ == '__main__':
     app.run(port=LISTEN_PORT, debug=False, host='0.0.0.0')
+    # serve(app, host="0.0.0.0", port=LISTEN_PORT, threads=100, _quiet=True)

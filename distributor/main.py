@@ -1,6 +1,7 @@
 '''
 Key Value Store Management Router
 '''
+from waitress import serve
 from flask import Flask, jsonify, request, send_file
 from logic import DatasetDistributor
 from helpers.file import get_OK_file
@@ -99,3 +100,4 @@ def get_dataset_metadata():
 
 if __name__ == '__main__':
     app.run(port=8888, debug=False, host='0.0.0.0')
+    # serve(app, host="0.0.0.0", port=8888)

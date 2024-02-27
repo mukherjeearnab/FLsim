@@ -1069,6 +1069,7 @@ clusters:
   cluster_0:
     upstream_cluster: null
     clients:
+      - node_0
       - node_1
       - node_2
       - node_3
@@ -1578,4 +1579,4 @@ clusters:
       <<: *dataset_default
 
 job_params:
-  rounds: 20
+  rounds: 100
