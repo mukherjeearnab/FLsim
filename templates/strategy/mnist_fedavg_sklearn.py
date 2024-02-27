@@ -30,17 +30,26 @@ class SKLearnMNIST(SKLearnStrategyBase):
                 max_iter=1,  # local epoch
                 warm_start=True,  # prevent refreshing weights when fitting
             )
-            self.global_model.coef_ = np.zeros(
-                (self._n_classes, self._n_features))
-            self.global_model.intercept_ = np.zeros((self._n_classes,))
-            self.global_model.classes_ = np.array(
-                [i for i in range(self._n_classes)])
+            # self.global_model.coef_ = np.zeros(
+            #     (self._n_classes, self._n_features))
+            # self.global_model.intercept_ = np.zeros((self._n_classes,))
+            # self.global_model.classes_ = np.array(
+            #     [i for i in range(self._n_classes)])
 
             self.local_model = LogisticRegression(
                 penalty="l2",
                 max_iter=1,  # local epoch
                 warm_start=True,  # prevent refreshing weights when fitting
             )
+
+            fake_data = np.zeros((self._n_classes, self._n_features))
+            fake_labels = np.array([i for i in range(self._n_classes)])
+
+            self.local_model.fit(
+                fake_data, fake_labels)
+            self.global_model.fit(
+                fake_data, fake_labels)
+
 
     def parameter_mixing(self) -> None:
         '''
@@ -77,6 +86,8 @@ class SKLearnMNIST(SKLearnStrategyBase):
         '''
 
         data, labels = self._test_set
+
+        print(data.shape)
 
         nsamples, nx, ny = data.shape
         data = data.reshape((nsamples, nx*ny))

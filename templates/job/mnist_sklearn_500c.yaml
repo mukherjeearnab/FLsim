@@ -1,0 +1,1581 @@
+dataset:
+  cluster_configs:
+    - &dataset_default
+      dataset: mnist_sklearn
+      distribution:
+        # client_weights:
+        #   - 0.5
+        #   - 0.5
+        extra_params:
+          diritchlet:
+            alpha: 1000000.0
+            seed: 10
+        train_test_split:
+          train: 0.8
+          test: 0.2
+
+consensus:
+  - &default_2_3
+    runnable: majority_2_3
+
+training:
+  client_configs:
+    - &cifar_train_def
+      learning_rate: 0.0001
+      batch_size: 256
+      local_epochs: 1
+      extra_params:
+        fed_prox:
+          mu: 0.01
+        lr_decay: 1
+
+  worker_configs:
+    - &fed_avg_def
+      batch_size: 256
+      extra_params:
+        fed_avg_momentum: 0.9
+
+model_params:
+  - &cifar_simple_cnn
+    strategy: mnist_fedavg_sklearn
+
+client_configs:
+  - &def_client
+    model_params:
+      <<: *cifar_simple_cnn
+    train_params:
+      <<: *cifar_train_def
+    dataset_params:
+      <<: *dataset_default
+
+worker_configs:
+  - &def_worker
+    model_params:
+      <<: *cifar_simple_cnn
+    aggregator_params:
+      <<: *fed_avg_def
+    dataset_params:
+      <<: *dataset_default
+
+clients:
+  node_0:
+    <<: *def_client
+  node_1:
+    <<: *def_client
+  node_2:
+    <<: *def_client
+  node_3:
+    <<: *def_client
+  node_4:
+    <<: *def_client
+  node_5:
+    <<: *def_client
+  node_6:
+    <<: *def_client
+  node_7:
+    <<: *def_client
+  node_8:
+    <<: *def_client
+  node_9:
+    <<: *def_client
+  node_10:
+    <<: *def_client
+  node_11:
+    <<: *def_client
+  node_12:
+    <<: *def_client
+  node_13:
+    <<: *def_client
+  node_14:
+    <<: *def_client
+  node_15:
+    <<: *def_client
+  node_16:
+    <<: *def_client
+  node_17:
+    <<: *def_client
+  node_18:
+    <<: *def_client
+  node_19:
+    <<: *def_client
+  node_20:
+    <<: *def_client
+  node_21:
+    <<: *def_client
+  node_22:
+    <<: *def_client
+  node_23:
+    <<: *def_client
+  node_24:
+    <<: *def_client
+  node_25:
+    <<: *def_client
+  node_26:
+    <<: *def_client
+  node_27:
+    <<: *def_client
+  node_28:
+    <<: *def_client
+  node_29:
+    <<: *def_client
+  node_30:
+    <<: *def_client
+  node_31:
+    <<: *def_client
+  node_32:
+    <<: *def_client
+  node_33:
+    <<: *def_client
+  node_34:
+    <<: *def_client
+  node_35:
+    <<: *def_client
+  node_36:
+    <<: *def_client
+  node_37:
+    <<: *def_client
+  node_38:
+    <<: *def_client
+  node_39:
+    <<: *def_client
+  node_40:
+    <<: *def_client
+  node_41:
+    <<: *def_client
+  node_42:
+    <<: *def_client
+  node_43:
+    <<: *def_client
+  node_44:
+    <<: *def_client
+  node_45:
+    <<: *def_client
+  node_46:
+    <<: *def_client
+  node_47:
+    <<: *def_client
+  node_48:
+    <<: *def_client
+  node_49:
+    <<: *def_client
+  node_50:
+    <<: *def_client
+  node_51:
+    <<: *def_client
+  node_52:
+    <<: *def_client
+  node_53:
+    <<: *def_client
+  node_54:
+    <<: *def_client
+  node_55:
+    <<: *def_client
+  node_56:
+    <<: *def_client
+  node_57:
+    <<: *def_client
+  node_58:
+    <<: *def_client
+  node_59:
+    <<: *def_client
+  node_60:
+    <<: *def_client
+  node_61:
+    <<: *def_client
+  node_62:
+    <<: *def_client
+  node_63:
+    <<: *def_client
+  node_64:
+    <<: *def_client
+  node_65:
+    <<: *def_client
+  node_66:
+    <<: *def_client
+  node_67:
+    <<: *def_client
+  node_68:
+    <<: *def_client
+  node_69:
+    <<: *def_client
+  node_70:
+    <<: *def_client
+  node_71:
+    <<: *def_client
+  node_72:
+    <<: *def_client
+  node_73:
+    <<: *def_client
+  node_74:
+    <<: *def_client
+  node_75:
+    <<: *def_client
+  node_76:
+    <<: *def_client
+  node_77:
+    <<: *def_client
+  node_78:
+    <<: *def_client
+  node_79:
+    <<: *def_client
+  node_80:
+    <<: *def_client
+  node_81:
+    <<: *def_client
+  node_82:
+    <<: *def_client
+  node_83:
+    <<: *def_client
+  node_84:
+    <<: *def_client
+  node_85:
+    <<: *def_client
+  node_86:
+    <<: *def_client
+  node_87:
+    <<: *def_client
+  node_88:
+    <<: *def_client
+  node_89:
+    <<: *def_client
+  node_90:
+    <<: *def_client
+  node_91:
+    <<: *def_client
+  node_92:
+    <<: *def_client
+  node_93:
+    <<: *def_client
+  node_94:
+    <<: *def_client
+  node_95:
+    <<: *def_client
+  node_96:
+    <<: *def_client
+  node_97:
+    <<: *def_client
+  node_98:
+    <<: *def_client
+  node_99:
+    <<: *def_client
+  node_100:
+    <<: *def_client
+  node_101:
+    <<: *def_client
+  node_102:
+    <<: *def_client
+  node_103:
+    <<: *def_client
+  node_104:
+    <<: *def_client
+  node_105:
+    <<: *def_client
+  node_106:
+    <<: *def_client
+  node_107:
+    <<: *def_client
+  node_108:
+    <<: *def_client
+  node_109:
+    <<: *def_client
+  node_110:
+    <<: *def_client
+  node_111:
+    <<: *def_client
+  node_112:
+    <<: *def_client
+  node_113:
+    <<: *def_client
+  node_114:
+    <<: *def_client
+  node_115:
+    <<: *def_client
+  node_116:
+    <<: *def_client
+  node_117:
+    <<: *def_client
+  node_118:
+    <<: *def_client
+  node_119:
+    <<: *def_client
+  node_120:
+    <<: *def_client
+  node_121:
+    <<: *def_client
+  node_122:
+    <<: *def_client
+  node_123:
+    <<: *def_client
+  node_124:
+    <<: *def_client
+  node_125:
+    <<: *def_client
+  node_126:
+    <<: *def_client
+  node_127:
+    <<: *def_client
+  node_128:
+    <<: *def_client
+  node_129:
+    <<: *def_client
+  node_130:
+    <<: *def_client
+  node_131:
+    <<: *def_client
+  node_132:
+    <<: *def_client
+  node_133:
+    <<: *def_client
+  node_134:
+    <<: *def_client
+  node_135:
+    <<: *def_client
+  node_136:
+    <<: *def_client
+  node_137:
+    <<: *def_client
+  node_138:
+    <<: *def_client
+  node_139:
+    <<: *def_client
+  node_140:
+    <<: *def_client
+  node_141:
+    <<: *def_client
+  node_142:
+    <<: *def_client
+  node_143:
+    <<: *def_client
+  node_144:
+    <<: *def_client
+  node_145:
+    <<: *def_client
+  node_146:
+    <<: *def_client
+  node_147:
+    <<: *def_client
+  node_148:
+    <<: *def_client
+  node_149:
+    <<: *def_client
+  node_150:
+    <<: *def_client
+  node_151:
+    <<: *def_client
+  node_152:
+    <<: *def_client
+  node_153:
+    <<: *def_client
+  node_154:
+    <<: *def_client
+  node_155:
+    <<: *def_client
+  node_156:
+    <<: *def_client
+  node_157:
+    <<: *def_client
+  node_158:
+    <<: *def_client
+  node_159:
+    <<: *def_client
+  node_160:
+    <<: *def_client
+  node_161:
+    <<: *def_client
+  node_162:
+    <<: *def_client
+  node_163:
+    <<: *def_client
+  node_164:
+    <<: *def_client
+  node_165:
+    <<: *def_client
+  node_166:
+    <<: *def_client
+  node_167:
+    <<: *def_client
+  node_168:
+    <<: *def_client
+  node_169:
+    <<: *def_client
+  node_170:
+    <<: *def_client
+  node_171:
+    <<: *def_client
+  node_172:
+    <<: *def_client
+  node_173:
+    <<: *def_client
+  node_174:
+    <<: *def_client
+  node_175:
+    <<: *def_client
+  node_176:
+    <<: *def_client
+  node_177:
+    <<: *def_client
+  node_178:
+    <<: *def_client
+  node_179:
+    <<: *def_client
+  node_180:
+    <<: *def_client
+  node_181:
+    <<: *def_client
+  node_182:
+    <<: *def_client
+  node_183:
+    <<: *def_client
+  node_184:
+    <<: *def_client
+  node_185:
+    <<: *def_client
+  node_186:
+    <<: *def_client
+  node_187:
+    <<: *def_client
+  node_188:
+    <<: *def_client
+  node_189:
+    <<: *def_client
+  node_190:
+    <<: *def_client
+  node_191:
+    <<: *def_client
+  node_192:
+    <<: *def_client
+  node_193:
+    <<: *def_client
+  node_194:
+    <<: *def_client
+  node_195:
+    <<: *def_client
+  node_196:
+    <<: *def_client
+  node_197:
+    <<: *def_client
+  node_198:
+    <<: *def_client
+  node_199:
+    <<: *def_client
+  node_200:
+    <<: *def_client
+  node_201:
+    <<: *def_client
+  node_202:
+    <<: *def_client
+  node_203:
+    <<: *def_client
+  node_204:
+    <<: *def_client
+  node_205:
+    <<: *def_client
+  node_206:
+    <<: *def_client
+  node_207:
+    <<: *def_client
+  node_208:
+    <<: *def_client
+  node_209:
+    <<: *def_client
+  node_210:
+    <<: *def_client
+  node_211:
+    <<: *def_client
+  node_212:
+    <<: *def_client
+  node_213:
+    <<: *def_client
+  node_214:
+    <<: *def_client
+  node_215:
+    <<: *def_client
+  node_216:
+    <<: *def_client
+  node_217:
+    <<: *def_client
+  node_218:
+    <<: *def_client
+  node_219:
+    <<: *def_client
+  node_220:
+    <<: *def_client
+  node_221:
+    <<: *def_client
+  node_222:
+    <<: *def_client
+  node_223:
+    <<: *def_client
+  node_224:
+    <<: *def_client
+  node_225:
+    <<: *def_client
+  node_226:
+    <<: *def_client
+  node_227:
+    <<: *def_client
+  node_228:
+    <<: *def_client
+  node_229:
+    <<: *def_client
+  node_230:
+    <<: *def_client
+  node_231:
+    <<: *def_client
+  node_232:
+    <<: *def_client
+  node_233:
+    <<: *def_client
+  node_234:
+    <<: *def_client
+  node_235:
+    <<: *def_client
+  node_236:
+    <<: *def_client
+  node_237:
+    <<: *def_client
+  node_238:
+    <<: *def_client
+  node_239:
+    <<: *def_client
+  node_240:
+    <<: *def_client
+  node_241:
+    <<: *def_client
+  node_242:
+    <<: *def_client
+  node_243:
+    <<: *def_client
+  node_244:
+    <<: *def_client
+  node_245:
+    <<: *def_client
+  node_246:
+    <<: *def_client
+  node_247:
+    <<: *def_client
+  node_248:
+    <<: *def_client
+  node_249:
+    <<: *def_client
+  node_250:
+    <<: *def_client
+  node_251:
+    <<: *def_client
+  node_252:
+    <<: *def_client
+  node_253:
+    <<: *def_client
+  node_254:
+    <<: *def_client
+  node_255:
+    <<: *def_client
+  node_256:
+    <<: *def_client
+  node_257:
+    <<: *def_client
+  node_258:
+    <<: *def_client
+  node_259:
+    <<: *def_client
+  node_260:
+    <<: *def_client
+  node_261:
+    <<: *def_client
+  node_262:
+    <<: *def_client
+  node_263:
+    <<: *def_client
+  node_264:
+    <<: *def_client
+  node_265:
+    <<: *def_client
+  node_266:
+    <<: *def_client
+  node_267:
+    <<: *def_client
+  node_268:
+    <<: *def_client
+  node_269:
+    <<: *def_client
+  node_270:
+    <<: *def_client
+  node_271:
+    <<: *def_client
+  node_272:
+    <<: *def_client
+  node_273:
+    <<: *def_client
+  node_274:
+    <<: *def_client
+  node_275:
+    <<: *def_client
+  node_276:
+    <<: *def_client
+  node_277:
+    <<: *def_client
+  node_278:
+    <<: *def_client
+  node_279:
+    <<: *def_client
+  node_280:
+    <<: *def_client
+  node_281:
+    <<: *def_client
+  node_282:
+    <<: *def_client
+  node_283:
+    <<: *def_client
+  node_284:
+    <<: *def_client
+  node_285:
+    <<: *def_client
+  node_286:
+    <<: *def_client
+  node_287:
+    <<: *def_client
+  node_288:
+    <<: *def_client
+  node_289:
+    <<: *def_client
+  node_290:
+    <<: *def_client
+  node_291:
+    <<: *def_client
+  node_292:
+    <<: *def_client
+  node_293:
+    <<: *def_client
+  node_294:
+    <<: *def_client
+  node_295:
+    <<: *def_client
+  node_296:
+    <<: *def_client
+  node_297:
+    <<: *def_client
+  node_298:
+    <<: *def_client
+  node_299:
+    <<: *def_client
+  node_300:
+    <<: *def_client
+  node_301:
+    <<: *def_client
+  node_302:
+    <<: *def_client
+  node_303:
+    <<: *def_client
+  node_304:
+    <<: *def_client
+  node_305:
+    <<: *def_client
+  node_306:
+    <<: *def_client
+  node_307:
+    <<: *def_client
+  node_308:
+    <<: *def_client
+  node_309:
+    <<: *def_client
+  node_310:
+    <<: *def_client
+  node_311:
+    <<: *def_client
+  node_312:
+    <<: *def_client
+  node_313:
+    <<: *def_client
+  node_314:
+    <<: *def_client
+  node_315:
+    <<: *def_client
+  node_316:
+    <<: *def_client
+  node_317:
+    <<: *def_client
+  node_318:
+    <<: *def_client
+  node_319:
+    <<: *def_client
+  node_320:
+    <<: *def_client
+  node_321:
+    <<: *def_client
+  node_322:
+    <<: *def_client
+  node_323:
+    <<: *def_client
+  node_324:
+    <<: *def_client
+  node_325:
+    <<: *def_client
+  node_326:
+    <<: *def_client
+  node_327:
+    <<: *def_client
+  node_328:
+    <<: *def_client
+  node_329:
+    <<: *def_client
+  node_330:
+    <<: *def_client
+  node_331:
+    <<: *def_client
+  node_332:
+    <<: *def_client
+  node_333:
+    <<: *def_client
+  node_334:
+    <<: *def_client
+  node_335:
+    <<: *def_client
+  node_336:
+    <<: *def_client
+  node_337:
+    <<: *def_client
+  node_338:
+    <<: *def_client
+  node_339:
+    <<: *def_client
+  node_340:
+    <<: *def_client
+  node_341:
+    <<: *def_client
+  node_342:
+    <<: *def_client
+  node_343:
+    <<: *def_client
+  node_344:
+    <<: *def_client
+  node_345:
+    <<: *def_client
+  node_346:
+    <<: *def_client
+  node_347:
+    <<: *def_client
+  node_348:
+    <<: *def_client
+  node_349:
+    <<: *def_client
+  node_350:
+    <<: *def_client
+  node_351:
+    <<: *def_client
+  node_352:
+    <<: *def_client
+  node_353:
+    <<: *def_client
+  node_354:
+    <<: *def_client
+  node_355:
+    <<: *def_client
+  node_356:
+    <<: *def_client
+  node_357:
+    <<: *def_client
+  node_358:
+    <<: *def_client
+  node_359:
+    <<: *def_client
+  node_360:
+    <<: *def_client
+  node_361:
+    <<: *def_client
+  node_362:
+    <<: *def_client
+  node_363:
+    <<: *def_client
+  node_364:
+    <<: *def_client
+  node_365:
+    <<: *def_client
+  node_366:
+    <<: *def_client
+  node_367:
+    <<: *def_client
+  node_368:
+    <<: *def_client
+  node_369:
+    <<: *def_client
+  node_370:
+    <<: *def_client
+  node_371:
+    <<: *def_client
+  node_372:
+    <<: *def_client
+  node_373:
+    <<: *def_client
+  node_374:
+    <<: *def_client
+  node_375:
+    <<: *def_client
+  node_376:
+    <<: *def_client
+  node_377:
+    <<: *def_client
+  node_378:
+    <<: *def_client
+  node_379:
+    <<: *def_client
+  node_380:
+    <<: *def_client
+  node_381:
+    <<: *def_client
+  node_382:
+    <<: *def_client
+  node_383:
+    <<: *def_client
+  node_384:
+    <<: *def_client
+  node_385:
+    <<: *def_client
+  node_386:
+    <<: *def_client
+  node_387:
+    <<: *def_client
+  node_388:
+    <<: *def_client
+  node_389:
+    <<: *def_client
+  node_390:
+    <<: *def_client
+  node_391:
+    <<: *def_client
+  node_392:
+    <<: *def_client
+  node_393:
+    <<: *def_client
+  node_394:
+    <<: *def_client
+  node_395:
+    <<: *def_client
+  node_396:
+    <<: *def_client
+  node_397:
+    <<: *def_client
+  node_398:
+    <<: *def_client
+  node_399:
+    <<: *def_client
+  node_400:
+    <<: *def_client
+  node_401:
+    <<: *def_client
+  node_402:
+    <<: *def_client
+  node_403:
+    <<: *def_client
+  node_404:
+    <<: *def_client
+  node_405:
+    <<: *def_client
+  node_406:
+    <<: *def_client
+  node_407:
+    <<: *def_client
+  node_408:
+    <<: *def_client
+  node_409:
+    <<: *def_client
+  node_410:
+    <<: *def_client
+  node_411:
+    <<: *def_client
+  node_412:
+    <<: *def_client
+  node_413:
+    <<: *def_client
+  node_414:
+    <<: *def_client
+  node_415:
+    <<: *def_client
+  node_416:
+    <<: *def_client
+  node_417:
+    <<: *def_client
+  node_418:
+    <<: *def_client
+  node_419:
+    <<: *def_client
+  node_420:
+    <<: *def_client
+  node_421:
+    <<: *def_client
+  node_422:
+    <<: *def_client
+  node_423:
+    <<: *def_client
+  node_424:
+    <<: *def_client
+  node_425:
+    <<: *def_client
+  node_426:
+    <<: *def_client
+  node_427:
+    <<: *def_client
+  node_428:
+    <<: *def_client
+  node_429:
+    <<: *def_client
+  node_430:
+    <<: *def_client
+  node_431:
+    <<: *def_client
+  node_432:
+    <<: *def_client
+  node_433:
+    <<: *def_client
+  node_434:
+    <<: *def_client
+  node_435:
+    <<: *def_client
+  node_436:
+    <<: *def_client
+  node_437:
+    <<: *def_client
+  node_438:
+    <<: *def_client
+  node_439:
+    <<: *def_client
+  node_440:
+    <<: *def_client
+  node_441:
+    <<: *def_client
+  node_442:
+    <<: *def_client
+  node_443:
+    <<: *def_client
+  node_444:
+    <<: *def_client
+  node_445:
+    <<: *def_client
+  node_446:
+    <<: *def_client
+  node_447:
+    <<: *def_client
+  node_448:
+    <<: *def_client
+  node_449:
+    <<: *def_client
+  node_450:
+    <<: *def_client
+  node_451:
+    <<: *def_client
+  node_452:
+    <<: *def_client
+  node_453:
+    <<: *def_client
+  node_454:
+    <<: *def_client
+  node_455:
+    <<: *def_client
+  node_456:
+    <<: *def_client
+  node_457:
+    <<: *def_client
+  node_458:
+    <<: *def_client
+  node_459:
+    <<: *def_client
+  node_460:
+    <<: *def_client
+  node_461:
+    <<: *def_client
+  node_462:
+    <<: *def_client
+  node_463:
+    <<: *def_client
+  node_464:
+    <<: *def_client
+  node_465:
+    <<: *def_client
+  node_466:
+    <<: *def_client
+  node_467:
+    <<: *def_client
+  node_468:
+    <<: *def_client
+  node_469:
+    <<: *def_client
+  node_470:
+    <<: *def_client
+  node_471:
+    <<: *def_client
+  node_472:
+    <<: *def_client
+  node_473:
+    <<: *def_client
+  node_474:
+    <<: *def_client
+  node_475:
+    <<: *def_client
+  node_476:
+    <<: *def_client
+  node_477:
+    <<: *def_client
+  node_478:
+    <<: *def_client
+  node_479:
+    <<: *def_client
+  node_480:
+    <<: *def_client
+  node_481:
+    <<: *def_client
+  node_482:
+    <<: *def_client
+  node_483:
+    <<: *def_client
+  node_484:
+    <<: *def_client
+  node_485:
+    <<: *def_client
+  node_486:
+    <<: *def_client
+  node_487:
+    <<: *def_client
+  node_488:
+    <<: *def_client
+  node_489:
+    <<: *def_client
+  node_490:
+    <<: *def_client
+  node_491:
+    <<: *def_client
+  node_492:
+    <<: *def_client
+  node_493:
+    <<: *def_client
+  node_494:
+    <<: *def_client
+  node_495:
+    <<: *def_client
+  node_496:
+    <<: *def_client
+  node_497:
+    <<: *def_client
+  node_498:
+    <<: *def_client
+  node_499:
+    <<: *def_client
+
+workers:
+  node_0:
+    <<: *def_worker
+  node_1:
+    <<: *def_worker
+
+clusters:
+  cluster_0:
+    upstream_cluster: null
+    clients:
+      - node_1
+      - node_2
+      - node_3
+      - node_4
+      - node_5
+      - node_6
+      - node_7
+      - node_8
+      - node_9
+      - node_10
+      - node_11
+      - node_12
+      - node_13
+      - node_14
+      - node_15
+      - node_16
+      - node_17
+      - node_18
+      - node_19
+      - node_20
+      - node_21
+      - node_22
+      - node_23
+      - node_24
+      - node_25
+      - node_26
+      - node_27
+      - node_28
+      - node_29
+      - node_30
+      - node_31
+      - node_32
+      - node_33
+      - node_34
+      - node_35
+      - node_36
+      - node_37
+      - node_38
+      - node_39
+      - node_40
+      - node_41
+      - node_42
+      - node_43
+      - node_44
+      - node_45
+      - node_46
+      - node_47
+      - node_48
+      - node_49
+      - node_50
+      - node_51
+      - node_52
+      - node_53
+      - node_54
+      - node_55
+      - node_56
+      - node_57
+      - node_58
+      - node_59
+      - node_60
+      - node_61
+      - node_62
+      - node_63
+      - node_64
+      - node_65
+      - node_66
+      - node_67
+      - node_68
+      - node_69
+      - node_70
+      - node_71
+      - node_72
+      - node_73
+      - node_74
+      - node_75
+      - node_76
+      - node_77
+      - node_78
+      - node_79
+      - node_80
+      - node_81
+      - node_82
+      - node_83
+      - node_84
+      - node_85
+      - node_86
+      - node_87
+      - node_88
+      - node_89
+      - node_90
+      - node_91
+      - node_92
+      - node_93
+      - node_94
+      - node_95
+      - node_96
+      - node_97
+      - node_98
+      - node_99
+      - node_100
+      - node_101
+      - node_102
+      - node_103
+      - node_104
+      - node_105
+      - node_106
+      - node_107
+      - node_108
+      - node_109
+      - node_110
+      - node_111
+      - node_112
+      - node_113
+      - node_114
+      - node_115
+      - node_116
+      - node_117
+      - node_118
+      - node_119
+      - node_120
+      - node_121
+      - node_122
+      - node_123
+      - node_124
+      - node_125
+      - node_126
+      - node_127
+      - node_128
+      - node_129
+      - node_130
+      - node_131
+      - node_132
+      - node_133
+      - node_134
+      - node_135
+      - node_136
+      - node_137
+      - node_138
+      - node_139
+      - node_140
+      - node_141
+      - node_142
+      - node_143
+      - node_144
+      - node_145
+      - node_146
+      - node_147
+      - node_148
+      - node_149
+      - node_150
+      - node_151
+      - node_152
+      - node_153
+      - node_154
+      - node_155
+      - node_156
+      - node_157
+      - node_158
+      - node_159
+      - node_160
+      - node_161
+      - node_162
+      - node_163
+      - node_164
+      - node_165
+      - node_166
+      - node_167
+      - node_168
+      - node_169
+      - node_170
+      - node_171
+      - node_172
+      - node_173
+      - node_174
+      - node_175
+      - node_176
+      - node_177
+      - node_178
+      - node_179
+      - node_180
+      - node_181
+      - node_182
+      - node_183
+      - node_184
+      - node_185
+      - node_186
+      - node_187
+      - node_188
+      - node_189
+      - node_190
+      - node_191
+      - node_192
+      - node_193
+      - node_194
+      - node_195
+      - node_196
+      - node_197
+      - node_198
+      - node_199
+      - node_200
+      - node_201
+      - node_202
+      - node_203
+      - node_204
+      - node_205
+      - node_206
+      - node_207
+      - node_208
+      - node_209
+      - node_210
+      - node_211
+      - node_212
+      - node_213
+      - node_214
+      - node_215
+      - node_216
+      - node_217
+      - node_218
+      - node_219
+      - node_220
+      - node_221
+      - node_222
+      - node_223
+      - node_224
+      - node_225
+      - node_226
+      - node_227
+      - node_228
+      - node_229
+      - node_230
+      - node_231
+      - node_232
+      - node_233
+      - node_234
+      - node_235
+      - node_236
+      - node_237
+      - node_238
+      - node_239
+      - node_240
+      - node_241
+      - node_242
+      - node_243
+      - node_244
+      - node_245
+      - node_246
+      - node_247
+      - node_248
+      - node_249
+      - node_250
+      - node_251
+      - node_252
+      - node_253
+      - node_254
+      - node_255
+      - node_256
+      - node_257
+      - node_258
+      - node_259
+      - node_260
+      - node_261
+      - node_262
+      - node_263
+      - node_264
+      - node_265
+      - node_266
+      - node_267
+      - node_268
+      - node_269
+      - node_270
+      - node_271
+      - node_272
+      - node_273
+      - node_274
+      - node_275
+      - node_276
+      - node_277
+      - node_278
+      - node_279
+      - node_280
+      - node_281
+      - node_282
+      - node_283
+      - node_284
+      - node_285
+      - node_286
+      - node_287
+      - node_288
+      - node_289
+      - node_290
+      - node_291
+      - node_292
+      - node_293
+      - node_294
+      - node_295
+      - node_296
+      - node_297
+      - node_298
+      - node_299
+      - node_300
+      - node_301
+      - node_302
+      - node_303
+      - node_304
+      - node_305
+      - node_306
+      - node_307
+      - node_308
+      - node_309
+      - node_310
+      - node_311
+      - node_312
+      - node_313
+      - node_314
+      - node_315
+      - node_316
+      - node_317
+      - node_318
+      - node_319
+      - node_320
+      - node_321
+      - node_322
+      - node_323
+      - node_324
+      - node_325
+      - node_326
+      - node_327
+      - node_328
+      - node_329
+      - node_330
+      - node_331
+      - node_332
+      - node_333
+      - node_334
+      - node_335
+      - node_336
+      - node_337
+      - node_338
+      - node_339
+      - node_340
+      - node_341
+      - node_342
+      - node_343
+      - node_344
+      - node_345
+      - node_346
+      - node_347
+      - node_348
+      - node_349
+      - node_350
+      - node_351
+      - node_352
+      - node_353
+      - node_354
+      - node_355
+      - node_356
+      - node_357
+      - node_358
+      - node_359
+      - node_360
+      - node_361
+      - node_362
+      - node_363
+      - node_364
+      - node_365
+      - node_366
+      - node_367
+      - node_368
+      - node_369
+      - node_370
+      - node_371
+      - node_372
+      - node_373
+      - node_374
+      - node_375
+      - node_376
+      - node_377
+      - node_378
+      - node_379
+      - node_380
+      - node_381
+      - node_382
+      - node_383
+      - node_384
+      - node_385
+      - node_386
+      - node_387
+      - node_388
+      - node_389
+      - node_390
+      - node_391
+      - node_392
+      - node_393
+      - node_394
+      - node_395
+      - node_396
+      - node_397
+      - node_398
+      - node_399
+      - node_400
+      - node_401
+      - node_402
+      - node_403
+      - node_404
+      - node_405
+      - node_406
+      - node_407
+      - node_408
+      - node_409
+      - node_410
+      - node_411
+      - node_412
+      - node_413
+      - node_414
+      - node_415
+      - node_416
+      - node_417
+      - node_418
+      - node_419
+      - node_420
+      - node_421
+      - node_422
+      - node_423
+      - node_424
+      - node_425
+      - node_426
+      - node_427
+      - node_428
+      - node_429
+      - node_430
+      - node_431
+      - node_432
+      - node_433
+      - node_434
+      - node_435
+      - node_436
+      - node_437
+      - node_438
+      - node_439
+      - node_440
+      - node_441
+      - node_442
+      - node_443
+      - node_444
+      - node_445
+      - node_446
+      - node_447
+      - node_448
+      - node_449
+      - node_450
+      - node_451
+      - node_452
+      - node_453
+      - node_454
+      - node_455
+      - node_456
+      - node_457
+      - node_458
+      - node_459
+      - node_460
+      - node_461
+      - node_462
+      - node_463
+      - node_464
+      - node_465
+      - node_466
+      - node_467
+      - node_468
+      - node_469
+      - node_470
+      - node_471
+      - node_472
+      - node_473
+      - node_474
+      - node_475
+      - node_476
+      - node_477
+      - node_478
+      - node_479
+      - node_480
+      - node_481
+      - node_482
+      - node_483
+      - node_484
+      - node_485
+      - node_486
+      - node_487
+      - node_488
+      - node_489
+      - node_490
+      - node_491
+      - node_492
+      - node_493
+      - node_494
+      - node_495
+      - node_496
+      - node_497
+      - node_498
+      - node_499
+    workers:
+      - node_0
+    consensus_params:
+      <<: *default_2_3
+    train_params:
+      cluster_epochs: 1
+    dataset_params:
+      <<: *dataset_default
+
+job_params:
+  rounds: 20
