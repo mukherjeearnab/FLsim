@@ -95,7 +95,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
     init_global_state_key = p2p_store.setv(initial_global_state)
     # 5.2 ACK of Dataset Download (Client Status to 2)
     setters.update_node_status(
-        job_name, cluster_id, node_type, 2, {'initial_param': None})
+        job_name, cluster_id, node_type, 2)
     sleep(10)
     listeners.wait_for_node_stage(job_name, cluster_id, node_type, 2)
 
