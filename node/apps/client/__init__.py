@@ -42,6 +42,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
     node_id = args['node_id']
     node_type = 'client'
+    wait_factor = int(node_id.split('_')[1])%10
 
     global_round = 1
     extra_data = {
@@ -49,19 +50,23 @@ def client_process(job_name: str, cluster_id: str) -> None:
         'global_extra_data': None
     }
 
-    startup_delay = env['DELAY'] * 5
-    logger.info(f'[{node_type}] Sleeping for {startup_delay} seconds')
-    sleep(startup_delay)
+    sync_delay = 5 + env['DELAY'] * wait_factor
+    logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+    sleep(sync_delay)
 
     # 0. Wait for JobsheetDownload Flag
     listeners.wait_for_jobsheet_flag(job_name, cluster_id, node_type)
+
+    logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+    sleep(sync_delay)
 
     # 1. Download Job Configuration
     manifest = getters.get_job_config(job_name, cluster_id, node_type)
 
     # 2. ACK of Job Sheet Download (Client Status to 1)
     setters.update_node_status(job_name, cluster_id, node_type, 1)
-    sleep(10)
+    logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+    sleep(sync_delay)
     listeners.wait_for_node_stage(job_name, cluster_id, node_type, 1)
 
     # 2.1 Initialize the Model and Obtain Intial Parameters
@@ -70,6 +75,9 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
     # obtain initial global state of the model
     initial_global_state = strategy.get_base64_global_payload()
+
+    logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+    sleep(sync_delay)
 
     # 3. Wait for DatasetDownload Flag
     listeners.wait_for_dataset_flag(job_name, cluster_id, node_type)
@@ -96,7 +104,8 @@ def client_process(job_name: str, cluster_id: str) -> None:
     # 5.2 ACK of Dataset Download (Client Status to 2)
     setters.update_node_status(
         job_name, cluster_id, node_type, 2)
-    sleep(10)
+    logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+    sleep(sync_delay)
     listeners.wait_for_node_stage(job_name, cluster_id, node_type, 2)
 
     # 6. Wait for process_stage to be 1
@@ -118,7 +127,8 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 8. Update Client Status to 3
         setters.update_node_status(job_name, cluster_id, node_type, 3)
-        sleep(10)
+        logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+        sleep(sync_delay)
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
 
         # 8.1. Test Trained Model On Global Params
@@ -154,14 +164,17 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 11. Update Client Status to 4
         setters.update_node_status(job_name, cluster_id, node_type, 4)
-        sleep(10)
+        logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+        sleep(sync_delay)
 
         # 12. Wait for client_stage to be 4 and Process Phase to be 2
-        listeners.wait_for_node_stage(job_name, cluster_id, node_type, 4)
-        sleep(10)
+        # listeners.wait_for_node_stage(job_name, cluster_id, node_type, 4)
+        logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+        sleep(sync_delay)
         listeners.wait_for_aggregation_phase(job_name, cluster_id, node_type)
 
-        sleep(10)
+        logger.info(f'[{node_type}] Sleeping for {sync_delay} seconds')
+        sleep(sync_delay)
         # 13. Wait for process_stage to be 1 or 3
         process_stage, global_round, cluster_epoch = listeners.wait_for_start_end_training(
             job_name, cluster_id, node_type)

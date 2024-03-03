@@ -134,7 +134,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
 
         # SLEEP FOR A WHILE FOR THE CLIENTS TO GET THEIR SIGNALLING UPDATED
         logger.info('Sleeping for 60 seconds.')
-        sleep(60)
+        sleep(300)
 
         # 10. Upload Aggregated Model Parameter
         aggregated_global_state = strategy.get_base64_global_payload()
