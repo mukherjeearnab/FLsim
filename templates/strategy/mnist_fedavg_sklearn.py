@@ -30,25 +30,35 @@ class SKLearnMNIST(SKLearnStrategyBase):
                 max_iter=1,  # local epoch
                 warm_start=True,  # prevent refreshing weights when fitting
             )
-            # self.global_model.coef_ = np.zeros(
-            #     (self._n_classes, self._n_features))
-            # self.global_model.intercept_ = np.zeros((self._n_classes,))
-            # self.global_model.classes_ = np.array(
-            #     [i for i in range(self._n_classes)])
+
+            self.global_model.coef_ = np.zeros(
+                (self._n_classes, self._n_features))
+            self.global_model.intercept_ = np.zeros((self._n_classes,))
+            self.global_model.classes_ = np.array(
+                [i for i in range(self._n_classes)])
 
             self.local_model = LogisticRegression(
                 penalty="l2",
                 max_iter=1,  # local epoch
                 warm_start=True,  # prevent refreshing weights when fitting
             )
+            self.local_model.coef_ = np.zeros(
+                (self._n_classes, self._n_features))
+            self.local_model.intercept_ = np.zeros((self._n_classes,))
+            self.local_model.classes_ = np.array(
+                [i for i in range(self._n_classes)])
 
-            fake_data = np.zeros((self._n_classes, self._n_features))
-            fake_labels = np.array([i for i in range(self._n_classes)])
+            # fake_data = np.random.random_sample(
+            #     (self._n_classes*2, self._n_features))
+            # fake_labels = np.array([i for i in range(self._n_classes)]*2)
 
-            self.local_model.fit(
-                fake_data, fake_labels)
-            self.global_model.fit(
-                fake_data, fake_labels)
+            # self.local_model.fit(
+            #     fake_data, fake_labels)
+            # self.global_model.fit(
+            #     fake_data, fake_labels)
+
+            # print(self.global_model.coef_.shape)
+            # print(self.global_model.intercept_.shape)
 
     def parameter_mixing(self) -> None:
         '''
@@ -66,11 +76,17 @@ class SKLearnMNIST(SKLearnStrategyBase):
         '''
         Executes Fit for the model
         '''
+        print(self.local_model.coef_.shape)
+        print(self.local_model.intercept_.shape)
 
         data, labels = self._train_set
 
+        print(data.shape, labels.shape)
+
         nsamples, nx, ny = data.shape
         data = data.reshape((nsamples, nx*ny))
+
+        print(data.shape, labels.shape)
 
         # Epoch loop
         for epoch in range(self.train_epochs):

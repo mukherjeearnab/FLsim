@@ -49,7 +49,7 @@ def wait_for_jobsheet_flag(job_name: str, cluster_id: str, node_type: str):
                 f'[{node_type}] Failed to fetch jobsheet download flag. Aborting.\n{traceback.format_exc()}')
             try_count += 1
 
-        if try_count >= 10:
+        if try_count >= 100:
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY*5)
@@ -89,7 +89,7 @@ def wait_for_dataset_flag(job_name: str, cluster_id: str, node_type: str):
                 f'[{node_type}] Failed to fetch dataset download flag. Aborting.\n{traceback.format_exc()}')
             try_count += 1
 
-        if try_count >= 10:
+        if try_count >= 100:
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY*5)
@@ -131,7 +131,7 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
                 f'[{node_type}] Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
             try_count += 1
 
-        if try_count >= 10:
+        if try_count >= 100:
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY*5)
@@ -171,7 +171,7 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
                 f'[{node_type}] Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
             try_count += 1
 
-        if try_count >= 10:
+        if try_count >= 100:
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY*5)
@@ -211,7 +211,7 @@ def wait_for_node_stage(job_name: str, cluster_id: str, node_type: str, stage: i
                 f'[{node_type}] Failed to fetch {node_type}_stage flag. Aborting.\n{traceback.format_exc()}')
             try_count += 1
 
-        if try_count >= 10:
+        if try_count >= 100:
             _fail_exit(job_name, cluster_id, node_type)
 
         sleep(DELAY*5)

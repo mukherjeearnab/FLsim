@@ -517,156 +517,156 @@ clusters:
       - node_47
       - node_48
       - node_49
-      - node_50
-      - node_51
-      - node_52
-      - node_53
-      - node_54
-      - node_55
-      - node_56
-      - node_57
-      - node_58
-      - node_59
-      - node_60
-      - node_61
-      - node_62
-      - node_63
-      - node_64
-      - node_65
-      - node_66
-      - node_67
-      - node_68
-      - node_69
-      - node_70
-      - node_71
-      - node_72
-      - node_73
-      - node_74
-      - node_75
-      - node_76
-      - node_77
-      - node_78
-      - node_79
-      - node_80
-      - node_81
-      - node_82
-      - node_83
-      - node_84
-      - node_85
-      - node_86
-      - node_87
-      - node_88
-      - node_89
-      - node_90
-      - node_91
-      - node_92
-      - node_93
-      - node_94
-      - node_95
-      - node_96
-      - node_97
-      - node_98
-      - node_99
-      - node_100
-      - node_101
-      - node_102
-      - node_103
-      - node_104
-      - node_105
-      - node_106
-      - node_107
-      - node_108
-      - node_109
-      - node_110
-      - node_111
-      - node_112
-      - node_113
-      - node_114
-      - node_115
-      - node_116
-      - node_117
-      - node_118
-      - node_119
-      - node_120
-      - node_121
-      - node_122
-      - node_123
-      - node_124
-      - node_125
-      - node_126
-      - node_127
-      - node_128
-      - node_129
-      - node_130
-      - node_131
-      - node_132
-      - node_133
-      - node_134
-      - node_135
-      - node_136
-      - node_137
-      - node_138
-      - node_139
-      - node_140
-      - node_141
-      - node_142
-      - node_143
-      - node_144
-      - node_145
-      - node_146
-      - node_147
-      - node_148
-      - node_149
-      - node_150
-      - node_151
-      - node_152
-      - node_153
-      - node_154
-      - node_155
-      - node_156
-      - node_157
-      - node_158
-      - node_159
-      - node_160
-      - node_161
-      - node_162
-      - node_163
-      - node_164
-      - node_165
-      - node_166
-      - node_167
-      - node_168
-      - node_169
-      - node_170
-      - node_171
-      - node_172
-      - node_173
-      - node_174
-      - node_175
-      - node_176
-      - node_177
-      - node_178
-      - node_179
-      - node_180
-      - node_181
-      - node_182
-      - node_183
-      - node_184
-      - node_185
-      - node_186
-      - node_187
-      - node_188
-      - node_189
-      - node_190
-      - node_191
-      - node_192
-      - node_193
-      - node_194
-      - node_195
-      - node_196
-      - node_197
-      - node_198
-      - node_199
+      # - node_50
+      # - node_51
+      # - node_52
+      # - node_53
+      # - node_54
+      # - node_55
+      # - node_56
+      # - node_57
+      # - node_58
+      # - node_59
+      # - node_60
+      # - node_61
+      # - node_62
+      # - node_63
+      # - node_64
+      # - node_65
+      # - node_66
+      # - node_67
+      # - node_68
+      # - node_69
+      # - node_70
+      # - node_71
+      # - node_72
+      # - node_73
+      # - node_74
+      # - node_75
+      # - node_76
+      # - node_77
+      # - node_78
+      # - node_79
+      # - node_80
+      # - node_81
+      # - node_82
+      # - node_83
+      # - node_84
+      # - node_85
+      # - node_86
+      # - node_87
+      # - node_88
+      # - node_89
+      # - node_90
+      # - node_91
+      # - node_92
+      # - node_93
+      # - node_94
+      # - node_95
+      # - node_96
+      # - node_97
+      # - node_98
+      # - node_99
+      # - node_100
+      # - node_101
+      # - node_102
+      # - node_103
+      # - node_104
+      # - node_105
+      # - node_106
+      # - node_107
+      # - node_108
+      # - node_109
+      # - node_110
+      # - node_111
+      # - node_112
+      # - node_113
+      # - node_114
+      # - node_115
+      # - node_116
+      # - node_117
+      # - node_118
+      # - node_119
+      # - node_120
+      # - node_121
+      # - node_122
+      # - node_123
+      # - node_124
+      # - node_125
+      # - node_126
+      # - node_127
+      # - node_128
+      # - node_129
+      # - node_130
+      # - node_131
+      # - node_132
+      # - node_133
+      # - node_134
+      # - node_135
+      # - node_136
+      # - node_137
+      # - node_138
+      # - node_139
+      # - node_140
+      # - node_141
+      # - node_142
+      # - node_143
+      # - node_144
+      # - node_145
+      # - node_146
+      # - node_147
+      # - node_148
+      # - node_149
+      # - node_150
+      # - node_151
+      # - node_152
+      # - node_153
+      # - node_154
+      # - node_155
+      # - node_156
+      # - node_157
+      # - node_158
+      # - node_159
+      # - node_160
+      # - node_161
+      # - node_162
+      # - node_163
+      # - node_164
+      # - node_165
+      # - node_166
+      # - node_167
+      # - node_168
+      # - node_169
+      # - node_170
+      # - node_171
+      # - node_172
+      # - node_173
+      # - node_174
+      # - node_175
+      # - node_176
+      # - node_177
+      # - node_178
+      # - node_179
+      # - node_180
+      # - node_181
+      # - node_182
+      # - node_183
+      # - node_184
+      # - node_185
+      # - node_186
+      # - node_187
+      # - node_188
+      # - node_189
+      # - node_190
+      # - node_191
+      # - node_192
+      # - node_193
+      # - node_194
+      # - node_195
+      # - node_196
+      # - node_197
+      # - node_198
+      # - node_199
 
     workers:
       - node_0

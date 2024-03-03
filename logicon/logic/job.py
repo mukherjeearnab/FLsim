@@ -20,6 +20,8 @@ class Job(object):
         self.cluster_id = cluster_id
         self.modification_lock = lock
 
+        self.status_count = 0
+
         self.modification_lock.acquire()
         if not load_from_db:
 
@@ -428,18 +430,20 @@ class Job(object):
             # find the client and update their status
             if self.job_status['client_info'][i]['client_id'] == client_id:
                 self.job_status['client_info'][i]['status'] = status
+                self.status_count += 1
 
             # collect the status of all the clients
             all_client_status.add(
                 self.job_status['client_info'][i]['status'])
 
         logger.info(
-            f"Client [{client_id}] is at stage [{status}].")
+            f"Client [{client_id}] is at stage [{status}]. ({self.status_count})")
 
         if len(all_client_status) == 1:
             self.job_status['client_stage'] = list(all_client_status)[0]
             logger.info(
                 f"[{self.job_name}#{self.cluster_id}] All clients are at Stage: [{self.job_status['client_stage']}]")
+            self.status_count = 0
             next_signal = self._cw_stage_update_handler()
 
         # method suffixed with update state and lock release

@@ -2867,206 +2867,206 @@ clusters:
       - node_797
       - node_798
       - node_799
-      - node_800
-      - node_801
-      - node_802
-      - node_803
-      - node_804
-      - node_805
-      - node_806
-      - node_807
-      - node_808
-      - node_809
-      - node_810
-      - node_811
-      - node_812
-      - node_813
-      - node_814
-      - node_815
-      - node_816
-      - node_817
-      - node_818
-      - node_819
-      - node_820
-      - node_821
-      - node_822
-      - node_823
-      - node_824
-      - node_825
-      - node_826
-      - node_827
-      - node_828
-      - node_829
-      - node_830
-      - node_831
-      - node_832
-      - node_833
-      - node_834
-      - node_835
-      - node_836
-      - node_837
-      - node_838
-      - node_839
-      - node_840
-      - node_841
-      - node_842
-      - node_843
-      - node_844
-      - node_845
-      - node_846
-      - node_847
-      - node_848
-      - node_849
-      - node_850
-      - node_851
-      - node_852
-      - node_853
-      - node_854
-      - node_855
-      - node_856
-      - node_857
-      - node_858
-      - node_859
-      - node_860
-      - node_861
-      - node_862
-      - node_863
-      - node_864
-      - node_865
-      - node_866
-      - node_867
-      - node_868
-      - node_869
-      - node_870
-      - node_871
-      - node_872
-      - node_873
-      - node_874
-      - node_875
-      - node_876
-      - node_877
-      - node_878
-      - node_879
-      - node_880
-      - node_881
-      - node_882
-      - node_883
-      - node_884
-      - node_885
-      - node_886
-      - node_887
-      - node_888
-      - node_889
-      - node_890
-      - node_891
-      - node_892
-      - node_893
-      - node_894
-      - node_895
-      - node_896
-      - node_897
-      - node_898
-      - node_899
-      - node_900
-      - node_901
-      - node_902
-      - node_903
-      - node_904
-      - node_905
-      - node_906
-      - node_907
-      - node_908
-      - node_909
-      - node_910
-      - node_911
-      - node_912
-      - node_913
-      - node_914
-      - node_915
-      - node_916
-      - node_917
-      - node_918
-      - node_919
-      - node_920
-      - node_921
-      - node_922
-      - node_923
-      - node_924
-      - node_925
-      - node_926
-      - node_927
-      - node_928
-      - node_929
-      - node_930
-      - node_931
-      - node_932
-      - node_933
-      - node_934
-      - node_935
-      - node_936
-      - node_937
-      - node_938
-      - node_939
-      - node_940
-      - node_941
-      - node_942
-      - node_943
-      - node_944
-      - node_945
-      - node_946
-      - node_947
-      - node_948
-      - node_949
-      - node_950
-      - node_951
-      - node_952
-      - node_953
-      - node_954
-      - node_955
-      - node_956
-      - node_957
-      - node_958
-      - node_959
-      - node_960
-      - node_961
-      - node_962
-      - node_963
-      - node_964
-      - node_965
-      - node_966
-      - node_967
-      - node_968
-      - node_969
-      - node_970
-      - node_971
-      - node_972
-      - node_973
-      - node_974
-      - node_975
-      - node_976
-      - node_977
-      - node_978
-      - node_979
-      - node_980
-      - node_981
-      - node_982
-      - node_983
-      - node_984
-      - node_985
-      - node_986
-      - node_987
-      - node_988
-      - node_989
-      - node_990
-      - node_991
-      - node_992
-      - node_993
-      - node_994
-      - node_995
-      - node_996
-      - node_997
-      - node_998
-      - node_999
+      # - node_800
+      # - node_801
+      # - node_802
+      # - node_803
+      # - node_804
+      # - node_805
+      # - node_806
+      # - node_807
+      # - node_808
+      # - node_809
+      # - node_810
+      # - node_811
+      # - node_812
+      # - node_813
+      # - node_814
+      # - node_815
+      # - node_816
+      # - node_817
+      # - node_818
+      # - node_819
+      # - node_820
+      # - node_821
+      # - node_822
+      # - node_823
+      # - node_824
+      # - node_825
+      # - node_826
+      # - node_827
+      # - node_828
+      # - node_829
+      # - node_830
+      # - node_831
+      # - node_832
+      # - node_833
+      # - node_834
+      # - node_835
+      # - node_836
+      # - node_837
+      # - node_838
+      # - node_839
+      # - node_840
+      # - node_841
+      # - node_842
+      # - node_843
+      # - node_844
+      # - node_845
+      # - node_846
+      # - node_847
+      # - node_848
+      # - node_849
+      # - node_850
+      # - node_851
+      # - node_852
+      # - node_853
+      # - node_854
+      # - node_855
+      # - node_856
+      # - node_857
+      # - node_858
+      # - node_859
+      # - node_860
+      # - node_861
+      # - node_862
+      # - node_863
+      # - node_864
+      # - node_865
+      # - node_866
+      # - node_867
+      # - node_868
+      # - node_869
+      # - node_870
+      # - node_871
+      # - node_872
+      # - node_873
+      # - node_874
+      # - node_875
+      # - node_876
+      # - node_877
+      # - node_878
+      # - node_879
+      # - node_880
+      # - node_881
+      # - node_882
+      # - node_883
+      # - node_884
+      # - node_885
+      # - node_886
+      # - node_887
+      # - node_888
+      # - node_889
+      # - node_890
+      # - node_891
+      # - node_892
+      # - node_893
+      # - node_894
+      # - node_895
+      # - node_896
+      # - node_897
+      # - node_898
+      # - node_899
+      # - node_900
+      # - node_901
+      # - node_902
+      # - node_903
+      # - node_904
+      # - node_905
+      # - node_906
+      # - node_907
+      # - node_908
+      # - node_909
+      # - node_910
+      # - node_911
+      # - node_912
+      # - node_913
+      # - node_914
+      # - node_915
+      # - node_916
+      # - node_917
+      # - node_918
+      # - node_919
+      # - node_920
+      # - node_921
+      # - node_922
+      # - node_923
+      # - node_924
+      # - node_925
+      # - node_926
+      # - node_927
+      # - node_928
+      # - node_929
+      # - node_930
+      # - node_931
+      # - node_932
+      # - node_933
+      # - node_934
+      # - node_935
+      # - node_936
+      # - node_937
+      # - node_938
+      # - node_939
+      # - node_940
+      # - node_941
+      # - node_942
+      # - node_943
+      # - node_944
+      # - node_945
+      # - node_946
+      # - node_947
+      # - node_948
+      # - node_949
+      # - node_950
+      # - node_951
+      # - node_952
+      # - node_953
+      # - node_954
+      # - node_955
+      # - node_956
+      # - node_957
+      # - node_958
+      # - node_959
+      # - node_960
+      # - node_961
+      # - node_962
+      # - node_963
+      # - node_964
+      # - node_965
+      # - node_966
+      # - node_967
+      # - node_968
+      # - node_969
+      # - node_970
+      # - node_971
+      # - node_972
+      # - node_973
+      # - node_974
+      # - node_975
+      # - node_976
+      # - node_977
+      # - node_978
+      # - node_979
+      # - node_980
+      # - node_981
+      # - node_982
+      # - node_983
+      # - node_984
+      # - node_985
+      # - node_986
+      # - node_987
+      # - node_988
+      # - node_989
+      # - node_990
+      # - node_991
+      # - node_992
+      # - node_993
+      # - node_994
+      # - node_995
+      # - node_996
+      # - node_997
+      # - node_998
+      # - node_999
     workers:
       - node_0
     consensus_params:
