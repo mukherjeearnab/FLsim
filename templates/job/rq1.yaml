@@ -1,11 +1,14 @@
 dataset:
   cluster_configs:
     - &dataset_default
-      dataset: cifar10_torch
+      dataset: mnist_sklearn
       distribution:
+        # client_weights:
+        #   - 0.5
+        #   - 0.5
         extra_params:
           diritchlet:
-            alpha: 10000.0
+            alpha: 1000000.0
             seed: 10
         train_test_split:
           train: 0.8
@@ -18,15 +21,12 @@ consensus:
 training:
   client_configs:
     - &cifar_train_def
-      learning_rate: 0.001
+      learning_rate: 0.0001
       batch_size: 256
-      local_epochs: 5
+      local_epochs: 1
       extra_params:
         fed_prox:
           mu: 0.01
-        moon:
-          temp: 0.5
-          mu: 5.0
         lr_decay: 1
 
   worker_configs:
@@ -37,7 +37,7 @@ training:
 
 model_params:
   - &cifar_simple_cnn
-    strategy: cifar10_cnn_fedavg
+    strategy: mnist_fedavg_sklearn
 
 client_configs:
   - &def_client
@@ -458,6 +458,106 @@ clients:
     <<: *def_client
   node_199:
     <<: *def_client
+  node_200:
+    <<: *def_client
+  node_201:
+    <<: *def_client
+  node_202:
+    <<: *def_client
+  node_203:
+    <<: *def_client
+  node_204:
+    <<: *def_client
+  node_205:
+    <<: *def_client
+  node_206:
+    <<: *def_client
+  node_207:
+    <<: *def_client
+  node_208:
+    <<: *def_client
+  node_209:
+    <<: *def_client
+  node_210:
+    <<: *def_client
+  node_211:
+    <<: *def_client
+  node_212:
+    <<: *def_client
+  node_213:
+    <<: *def_client
+  node_214:
+    <<: *def_client
+  node_215:
+    <<: *def_client
+  node_216:
+    <<: *def_client
+  node_217:
+    <<: *def_client
+  node_218:
+    <<: *def_client
+  node_219:
+    <<: *def_client
+  node_220:
+    <<: *def_client
+  node_221:
+    <<: *def_client
+  node_222:
+    <<: *def_client
+  node_223:
+    <<: *def_client
+  node_224:
+    <<: *def_client
+  node_225:
+    <<: *def_client
+  node_226:
+    <<: *def_client
+  node_227:
+    <<: *def_client
+  node_228:
+    <<: *def_client
+  node_229:
+    <<: *def_client
+  node_230:
+    <<: *def_client
+  node_231:
+    <<: *def_client
+  node_232:
+    <<: *def_client
+  node_233:
+    <<: *def_client
+  node_234:
+    <<: *def_client
+  node_235:
+    <<: *def_client
+  node_236:
+    <<: *def_client
+  node_237:
+    <<: *def_client
+  node_238:
+    <<: *def_client
+  node_239:
+    <<: *def_client
+  node_240:
+    <<: *def_client
+  node_241:
+    <<: *def_client
+  node_242:
+    <<: *def_client
+  node_243:
+    <<: *def_client
+  node_244:
+    <<: *def_client
+  node_245:
+    <<: *def_client
+  node_246:
+    <<: *def_client
+  node_247:
+    <<: *def_client
+  node_248:
+    <<: *def_client
+  node_249:
+    <<: *def_client
 
 workers:
   node_0:
@@ -667,6 +767,56 @@ clusters:
       - node_197
       - node_198
       - node_199
+      - node_200
+      - node_201
+      - node_202
+      - node_203
+      - node_204
+      - node_205
+      - node_206
+      - node_207
+      - node_208
+      - node_209
+      - node_210
+      - node_211
+      - node_212
+      - node_213
+      - node_214
+      - node_215
+      - node_216
+      - node_217
+      - node_218
+      - node_219
+      - node_220
+      - node_221
+      - node_222
+      - node_223
+      - node_224
+      - node_225
+      - node_226
+      - node_227
+      - node_228
+      - node_229
+      - node_230
+      - node_231
+      - node_232
+      - node_233
+      - node_234
+      - node_235
+      - node_236
+      - node_237
+      - node_238
+      - node_239
+      - node_240
+      - node_241
+      - node_242
+      - node_243
+      - node_244
+      - node_245
+      - node_246
+      - node_247
+      - node_248
+      - node_249
 
     workers:
       - node_0
@@ -678,4 +828,4 @@ clusters:
       <<: *dataset_default
 
 job_params:
-  rounds: 200
+  rounds: 100

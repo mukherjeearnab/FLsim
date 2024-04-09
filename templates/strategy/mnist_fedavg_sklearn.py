@@ -30,6 +30,7 @@ class SKLearnMNIST(SKLearnStrategyBase):
                 max_iter=1,  # local epoch
                 warm_start=True,  # prevent refreshing weights when fitting
             )
+
             self.global_model.coef_ = np.zeros(
                 (self._n_classes, self._n_features))
             self.global_model.intercept_ = np.zeros((self._n_classes,))
@@ -41,6 +42,23 @@ class SKLearnMNIST(SKLearnStrategyBase):
                 max_iter=1,  # local epoch
                 warm_start=True,  # prevent refreshing weights when fitting
             )
+            self.local_model.coef_ = np.zeros(
+                (self._n_classes, self._n_features))
+            self.local_model.intercept_ = np.zeros((self._n_classes,))
+            self.local_model.classes_ = np.array(
+                [i for i in range(self._n_classes)])
+
+            # fake_data = np.random.random_sample(
+            #     (self._n_classes*2, self._n_features))
+            # fake_labels = np.array([i for i in range(self._n_classes)]*2)
+
+            # self.local_model.fit(
+            #     fake_data, fake_labels)
+            # self.global_model.fit(
+            #     fake_data, fake_labels)
+
+            # print(self.global_model.coef_.shape)
+            # print(self.global_model.intercept_.shape)
 
     def parameter_mixing(self) -> None:
         '''
@@ -58,11 +76,17 @@ class SKLearnMNIST(SKLearnStrategyBase):
         '''
         Executes Fit for the model
         '''
+        print(self.local_model.coef_.shape)
+        print(self.local_model.intercept_.shape)
 
         data, labels = self._train_set
 
+        print(data.shape, labels.shape)
+
         nsamples, nx, ny = data.shape
         data = data.reshape((nsamples, nx*ny))
+
+        print(data.shape, labels.shape)
 
         # Epoch loop
         for epoch in range(self.train_epochs):
@@ -78,6 +102,8 @@ class SKLearnMNIST(SKLearnStrategyBase):
 
         data, labels = self._test_set
 
+        print(data.shape)
+
         nsamples, nx, ny = data.shape
         data = data.reshape((nsamples, nx*ny))
 
@@ -87,13 +113,16 @@ class SKLearnMNIST(SKLearnStrategyBase):
         else:
             model = self.global_model
 
-        preds = model.predict(data)
+        preds_proba = model.predict_proba(data)
 
-        # loss = metrics.log_loss(labels, model.predict_proba(data))
+        print(preds_proba)
 
+        preds = np.argmax(preds_proba, axis=1)
+
+        loss = metrics.log_loss(labels, preds_proba, labels=model.classes_)
         results = self.__get_metrics(labels, preds)
 
-        # results['loss'] = loss
+        results['loss'] = loss
 
         print(
             f"Model Test Report:\n{results['classification_report']}")
