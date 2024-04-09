@@ -36,10 +36,10 @@ Federated Learning is a machine learning paradigm that allows training models ac
 
 Refer to the Quick Start Guide for more information at: [Quick Start](docs/quick-start/readme.md)
 
-# Examples
+## Examples
 
 Check out the Examples Guide for more information at: [Examples](docs/examples/readme.md)
 
-# License
+## License
 
 This project is licensed under the GNU GPLv3 License - see the [`LICENSE`](./LICENSE) file for details.

@@ -165,4 +165,4 @@ Here:
 
 ## Job deployment
 
-For deploying a job, check out the examples provided at: [Examples](docs/examples/readme.md)
+For deploying a job, check out the examples provided at: [Examples](/docs/examples/readme.md)
