@@ -1,6 +1,6 @@
 # FLsim: A Simulation Framework for Federated Learning
 
-[![License](https://img.shields.io/badge/license-GPL-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL-blue.svg)](LICENSE) [![Contributors](https://img.shields.io/github/contributors/mukherjeearnab/FLsim)](https://github.com/mukherjeearnab/FLsim/graphs/contributors)
 
 A Federated Learning simulation framework designed to facilitate research and experimentation with Federated Learning algorithms and techniques.
 
@@ -9,10 +9,7 @@ A Federated Learning simulation framework designed to facilitate research and ex
 - [Introduction](#introduction)
 - [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
-- [Documentation](#documentation)
 - [Examples](#examples)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Introduction
