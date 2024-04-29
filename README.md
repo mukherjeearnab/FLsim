@@ -29,6 +29,8 @@ Federated Learning is a machine learning paradigm that allows training models ac
 - **Flexible Configuration**: Configure various parameters such as network topology, dataset distribution, and learning algorithms.
 - **Visualization Tools**: Visualization tools for monitoring training progress, analyzing performance metrics, and visualizing results.
 
+![Visualization Dashboard](./docs/assets/perflogger-dashboard.png)
+
 ## Installation
 
 Refer to the Quick Start Guide for more information at: [Quick Start](docs/quick-start/readme.md)
