@@ -118,8 +118,9 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 8. Update Client Status to 3
         setters.update_node_status(job_name, cluster_id, node_type, 3)
-        sleep(10)
+        sleep(2)
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
+        listeners.wait_for_scheduled_execution(job_name, cluster_id, node_type)
 
         # 8.1. Test Trained Model On Global Params
         metrics = handlers.test_model(job_name, cluster_id, node_type,
@@ -170,6 +171,11 @@ def client_process(job_name: str, cluster_id: str) -> None:
         #     else Update Client Status to 5 and exit
         if process_stage == 1:
             start_time = time()
+
+            # memory profiling for auto assignment of nodes to machines
+            # import resource
+            # print("[C] MAX RESOURCE USAGE", resource.getrusage(
+            #     resource.RUSAGE_SELF).ru_maxrss)
 
         if process_stage == 3:
             logger.info(
