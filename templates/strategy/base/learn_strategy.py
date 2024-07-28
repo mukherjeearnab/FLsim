@@ -6,7 +6,7 @@ import base64
 from typing import Any
 from copy import deepcopy
 import torch
-from templates.dataset.base.dataset_base import DatasetBase
+from base.dataset_base import DatasetBase
 
 
 class LearnStrategyBase(object):
@@ -96,11 +96,7 @@ class LearnStrategyBase(object):
         '''
 
         with torch.no_grad():
-            payload = dict()
-            for key, value in self.__dict__.items():
-                # remove private and protected fields
-                if not key.startswith('_'):
-                    payload[key] = deepcopy(value)
+            payload = deepcopy(self.__dict__)
 
         # delete the unnecessary fields
         del payload['global_model']
@@ -119,6 +115,11 @@ class LearnStrategyBase(object):
         del payload['is_local']
         del payload['device']
 
+        # remove private and protected fields
+        for key in self.__dict__.keys():
+            if key.startswith('_') and key in payload:
+                del payload[key]
+
         return payload
 
     def get_global_payload(self):
@@ -127,11 +128,7 @@ class LearnStrategyBase(object):
         '''
 
         with torch.no_grad():
-            payload = dict()
-            for key, value in self.__dict__.items():
-                # remove private and protected fields
-                if not key.startswith('_'):
-                    payload[key] = deepcopy(value)
+            payload = deepcopy(self.__dict__)
 
         # delete the unnecessary fields
         del payload['local_model']
@@ -149,6 +146,11 @@ class LearnStrategyBase(object):
 
         del payload['is_local']
         del payload['device']
+
+        # remove private and protected fields
+        for key in self.__dict__.keys():
+            if key.startswith('_') and key in payload:
+                del payload[key]
 
         return payload
 
@@ -202,8 +204,8 @@ class LearnStrategyBase(object):
         self.client_objects = list()
         self.client_weights = list()
 
-    @staticmethod
-    def __base64_encode(obj: Any) -> str:
+    # @staticmethod
+    def __base64_encode(self, obj: Any) -> str:
         '''
         Static function to Base 64 encode an object using torch.save pickling
         '''
@@ -222,8 +224,8 @@ class LearnStrategyBase(object):
 
         return b64_payload
 
-    @staticmethod
-    def __base64_decode(base64str: str) -> Any:
+    # @staticmethod
+    def __base64_decode(self, base64str: str) -> Any:
         '''
         Static function to decode a Base 64 string to object using torch.load unpickling
         '''
@@ -235,6 +237,7 @@ class LearnStrategyBase(object):
         obj_bytes = base64.b64decode(obj_data)
 
         # converts into bytes stream and load using torch.load
-        obj = torch.load(io.BytesIO(obj_bytes))
+        obj = torch.load(io.BytesIO(obj_bytes),
+                         map_location=self.device)
 
         return obj

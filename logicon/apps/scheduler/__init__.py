@@ -21,8 +21,9 @@ def schedule_job_status(participants: dict, job_status: dict, exec_params: dict,
     if process_stage == 1 and node_type == 'client':
         clients_to_allow = []
         for i in range(max_parallel):
-            node_index = min(i+num_client_params, len(clients)-1)
-            clients_to_allow.append(clients[node_index])
+            for j in range(num_client_params+1):
+                node_index = min(i+j, len(clients)-1)
+                clients_to_allow.append(clients[node_index])
             # print("CLIENTS TO ALLOW", clients_to_allow)
 
         if node_id in clients_to_allow:
