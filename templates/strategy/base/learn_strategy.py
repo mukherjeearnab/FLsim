@@ -6,7 +6,7 @@ import base64
 from typing import Any
 from copy import deepcopy
 import torch
-from base.dataset_base import DatasetBase
+from templates.dataset.base.dataset_base import DatasetBase
 
 
 class LearnStrategyBase(object):
@@ -96,7 +96,11 @@ class LearnStrategyBase(object):
         '''
 
         with torch.no_grad():
-            payload = deepcopy(self.__dict__)
+            payload = dict()
+            for key, value in self.__dict__.items():
+                # remove private and protected fields
+                if not key.startswith('_'):
+                    payload[key] = deepcopy(value)
 
         # delete the unnecessary fields
         del payload['global_model']
@@ -115,11 +119,6 @@ class LearnStrategyBase(object):
         del payload['is_local']
         del payload['device']
 
-        # remove private and protected fields
-        for key in self.__dict__.keys():
-            if key.startswith('_') and key in payload:
-                del payload[key]
-
         return payload
 
     def get_global_payload(self):
@@ -128,7 +127,11 @@ class LearnStrategyBase(object):
         '''
 
         with torch.no_grad():
-            payload = deepcopy(self.__dict__)
+            payload = dict()
+            for key, value in self.__dict__.items():
+                # remove private and protected fields
+                if not key.startswith('_'):
+                    payload[key] = deepcopy(value)
 
         # delete the unnecessary fields
         del payload['local_model']
@@ -146,11 +149,6 @@ class LearnStrategyBase(object):
 
         del payload['is_local']
         del payload['device']
-
-        # remove private and protected fields
-        for key in self.__dict__.keys():
-            if key.startswith('_') and key in payload:
-                del payload[key]
 
         return payload
 
@@ -229,10 +227,8 @@ class LearnStrategyBase(object):
         '''
         Static function to decode a Base 64 string to object using torch.load unpickling
         '''
-
         # encode the string into base64
         obj_data = base64str.encode()
-
         # apply base64 decode to obtain bytes
         obj_bytes = base64.b64decode(obj_data)
 
