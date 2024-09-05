@@ -99,13 +99,13 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         job_name, cluster_id, node_type, 2, {'initial_param': init_global_state_key})
     listeners.wait_for_node_stage(job_name, cluster_id, node_type, 2)
 
+    # set start time
+    start_time = time()
+
     # Process Loop
     while True:
         # 6. Wait for process_stage to be 2
         listeners.wait_for_aggregation_phase(job_name, cluster_id, node_type)
-
-        # set start time
-        start_time = time()
 
         # 7. Donwload All Trained Client Parameter(s)
         client_params = handlers.get_client_params(
@@ -114,6 +114,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         # 8. Update Worker Status to 3
         setters.update_node_status(job_name, cluster_id, node_type, 3)
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
+        listeners.wait_for_scheduled_execution(job_name, cluster_id, node_type)
 
         # 9. Start Aggregation Process
         handlers.run_aggregator(job_name, cluster_id, node_type,
@@ -134,7 +135,7 @@ def worker_process(job_name: str, cluster_id: str) -> None:
 
         # SLEEP FOR A WHILE FOR THE CLIENTS TO GET THEIR SIGNALLING UPDATED
         logger.info('Sleeping for 60 seconds.')
-        sleep(60)
+        sleep(30)
 
         # 10. Upload Aggregated Model Parameter
         aggregated_global_state = strategy.get_base64_global_payload()
@@ -163,6 +164,11 @@ def worker_process(job_name: str, cluster_id: str) -> None:
         #     else Update Worker Status to 5 and exit
         if process_stage == 1:
             start_time = time()
+
+            # memory profiling for auto assignment of nodes to machines
+            # import resource
+            # print("[W] MAX RESOURCE USAGE", resource.getrusage(
+            #     resource.RUSAGE_SELF).ru_maxrss)
 
         if process_stage == 3:
             logger.info(

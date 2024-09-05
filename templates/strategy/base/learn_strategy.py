@@ -202,8 +202,8 @@ class LearnStrategyBase(object):
         self.client_objects = list()
         self.client_weights = list()
 
-    @staticmethod
-    def __base64_encode(obj: Any) -> str:
+    # @staticmethod
+    def __base64_encode(self, obj: Any) -> str:
         '''
         Static function to Base 64 encode an object using torch.save pickling
         '''
@@ -222,19 +222,18 @@ class LearnStrategyBase(object):
 
         return b64_payload
 
-    @staticmethod
-    def __base64_decode(base64str: str) -> Any:
+    # @staticmethod
+    def __base64_decode(self, base64str: str) -> Any:
         '''
         Static function to decode a Base 64 string to object using torch.load unpickling
         '''
-
         # encode the string into base64
         obj_data = base64str.encode()
-
         # apply base64 decode to obtain bytes
         obj_bytes = base64.b64decode(obj_data)
 
         # converts into bytes stream and load using torch.load
-        obj = torch.load(io.BytesIO(obj_bytes))
+        obj = torch.load(io.BytesIO(obj_bytes),
+                         map_location=self.device)
 
         return obj

@@ -1,10 +1,12 @@
 '''
 This is the Commandline interface for managing the server
 '''
+import os
 import sys
 import signal
 import logging
 from time import sleep
+from threading import Thread
 # from state import peer_state
 from helpers.argsparse import args
 from helpers.networking import get_all_nic_ip
@@ -15,6 +17,7 @@ from apps.servers import controller, gossip
 from apps.gossip.peer_management import PeerManager
 from apps.gossip.discovery import init_discovery_process
 from apps.job import job_keep_alive_process
+from procmon import runner
 
 # set flask logging level
 log = logging.getLogger('werkzeug')
@@ -38,6 +41,14 @@ sleep(1.0)
 # set peer manager object
 init_discovery_process()
 
+pid = os.getgid()
+print("PID: ", pid)
+sleep(1.0)
+
+# # procmon
+# procmon = Thread(target=runner, args=(
+#     pid,))
+
 
 def sigint_handler(signum, frame):
 
@@ -50,6 +61,7 @@ def sigint_handler(signum, frame):
         proc.kill()
         proc.join()
 
+    procmon.join()
     sys.exit()
 
 
@@ -57,4 +69,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 
 if __name__ == '__main__':
+    print("PROCPID", os.getpid())
+    # procmon = Thread(target=runner, args=(
+    #     os.getpid(),)).start()
     job_keep_alive_process()

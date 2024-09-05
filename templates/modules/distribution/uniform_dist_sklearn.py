@@ -21,7 +21,7 @@ def distribute_into_client_chunks(dataset: tuple, client_weights: list, extra_pa
     # create dataset tuples for client chunks
     client_chunks = []
     for i in range(len(client_weights)):
-        client_chunk = (data_chunks[i], label_chunks[i])
+        client_chunk = (data_chunks[i].copy(), label_chunks[i].copy())
 
         client_chunks.append(client_chunk)
 

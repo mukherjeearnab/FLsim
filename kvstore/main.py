@@ -2,6 +2,7 @@
 Key Value Store Management Router
 '''
 import sys
+from waitress import serve
 from flask import Flask, jsonify, request
 from key_val_store import KeyValueStore
 
@@ -95,6 +96,6 @@ def get_size():
         return jsonify({'status': False, 'size': -1}), 500
 
 
-
 if __name__ == '__main__':
     app.run(port=6666, debug=False, host='0.0.0.0')
+    # serve(app, host="0.0.0.0", port=6666, threads=100, _quiet=True)

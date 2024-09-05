@@ -2,7 +2,7 @@
 DistLearn Dataset Definition Class for PyTorch
 '''
 from templates.dataset.base.sklearn_dataset_base import SKLearnDatasetBase
-from templates.modules.dataset_prep.cifar_def import prepare_torch_dataset
+from templates.modules.dataset_prep.mnist_sklearn import prepare_dataset
 from templates.modules.distribution.uniform_dist_sklearn import distribute_into_client_chunks
 
 
@@ -28,7 +28,7 @@ class MNISTDataset(SKLearnDatasetBase):
         ((train_data, train_labels), (test_data, test_labels))
         '''
 
-        return prepare_torch_dataset()
+        return prepare_dataset()
 
     def distribute_into_chunks(self, root_dataset):
         '''

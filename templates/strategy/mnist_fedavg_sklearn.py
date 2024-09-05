@@ -30,7 +30,6 @@ class SKLearnMNIST(SKLearnStrategyBase):
                 max_iter=1,  # local epoch
                 warm_start=True,  # prevent refreshing weights when fitting
             )
-
             self.global_model.coef_ = np.zeros(
                 (self._n_classes, self._n_features))
             self.global_model.intercept_ = np.zeros((self._n_classes,))
@@ -59,6 +58,14 @@ class SKLearnMNIST(SKLearnStrategyBase):
 
             # print(self.global_model.coef_.shape)
             # print(self.global_model.intercept_.shape)
+
+            fake_data = np.zeros((self._n_classes, self._n_features))
+            fake_labels = np.array([i for i in range(self._n_classes)])
+
+            self.local_model.fit(
+                fake_data, fake_labels)
+            self.global_model.fit(
+                fake_data, fake_labels)
 
     def parameter_mixing(self) -> None:
         '''

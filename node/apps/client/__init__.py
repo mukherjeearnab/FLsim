@@ -61,6 +61,7 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
     # 2. ACK of Job Sheet Download (Client Status to 1)
     setters.update_node_status(job_name, cluster_id, node_type, 1)
+    sleep(10)
     listeners.wait_for_node_stage(job_name, cluster_id, node_type, 1)
 
     # 2.1 Initialize the Model and Obtain Intial Parameters
@@ -94,7 +95,8 @@ def client_process(job_name: str, cluster_id: str) -> None:
     init_global_state_key = p2p_store.setv(initial_global_state)
     # 5.2 ACK of Dataset Download (Client Status to 2)
     setters.update_node_status(
-        job_name, cluster_id, node_type, 2, {'initial_param': init_global_state_key})
+        job_name, cluster_id, node_type, 2)
+    sleep(10)
     listeners.wait_for_node_stage(job_name, cluster_id, node_type, 2)
 
     # 6. Wait for process_stage to be 1
@@ -116,7 +118,9 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 8. Update Client Status to 3
         setters.update_node_status(job_name, cluster_id, node_type, 3)
+        sleep(2)
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 3)
+        listeners.wait_for_scheduled_execution(job_name, cluster_id, node_type)
 
         # 8.1. Test Trained Model On Global Params
         metrics = handlers.test_model(job_name, cluster_id, node_type,
@@ -151,12 +155,14 @@ def client_process(job_name: str, cluster_id: str) -> None:
 
         # 11. Update Client Status to 4
         setters.update_node_status(job_name, cluster_id, node_type, 4)
+        sleep(10)
 
-        # 12. Wait for client_stage to be 4
+        # 12. Wait for client_stage to be 4 and Process Phase to be 2
         listeners.wait_for_node_stage(job_name, cluster_id, node_type, 4)
-
+        sleep(10)
         listeners.wait_for_aggregation_phase(job_name, cluster_id, node_type)
 
+        sleep(10)
         # 13. Wait for process_stage to be 1 or 3
         process_stage, global_round, cluster_epoch = listeners.wait_for_start_end_training(
             job_name, cluster_id, node_type)
@@ -165,6 +171,11 @@ def client_process(job_name: str, cluster_id: str) -> None:
         #     else Update Client Status to 5 and exit
         if process_stage == 1:
             start_time = time()
+
+            # memory profiling for auto assignment of nodes to machines
+            # import resource
+            # print("[C] MAX RESOURCE USAGE", resource.getrusage(
+            #     resource.RUSAGE_SELF).ru_maxrss)
 
         if process_stage == 3:
             logger.info(

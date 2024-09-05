@@ -8,7 +8,7 @@ from state import job_route_state
 from helpers.logging import logger
 from logic.job import Job
 from logic import handlers
-
+from apps.scheduler import schedule_job_status
 
 ROUTE_NAME = 'job-manager'
 blueprint = Blueprint(ROUTE_NAME, __name__)
@@ -121,6 +121,11 @@ def get_job_status():
     job_name = request.args['job_name']
     cluster_id = request.args['cluster_id']
 
+    node_id = None
+    if 'node_id' in request.args:
+        node_id = request.args['node_id']
+        node_type = request.args['node_type']
+
     job_id = f'{job_name}#{cluster_id}'
 
     if job_id not in job_route_state:
@@ -128,7 +133,15 @@ def get_job_status():
 
     try:
         job = job_route_state[job_id]
-        payload = handlers.get_job_status(job)
+        participants = handlers.get_participants(job)
+        job_status = handlers.get_job_status(job)
+        exec_params = handlers.get_exec_params(job)
+
+        if node_id is not None:
+            payload = schedule_job_status(
+                participants, job_status, exec_params, node_id, node_type)
+        else:
+            payload = job_status
 
         if payload is None:
             raise Exception('Job does not exist in job state variable')

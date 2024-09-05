@@ -108,7 +108,7 @@ def wait_for_start_end_training(job_name: str, cluster_id: str, node_type: str) 
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id}, timeout=15)['payload']
+                                 'cluster_id': cluster_id}, timeout=15)['payload']
 
             process_stage = manifest['process_stage']
             abort_flag = manifest['abort']
@@ -150,7 +150,7 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
         try:
 
             manifest = get(url, {'job_name': job_name,
-                           'cluster_id': cluster_id}, timeout=15)['payload']
+                                 'cluster_id': cluster_id}, timeout=15)['payload']
 
             process_stage = manifest['process_stage']
             abort_flag = manifest['abort']
@@ -165,6 +165,48 @@ def wait_for_aggregation_phase(job_name: str, cluster_id: str, node_type: str) -
             # if process_stage is 1, break and exit
             if process_stage == 2:
                 return process_stage
+
+        except Exception:
+            logger.error(
+                f'[{node_type}] Failed to fetch process_stage flag. Aborting.\n{traceback.format_exc()}')
+            try_count += 1
+
+        if try_count >= 10:
+            _fail_exit(job_name, cluster_id, node_type)
+
+        sleep(DELAY*5)
+
+
+def wait_for_scheduled_execution(job_name: str, cluster_id: str, node_type: str) -> Tuple[int, int, int]:
+    '''
+    Method to wait for execution signal to be true
+    '''
+    prev_flag = -1
+    # listen to check if dataset flag is true or false
+    url = f'{logicon_url}/job/get_job_status'
+
+    try_count = 0
+    while True:
+        try:
+
+            manifest = get(url, {'job_name': job_name,
+                                 'cluster_id': cluster_id,
+                                 'node_id': node_id,
+                                 'node_type': node_type}, timeout=15)['payload']
+
+            start_scheduled_execution = manifest['start_scheduled_execution']
+            abort_flag = manifest['abort']
+
+            listen_abort(job_name, cluster_id, node_type, abort_flag)
+
+            if prev_flag != start_scheduled_execution:
+                logger.info(
+                    f"[{node_type}] Got start_scheduled_execution [{start_scheduled_execution}], expecting True for [{job_name}] at cluster {cluster_id}")
+                prev_flag = start_scheduled_execution
+
+            # if process_stage is 1, break and exit
+            if start_scheduled_execution:
+                return
 
         except Exception:
             logger.error(
